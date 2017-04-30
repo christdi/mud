@@ -1,0 +1,4 @@
+.DS_STORE
+src/o/*.o
+src/mud
+dist/mud
