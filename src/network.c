@@ -11,13 +11,13 @@
 #include <zlog.h>
 
 server * network_server_new() {
-	server * server = calloc(1, sizeof * server);
+    server * server = calloc(1, sizeof * server);
 
     server->fd = 0;
-	server->port = 0;
+    server->port = 0;
     server->backlog = 10;
 
-	return server;
+    return server;
 }
 
 const int network_server_listen(server * server) {
@@ -84,7 +84,7 @@ const int network_server_listen(server * server) {
 
     freeaddrinfo(serverInfo);
 
-	return 0;
+    return 0;
 
 }
 
@@ -99,11 +99,11 @@ const int network_server_close(server * server) {
         }
     }
 
-	return 0;
+    return 0;
 }
 
 void network_server_free(server * server) {
-	if ( server ) {
-		free(server);
-	}
+    if ( server ) {
+        free(server);
+    }
 }

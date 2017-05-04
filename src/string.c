@@ -5,14 +5,14 @@
 #include "mud/string.h"
 
 char * string_copy(const char * source) {
-	if ( !source ) {
-		return 0;
-	}
-	char * copy = malloc(strlen(source) + 1);
+    if ( !source ) {
+        return 0;
+    }
+    char * copy = malloc(strlen(source) + 1);
 
-	strcpy(copy, source);
+    strcpy(copy, source);
 
-	return copy;
+    return copy;
 }
 
 

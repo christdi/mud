@@ -3,7 +3,7 @@
 
 struct server {
     unsigned int fd;
-	unsigned int port;
+    unsigned int port;
     unsigned int backlog;
 };
 

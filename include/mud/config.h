@@ -4,7 +4,7 @@
 typedef struct config config;
 
 struct config {
-	char * logConfigFile;
+    char * logConfigFile;
 };
 
 config * config_new();
