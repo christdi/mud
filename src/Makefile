@@ -4,7 +4,7 @@ LFLAGS=-lzlog
 OBJECT_DIR=o
 TARGET=mud
 
-_OBJS = main.o game.o config.o log.o string.o
+_OBJS = main.o game.o config.o string.o network.o
 OBJS = $(patsubst %,$(OBJECT_DIR)/%,$(_OBJS))
 
 $(OBJECT_DIR)/%.o: %.c
