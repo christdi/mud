@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I. -I../include
+CFLAGS=-I. -I../include -ggdb
 LFLAGS=-lzlog
 OBJECT_DIR=o
 TARGET=mud

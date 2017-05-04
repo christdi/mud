@@ -2,7 +2,9 @@
 #define _NETWORK_H_
 
 struct server {
-	int port;
+    unsigned int fd;
+	unsigned int port;
+    unsigned int backlog;
 };
 
 typedef struct server server;

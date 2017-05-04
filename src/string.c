@@ -14,3 +14,14 @@ char * string_copy(const char * source) {
 
 	return copy;
 }
+
+
+char * string_integer_to_ascii(int input) {
+    char string[15];
+
+    if ( sprintf(string, "%d", input) < 0 ) {
+        return 0;
+    }
+
+    return string_copy(string);
+}
