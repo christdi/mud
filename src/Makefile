@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I. -I../include -ggdb
-LFLAGS=-lzlog
+LFLAGS=-lzlog -lpthread
 OBJECT_DIR=o
 TARGET=mud
 

@@ -14,6 +14,7 @@ server * network_server_new() {
     server * server = calloc(1, sizeof * server);
 
     server->fd = 0;
+    server->thread = 0;
     server->port = 0;
     server->backlog = 10;
 
@@ -41,7 +42,7 @@ const int network_server_listen(server * server) {
     char * portString = string_integer_to_ascii(server->port);
 
     if ( !portString ) {
-        zlog_error(networkCategory, "network_server_listen: Failed to convert port from integer to string");
+        zlog_error(networkCategory, "network_server_listen: Failed to convert port from integer to string.");
 
         return -1;
     }
@@ -54,6 +55,8 @@ const int network_server_listen(server * server) {
         return -1;
     }
 
+    zlog_debug(networkCategory, "network_server_listen: Successfully got address information.");
+
     server->fd = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
     if ( !server->fd ) {
@@ -61,6 +64,8 @@ const int network_server_listen(server * server) {
 
         return -1;
     }
+
+    zlog_debug(networkCategory, "network_server_listen: Successfully got socket.");
 
     int yes = 1;
 
@@ -70,11 +75,15 @@ const int network_server_listen(server * server) {
         return -1;
     }
 
+    zlog_debug(networkCategory, "network_server_listen: Successfully set socket option.");
+
     if ( bind(server->fd, serverInfo->ai_addr, serverInfo->ai_addrlen) != 0 ) {
         zlog_error(networkCategory, "network_server_listen: %s", strerror(errno));
 
         return -1;
     }
+
+    zlog_debug(networkCategory, "network_server_listen: Successfully bound port.");
 
     if ( listen(server->fd, server->backlog) != 0 ) {
         zlog_error(networkCategory, "network_server_listen: %s", strerror(errno));
@@ -82,17 +91,56 @@ const int network_server_listen(server * server) {
         return -1;
     }
 
+    zlog_debug(networkCategory, "network_server_listen: Successfully listened on port.");
+
     freeaddrinfo(serverInfo);
 
     return 0;
+}
 
+const int network_server_create_thread(server * server) {
+    zlog_category_t * networkCategory = zlog_get_category("network");
+
+    if ( pthread_create(&server->thread, NULL, network_server_accept_thread, &server->fd) != 0 ) {
+        zlog_error(networkCategory, "network_server_create_thread: %s", strerror(errno));
+
+        return -1;
+    }
+
+    return 0;
+}
+
+void * network_server_accept_thread(void * fd) {
+    zlog_category_t * networkCategory = zlog_get_category("network");
+
+    zlog_info(networkCategory, "network_server_accept_thread: In thread");
+
+    return 0;
+}
+
+const int network_server_join_thread(server * server) {
+    zlog_category_t * networkCategory = zlog_get_category("network");
+
+    if ( !server->thread ) {
+        zlog_error(networkCategory, "network_server_join_thread: Precondition failed, no thread ID to join");
+
+        return -1;
+    }
+
+    if ( pthread_join(server->thread, 0) != 0 ) {
+        zlog_error(networkCategory, "network_server_join_thread: %s", strerror(errno));
+
+        return -1;
+    }
+
+    return 0;
 }
 
 const int network_server_close(server * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( server->fd ) {
-        if ( close(server->fd != 0) ) {
+        if ( close(server->fd) != 0 ) {
             zlog_error(networkCategory, "network_server_close: %s", strerror(errno));
 
             return -1;

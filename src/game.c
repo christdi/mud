@@ -17,7 +17,19 @@ const int game_run() {
         return -1;
     }
 
+    if ( network_server_create_thread(server) != 0 ) {
+        zlog_error(gameCategory, "game_run: Failed to create server thread.");
+
+        return -1;
+    }
+
     zlog_info(gameCategory, "game_run: Server successfully bound to port %d.", server->port);
+
+    if ( network_server_join_thread(server) != 0 ) {
+        zlog_error(gameCategory, "game_run: Failed to join server thread.");
+
+        return -1;
+    }
 
     if ( network_server_close(server) != 0 ) {
         zlog_error(gameCategory, "game_run: Failed to close server.");

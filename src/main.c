@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 
     config_free(config);
 
+    fflush(stdout);
+
     zlog_fini();
 
     return 0;
