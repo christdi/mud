@@ -5,14 +5,14 @@
 #include "mud/config.h"
 #include "mud/string.h"
 
-config * config_new() {
-    config * config = calloc(1, sizeof * config);
+config_t * config_new() {
+    config_t * config = calloc(1, sizeof * config);
     config->logConfigFile = string_copy("config.ini");
 
     return config;
 }
 
-const int config_load(const char * filename, config * config) {
+const int config_load(const char * filename, config_t * config) {
     if ( !filename ) {
         return -1;
     }
@@ -38,7 +38,7 @@ const int config_load(const char * filename, config * config) {
     return 0;
 }
 
-const int config_parse_line(char * line, config * config) {
+const int config_parse_line(char * line, config_t * config) {
     if ( !line || !config ) {
         return - 1;
     }
@@ -61,7 +61,7 @@ const int config_parse_line(char * line, config * config) {
     return 0;
 }
 
-void config_free(config * config) {
+void config_free(config_t * config) {
     if ( config ) {
         if ( config->logConfigFile ) {
             free(config->logConfigFile);

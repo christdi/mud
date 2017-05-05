@@ -8,7 +8,7 @@ const int game_run() {
 
     zlog_info(gameCategory, "game_run: Starting MUD engine");
 
-    server * server = network_server_new();
+    server_t * server = network_server_new();
     server->port = 5000;
 
     if ( network_server_listen(server) != 0 ) {

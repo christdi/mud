@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <zlog.h>
 
-server * network_server_new() {
-    server * server = calloc(1, sizeof * server);
+server_t * network_server_new() {
+    server_t * server = calloc(1, sizeof * server);
 
     server->fd = 0;
     server->thread = 0;
@@ -21,7 +21,7 @@ server * network_server_new() {
     return server;
 }
 
-const int network_server_listen(server * server) {
+const int network_server_listen(server_t * server) {
 
     zlog_category_t * networkCategory = zlog_get_category("network");
 
@@ -98,7 +98,7 @@ const int network_server_listen(server * server) {
     return 0;
 }
 
-const int network_server_create_thread(server * server) {
+const int network_server_create_thread(server_t * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( pthread_create(&server->thread, NULL, network_server_accept_thread, &server->fd) != 0 ) {
@@ -118,7 +118,7 @@ void * network_server_accept_thread(void * fd) {
     return 0;
 }
 
-const int network_server_join_thread(server * server) {
+const int network_server_join_thread(server_t * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( !server->thread ) {
@@ -136,7 +136,7 @@ const int network_server_join_thread(server * server) {
     return 0;
 }
 
-const int network_server_close(server * server) {
+const int network_server_close(server_t * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( server->fd ) {
@@ -150,7 +150,7 @@ const int network_server_close(server * server) {
     return 0;
 }
 
-void network_server_free(server * server) {
+void network_server_free(server_t * server) {
     if ( server ) {
         free(server);
     }

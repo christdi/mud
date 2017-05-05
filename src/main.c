@@ -7,7 +7,7 @@
 const int load_configuration();
 
 int main(int argc, char *argv[]) {
-    config * config = config_new();
+    config_t * config = config_new();
 
     if ( !config ) {
         printf("Unable to allocate configuration.  Shutting down\n\r");
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-const int load_configuration(const char * filename, config * config) {
+const int load_configuration(const char * filename, config_t * config) {
     if ( config_load(filename, config) != 0 ) {
         config_free(config);
 

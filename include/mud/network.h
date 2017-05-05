@@ -10,15 +10,15 @@ struct server {
     unsigned int backlog;
 };
 
-typedef struct server server;
+typedef struct server server_t;
 
-server * network_server_new();
-const int network_server_listen(server * server);
-const int network_server_create_thread(server * server);
+server_t * network_server_new();
+const int network_server_listen(server_t * server);
+const int network_server_create_thread(server_t * server);
 void * network_server_accept_thread(void * fd);
-const int network_server_join_thread(server * server);
-const int network_server_close(server * server);
-void network_server_free(server * server);
+const int network_server_join_thread(server_t * server);
+const int network_server_close(server_t * server);
+void network_server_free(server_t * server);
 
 
 #endif
