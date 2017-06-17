@@ -12,6 +12,6 @@ struct client {
 typedef struct client client_t;
 
 client_t * network_client_new();
-void network_client_free();
+void network_client_free(client_t * client);
 
 #endif

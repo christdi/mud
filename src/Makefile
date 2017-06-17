@@ -4,8 +4,8 @@ LFLAGS=-lzlog -lpthread
 BUILD_DIR=build
 TARGET=mud
 
-MODULES = network
-_OBJS = main.o game.o config.o string.o network/server.o network/client.o
+MODULES = network list
+_OBJS = main.o game.o config.o string.o network/network.o network/server.o network/client.o list/node.o list/list.o
 OBJS = $(patsubst %,$(BUILD_DIR)/%,$(_OBJS))
 OBJDIRS = $(patsubst %, $(BUILD_DIR)/%, $(MODULES))
 
