@@ -1,12 +1,12 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "mud/network/server.h"
+#include "mud/network/network.h"
 
 struct game {
     int shutdown;
 
-    server_t * server;
+    network_t * network;
 };
 
 typedef struct game game_t;

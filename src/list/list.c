@@ -8,7 +8,8 @@ list_t * list_new() {
 
     list->first = 0;
     list->last = 0;
-
+	
+	return list;
 }
 
 void list_free(list_t * list) {
