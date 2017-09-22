@@ -105,6 +105,8 @@ const int network_server_listen(server_t * server) {
 
     freeaddrinfo(serverInfo);
 
+    zlog_info(networkCategory, "network_server_listen: Successfully bound to port %d.", server->port);
+
     return 0;
 }
 
@@ -134,8 +136,6 @@ void * network_server_accept_thread(void * server) {
     zlog_debug(networkCategory, "network_server_accept_thread: Polling until server shutdown, shutdown is %d.", acceptServer->shutdown);
 
     while (acceptServer->shutdown == 0) {
-        zlog_info(networkCategory, "network_server_accept_thread: In thread");
-
         FD_ZERO(&readSet);        
         FD_SET(acceptServer->fd, &readSet);
 
@@ -171,6 +171,8 @@ void * network_server_accept_thread(void * server) {
 
                     network_client_free(client);
                 }
+
+                zlog_info(networkCategory, "network_server_accept_thread: Accepted a new client connection.");
             }
         }
     }

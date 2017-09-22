@@ -41,7 +41,6 @@ const int game_run() {
 	}
 
     while ( !game->shutdown ) {
-        game->shutdown = 1;
     }
 
 	if ( network_shutdown(game->network) == -1 ) {
