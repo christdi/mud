@@ -1,7 +1,13 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
+#include "mud/list/list.h"
+
 #include <pthread.h>
+
+
+typedef struct server server_t;
+typedef struct server_thread server_thread_t;
 
 struct server {
     unsigned int fd;
@@ -11,7 +17,11 @@ struct server {
     unsigned int shutdown;
 };
 
-typedef struct server server_t;
+struct server_thread {
+	server_t * server;
+	list_t * clients;
+};
+
 
 server_t * network_server_new();
 const int network_server_listen(server_t * server);

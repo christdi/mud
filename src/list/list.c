@@ -28,12 +28,19 @@ void list_free(list_t * list) {
     }
 }
 
-void list_insert(list_t * list, node_t * node) {
+int list_insert(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
     if ( !list->first ) {
         list->first = node;
         list->last = node;
 
-        return;
+        return 0;
     }
 
     node_t * last = list->last;
@@ -42,9 +49,20 @@ void list_insert(list_t * list, node_t * node) {
     node->prev = last;
 
     list->last = node;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
 }
 
-void list_remove(list_t * list, node_t * node) {
+int list_remove(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
     node_t * search = list->first;
 
     while ( search ) {
@@ -70,4 +88,102 @@ void list_remove(list_t * list, node_t * node) {
 
         search = current->next;
     }
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
+}
+
+int list_next(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    if ( !node->next ) {
+        return -1;
+    }
+
+    node = node->next;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
+}
+
+int list_prev(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    if ( !node->prev ) {
+        return -1;
+    }
+
+    node = node->prev;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
+}
+
+int list_first(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    node = list->first;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
+}
+
+int list_last(list_t * list, node_t * node) {
+
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    node = list->last;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
+}
+
+int list_clear(list_t * list) {
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    node_t * node = list->first;
+
+    while ( node != list->last ) {
+        node_t * next = node->next;
+
+        node->prev = 0;
+        node->next = 0;
+
+        node = next;
+    }
+
+    list->first = 0;
+    list->last = 0;
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return 0;
 }
