@@ -1,17 +1,27 @@
 CC=gcc
-CFLAGS=-I. -I../include
-LFLAGS=-lzlog
-OBJECT_DIR=o
+CFLAGS=-I. -I../include -ggdb
+LFLAGS=-lzlog -lpthread
+BUILD_DIR=build
 TARGET=mud
 
-_OBJS = main.o game.o config.o log.o string.o
-OBJS = $(patsubst %,$(OBJECT_DIR)/%,$(_OBJS))
+MODULES = network list
+_OBJS = main.o game.o config.o string.o network/network.o network/server.o network/client.o list/node.o list/list.o
+OBJS = $(patsubst %,$(BUILD_DIR)/%,$(_OBJS))
+OBJDIRS = $(patsubst %, $(BUILD_DIR)/%, $(MODULES))
 
-$(OBJECT_DIR)/%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
+all: $(OBJDIRS) $(TARGET)
 
 $(TARGET): $(OBJS)
 	gcc -o $@ $^ $(CFLAGS) $(LFLAGS)
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(OBJDIRS): $(BUILD_DIR)
+	mkdir -p $@
+
+$(BUILD_DIR):
+	mkdir -p $@
 
 install: $(TARGET)
 	cp $^ ../dist
@@ -19,4 +29,4 @@ install: $(TARGET)
 .PHONY: clean
 
 clean:
-	rm -f $(OBJECT_DIR)/*.o $(TARGET)
+	rm -rf $(OBJDIRS) $(BUILD_DIR)/*.o $(TARGET)
