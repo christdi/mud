@@ -28,7 +28,7 @@ int network_initialise(network_t * network, int port) {
         return -1;
     }
 
-    if ( network_server_create_thread(network->server) == -1 ) {
+    if ( network_server_create_thread(network->server, network->clients) == -1 ) {
         zlog_error(networkCategory, "network_initialise: Failed to create server accept thread.");
 
         return -1;

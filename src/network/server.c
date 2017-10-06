@@ -110,10 +110,14 @@ const int network_server_listen(server_t * server) {
     return 0;
 }
 
-const int network_server_create_thread(server_t * server) {
+const int network_server_create_thread(server_t * server, list_t * clients) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
-    if ( pthread_create(&server->thread, NULL, network_server_accept_thread, server) != 0 ) {
+    server_thread_data_t * serverThreadData = network_server_thread_data_new();
+    serverThreadData->server = server;
+    serverThreadData->clients = clients;
+
+    if ( pthread_create(&server->thread, NULL, network_server_accept_thread, serverThreadData) != 0 ) {
         zlog_error(networkCategory, "network_server_create_thread: %s", strerror(errno));
 
         return -1;
@@ -124,10 +128,14 @@ const int network_server_create_thread(server_t * server) {
     return 0;
 }
 
-void * network_server_accept_thread(void * server) {
+void * network_server_accept_thread(void * serverThreadData) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
-    server_t * acceptServer = (server_t *) server;
+    server_thread_data_t * threadData = (server_thread_data_t *) serverThreadData;
+    server_t * acceptServer = threadData->server;
+    list_t * clients = threadData->clients;
+
+    network_server_thread_data_free(serverThreadData);
 
     struct timeval timeout;
 
@@ -171,6 +179,11 @@ void * network_server_accept_thread(void * server) {
 
                     network_client_free(client);
                 }
+
+                node_t * node = list_node_new();
+                node->data = client;
+
+                list_insert(clients, node);
 
                 zlog_info(networkCategory, "network_server_accept_thread: Accepted a new client connection.");
             }
@@ -217,5 +230,20 @@ const int network_server_close(server_t * server) {
 void network_server_free(server_t * server) {
     if ( server ) {
         free(server);
+    }
+}
+
+server_thread_data_t * network_server_thread_data_new() {
+    server_thread_data_t * serverThreadData = calloc(1, sizeof * serverThreadData);
+
+    serverThreadData->server = 0;
+    serverThreadData->clients = 0;
+
+    return serverThreadData;
+}
+
+void network_server_thread_data_free(server_thread_data_t * serverThreadData) {
+    if ( serverThreadData ) {
+        free(serverThreadData);
     }
 }

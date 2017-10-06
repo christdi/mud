@@ -7,7 +7,7 @@
 
 
 typedef struct server server_t;
-typedef struct server_thread server_thread_t;
+typedef struct server_thread_data server_thread_data_t;
 
 struct server {
     unsigned int fd;
@@ -17,7 +17,7 @@ struct server {
     unsigned int shutdown;
 };
 
-struct server_thread {
+struct server_thread_data {
 	server_t * server;
 	list_t * clients;
 };
@@ -25,11 +25,13 @@ struct server_thread {
 
 server_t * network_server_new();
 const int network_server_listen(server_t * server);
-const int network_server_create_thread(server_t * server);
-void * network_server_accept_thread(void * server);
+const int network_server_create_thread(server_t * server, list_t * clients);
+void * network_server_accept_thread(void * serverThreadData);
 const int network_server_join_thread(server_t * server);
 const int network_server_close(server_t * server);
 void network_server_free(server_t * server);
 
+server_thread_data_t * network_server_thread_data_new();
+void network_server_thread_data_free(server_thread_data_t * serverThreadData);
 
 #endif
