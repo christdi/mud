@@ -49,6 +49,7 @@ const int network_client_send(client_t * client, char * data) {
 		}
 	}
 
+	return 0;
 }
 
 void network_client_free(client_t * client) {

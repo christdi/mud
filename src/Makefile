@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I. -I../include -ggdb
+CFLAGS=-I. -I../include -ggdb -Wall
 LFLAGS=-lzlog -lpthread
 BUILD_DIR=build
 TARGET=mud
