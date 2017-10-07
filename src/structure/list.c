@@ -1,5 +1,5 @@
-#include "mud/list/list.h"
-#include "mud/list/node.h"
+#include "mud/structure/list.h"
+#include "mud/structure/node.h"
 
 #include <stdlib.h>
 
@@ -28,7 +28,7 @@ void list_free(list_t * list) {
     }
 }
 
-int list_insert(list_t * list, node_t * node) {
+const int list_insert(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -55,7 +55,7 @@ int list_insert(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_remove(list_t * list, node_t * node) {
+const int list_remove(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -94,7 +94,7 @@ int list_remove(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_next(list_t * list, node_t * node) {
+const int list_next(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -113,7 +113,7 @@ int list_next(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_prev(list_t * list, node_t * node) {
+const int list_prev(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -132,7 +132,7 @@ int list_prev(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_first(list_t * list, node_t * node) {
+const int list_first(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -147,7 +147,7 @@ int list_first(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_last(list_t * list, node_t * node) {
+const int list_last(list_t * list, node_t * node) {
 
     if ( !list ) {
         return -1;
@@ -162,7 +162,7 @@ int list_last(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_clear(list_t * list) {
+const int list_clear(list_t * list) {
     if ( !list ) {
         return -1;
     }
@@ -186,4 +186,26 @@ int list_clear(list_t * list) {
     pthread_mutex_unlock(&list->mutex);
 
     return 0;
+}
+
+const int list_count(list_t * list) {
+    if ( !list ) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&list->mutex);
+
+    int count = 0;
+
+    node_t * node = list->first;
+
+    while ( node != list->last ) {
+        count++;
+
+        node = node->next;
+    }
+
+    pthread_mutex_unlock(&list->mutex);
+
+    return count;
 }

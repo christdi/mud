@@ -4,8 +4,8 @@ LFLAGS=-lzlog -lpthread
 BUILD_DIR=build
 TARGET=mud
 
-MODULES = network list
-_OBJS = main.o game.o config.o string.o network/network.o network/server.o network/client.o list/node.o list/list.o
+MODULES = network structure
+_OBJS = main.o game.o config.o string.o network/network.o network/server.o network/client.o structure/node.o structure/list.o structure/queue.o
 OBJS = $(patsubst %,$(BUILD_DIR)/%,$(_OBJS))
 OBJDIRS = $(patsubst %, $(BUILD_DIR)/%, $(MODULES))
 
@@ -29,4 +29,4 @@ install: $(TARGET)
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJDIRS) $(BUILD_DIR)/*.o $(TARGET)
+	rm -rf $(BUILD_DIR) $(TARGET)

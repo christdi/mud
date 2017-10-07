@@ -1,8 +1,8 @@
 #include "mud/network/network.h"
 #include "mud/network/client.h"
 #include "mud/network/server.h"
-#include "mud/list/list.h"
-#include "mud/list/node.h"
+#include "mud/structure/list.h"
+#include "mud/structure/node.h"
 
 #include <zlog.h>
 #include <stdlib.h>

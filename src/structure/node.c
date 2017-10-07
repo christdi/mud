@@ -1,4 +1,4 @@
-#include "mud/list/node.h"
+#include "mud/structure/node.h"
 
 #include <stdlib.h>
 

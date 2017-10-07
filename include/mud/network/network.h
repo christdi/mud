@@ -1,7 +1,7 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include "mud/list/list.h"
+#include "mud/structure/list.h"
 #include "server.h"
 
 struct network {
