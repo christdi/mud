@@ -1,6 +1,7 @@
 #include "mud/structure/list.h"
 #include "mud/structure/node.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 list_t * list_new() {
@@ -13,22 +14,28 @@ list_t * list_new() {
 }
 
 void list_free(list_t * list) {
-    if ( list ) {
-        node_t * node = list->first;
+    assert(list);
 
-        while ( node ) {
-            node_t * next = node->next;
+    node_t * node = NULL;
 
-            list_node_free(node);
+    list_first(list, &node);
 
-            node = next;
-        }
+    while(node != NULL) {
+        node_t * next = NULL;
 
-        free(list);        
+        list_next(list, &next);
+        node_free(node);
+
+        node = next;
     }
+    
+    free(list);
+    list = NULL;
 }
 
 const int list_insert(list_t * list, node_t * node) {
+    assert(list);
+    assert(node);
 
     if ( !list ) {
         return -1;
@@ -56,10 +63,8 @@ const int list_insert(list_t * list, node_t * node) {
 }
 
 const int list_remove(list_t * list, node_t * node) {
-
-    if ( !list ) {
-        return -1;
-    }
+    assert(list);
+    assert(node);
 
     pthread_mutex_lock(&list->mutex);
 
@@ -94,78 +99,60 @@ const int list_remove(list_t * list, node_t * node) {
     return 0;
 }
 
-const int list_next(list_t * list, node_t * node) {
-
-    if ( !list ) {
-        return -1;
-    }
+void list_next(list_t * list, node_t ** node) {
+    assert(list);
+    assert(node);
 
     pthread_mutex_lock(&list->mutex);
 
-    if ( !node->next ) {
-        return -1;
+    if ( !(*node)->next ) {
+        *node = NULL;
+    } else {
+        *node = (*node)->next;
     }
 
-    node = node->next;
-
     pthread_mutex_unlock(&list->mutex);
-
-    return 0;
 }
 
-const int list_prev(list_t * list, node_t * node) {
-
-    if ( !list ) {
-        return -1;
-    }
+void list_prev(list_t * list, node_t ** node) {
+    assert(list);
+    assert(node);
 
     pthread_mutex_lock(&list->mutex);
 
-    if ( !node->prev ) {
-        return -1;
+    if ( !(*node)->prev ) {
+        *node = NULL;
+    } else {
+        *node = (*node)->prev;
     }
 
-    node = node->prev;
-
     pthread_mutex_unlock(&list->mutex);
-
-    return 0;
 }
 
-const int list_first(list_t * list, node_t * node) {
-
-    if ( !list ) {
-        return -1;
-    }
+void list_first(list_t * list, node_t ** node) {
+    assert(list);
+    assert(node);
 
     pthread_mutex_lock(&list->mutex);
 
-    node = list->first;
+    *node = list->first;
 
     pthread_mutex_unlock(&list->mutex);
-
-    return 0;
 }
 
-const int list_last(list_t * list, node_t * node) {
-
-    if ( !list ) {
-        return -1;
-    }
+void list_last(list_t * list, node_t ** node) {
+    assert(list);
+    assert(node);
 
     pthread_mutex_lock(&list->mutex);
 
-    node = list->last;
+    *node = list->last;
 
     pthread_mutex_unlock(&list->mutex);
-
-    return 0;
 }
 
 const int list_clear(list_t * list) {
-    if ( !list ) {
-        return -1;
-    }
+    assert(list);
 
     pthread_mutex_lock(&list->mutex);
 
@@ -189,9 +176,7 @@ const int list_clear(list_t * list) {
 }
 
 const int list_count(list_t * list) {
-    if ( !list ) {
-        return -1;
-    }
+    assert(list);
 
     pthread_mutex_lock(&list->mutex);
 

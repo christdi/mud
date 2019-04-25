@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,9 +14,7 @@ config_t * config_new() {
 }
 
 const int config_load(const char * filename, config_t * config) {
-    if ( !filename ) {
-        return -1;
-    }
+    assert(filename);
 
     FILE * fp = fopen(filename, "r");
 
@@ -62,11 +61,11 @@ const int config_parse_line(char * line, config_t * config) {
 }
 
 void config_free(config_t * config) {
-    if ( config ) {
-        if ( config->logConfigFile ) {
-            free(config->logConfigFile);
-        }
+    assert(config);
+    
+    if ( config->logConfigFile ) {
+        free(config->logConfigFile);
 
-        free(config);
+        config->logConfigFile = NULL;
     }
 }

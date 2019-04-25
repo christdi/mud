@@ -9,7 +9,7 @@ struct node {
     node_t * prev;
 };
 
-node_t * list_node_new();
-void list_node_free(node_t * node);
+node_t * node_new();
+void node_free(node_t * node);
 
 #endif

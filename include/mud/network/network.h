@@ -6,14 +6,14 @@
 
 struct network {
 	server_t * server;
-    list_t * clients;
 };
 
 typedef struct network network_t;
 
 network_t * network_new();
-int network_initialise(network_t * network, int port);
-int network_shutdown(network_t * network);
+const int network_initialise(network_t * network, int port);
+const int network_poll(network_t * network);
+const int network_shutdown(network_t * network);
 void network_free(network_t * network);
 
 #endif

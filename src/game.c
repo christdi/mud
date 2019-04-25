@@ -1,6 +1,7 @@
 #include "mud/game.h"
 #include "mud/network/network.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
 
@@ -14,45 +15,49 @@ game_t * game_new() {
 }
 
 void game_free(game_t * game) {
-    if ( game ) {
+    assert(game);
+    assert(game->network);
 
-        if ( game->network ) {
-            network_free(game->network);
-        }
-
-        free(game);
-    }
+    free(game);
+    network_free(game->network);
 }
 
 const int game_run() {
     zlog_category_t * gameCategory = zlog_get_category("game");
 
-    zlog_info(gameCategory, "game_run: Starting MUD engine");
+    zlog_info(gameCategory, "Starting MUD engine");
 
     game_t * game = game_new();
+    gettimeofday(&game->last_tick, NULL);
+
     game->network = network_new();
 
-	zlog_info(gameCategory, "game_run: Initialising network");
-
 	if ( network_initialise(game->network, 5000) == -1 ) {
-		zlog_error(gameCategory, "game_run: Failed to initialise network");
+		zlog_error(gameCategory, "Failed to initialise network");
 
 		return -1;
 	}
 
     while ( !game->shutdown ) {
+        game_tick(game);
+        network_poll(game->network);
     }
 
 	if ( network_shutdown(game->network) == -1 ) {
-		zlog_error(gameCategory, "game_run: Failed to shutdown network");
+		zlog_error(gameCategory, "Failed to shutdown network");
 
 		return -1;
 	}
 
     game_free(game);
 
-    zlog_info(gameCategory, "game_run: Stopping MUD engine");
+    zlog_info(gameCategory, "Stopping MUD engine");
 
     return 0;
 }
 
+const int game_tick(game_t * game) {
+    gettimeofday(&game->last_tick, NULL);
+
+    return 0;
+}
