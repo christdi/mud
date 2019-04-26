@@ -5,13 +5,11 @@
 
 #include <pthread.h>
 
-struct list {
+typedef struct list {
 	pthread_mutex_t mutex;
     node_t * first;
     node_t * last;
-};
-
-typedef struct list list_t;
+} list_t;
 
 list_t * list_new();
 void list_free(list_t * list);

@@ -18,11 +18,11 @@ void game_free(game_t * game) {
     assert(game);
     assert(game->network);
 
-    free(game);
     network_free(game->network);
+    free(game);
 }
 
-const int game_run() {
+const int game_run(config_t * config) {
     zlog_category_t * gameCategory = zlog_get_category("game");
 
     zlog_info(gameCategory, "Starting MUD engine");
@@ -38,8 +38,10 @@ const int game_run() {
 		return -1;
 	}
 
+    long nanosecondsPerTick = 1000000000L / config->ticksPerSecond;
+
     while ( !game->shutdown ) {
-        game_tick(game);
+        game_tick(game, nanosecondsPerTick);
         network_poll(game->network);
     }
 
@@ -56,8 +58,23 @@ const int game_run() {
     return 0;
 }
 
-const int game_tick(game_t * game) {
-    gettimeofday(&game->last_tick, NULL);
+const int game_tick(game_t * game, const long nanosecondsPerTick) {
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+
+    time_t secondsElapsed = currentTime.tv_sec - game->last_tick.tv_sec;
+    suseconds_t microsecondsElapsed = currentTime.tv_usec - game->last_tick.tv_usec;
+    long nanosecondsElapsed = (secondsElapsed * 1000000000L) + (microsecondsElapsed * 1000);
+
+    if (nanosecondsElapsed < nanosecondsPerTick) {
+        struct timespec sleepTime;
+        sleepTime.tv_sec = 0;
+        sleepTime.tv_nsec = nanosecondsPerTick - nanosecondsElapsed;
+
+        nanosleep(&sleepTime, NULL);
+    }
+
+    game->last_tick = currentTime;
 
     return 0;
 }

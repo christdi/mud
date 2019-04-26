@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    if ( game_run() != 0 ) {
+    if ( game_run(config) != 0 ) {
         return -1;
     }
 

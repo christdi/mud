@@ -23,8 +23,8 @@ $(OBJDIRS): $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 
-install: $(TARGET)
-	cp $^ ../dist
+install: all
+	cp $(TARGET) ../dist
 
 .PHONY: clean
 

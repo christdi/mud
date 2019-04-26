@@ -7,8 +7,10 @@
 list_t * list_new() {
     list_t * list = calloc(1, sizeof * list);
 
-    list->first = 0;
-    list->last = 0;
+    list->first = NULL;
+    list->last = NULL;
+
+    pthread_mutex_init(&list->mutex, NULL);
 	
 	return list;
 }
@@ -18,7 +20,9 @@ void list_free(list_t * list) {
 
     node_t * node = NULL;
 
+
     list_first(list, &node);
+
 
     while(node != NULL) {
         node_t * next = NULL;
@@ -28,12 +32,18 @@ void list_free(list_t * list) {
 
         node = next;
     }
+
+    list->first = NULL;
+    list->last = NULL;
+    pthread_mutex_destroy(&list->mutex);
     
     free(list);
     list = NULL;
 }
 
 const int list_insert(list_t * list, node_t * node) {
+
+
     assert(list);
     assert(node);
 
@@ -45,7 +55,11 @@ const int list_insert(list_t * list, node_t * node) {
 
     if ( !list->first ) {
         list->first = node;
+
         list->last = node;
+
+
+        pthread_mutex_unlock(&list->mutex);
 
         return 0;
     }
@@ -53,16 +67,19 @@ const int list_insert(list_t * list, node_t * node) {
     node_t * last = list->last;
 
     last->next = node;
+
     node->prev = last;
 
     list->last = node;
 
     pthread_mutex_unlock(&list->mutex);
 
+
     return 0;
 }
 
 const int list_remove(list_t * list, node_t * node) {
+
     assert(list);
     assert(node);
 
@@ -85,8 +102,11 @@ const int list_remove(list_t * list, node_t * node) {
                 list->last = previous;
             }
 
-            if ( previous && next) {
+            if (previous) {
                 previous->next = next;
+            }
+
+            if (next) {
                 next->prev = previous;
             }
         }
@@ -95,6 +115,7 @@ const int list_remove(list_t * list, node_t * node) {
     }
 
     pthread_mutex_unlock(&list->mutex);
+
 
     return 0;
 }

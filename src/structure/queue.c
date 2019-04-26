@@ -23,7 +23,7 @@ const int queue_pop(queue_t * queue, node_t ** node) {
 
 	list_last(queue->list, node);
 
-	if (!*node) {
+	if (!(*node)) {
 		return -1;
 	}
 

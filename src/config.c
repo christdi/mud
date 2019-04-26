@@ -9,6 +9,7 @@
 config_t * config_new() {
     config_t * config = calloc(1, sizeof * config);
     config->logConfigFile = string_copy("config.ini");
+    config->ticksPerSecond = 20;
 
     return config;
 }
@@ -43,7 +44,7 @@ const int config_parse_line(char * line, config_t * config) {
     }
 
     char * key = strtok(line, "=");
-    char * value = strtok(0, "\n");
+    char * value = strtok(NULL, "\n");
 
     if ( !key || !value ) {
         return -1;
@@ -55,6 +56,10 @@ const int config_parse_line(char * line, config_t * config) {
         }
 
         config->logConfigFile = string_copy(value);
+    }
+
+    if ( strcmp(key, "ticks_per_second") == 0 ) {
+        config->ticksPerSecond = atoi(value);
     }
 
     return 0;

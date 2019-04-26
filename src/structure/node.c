@@ -7,8 +7,8 @@ node_t * node_new() {
     node_t * node = calloc(1, sizeof * node);
 
     node->data = NULL;
-    node->next = 0;
-    node->prev = 0;
+    node->next = NULL;
+    node->prev = NULL;
 
 	return node;
 }

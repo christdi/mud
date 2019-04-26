@@ -5,6 +5,7 @@ typedef struct config config_t;
 
 struct config {
     char * logConfigFile;
+    unsigned int ticksPerSecond;
 };
 
 config_t * config_new();
