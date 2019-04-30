@@ -229,9 +229,9 @@ int network_server_poll_clients(server_t * server) {
             node_free(node);
 
             node = next;
+        } else {
+            list_next(server->clients, &node);
         }
-
-        list_next(server->clients, &node);
     }
 
     return 0;

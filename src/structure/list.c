@@ -79,7 +79,7 @@ int list_insert(list_t * list, node_t * node) {
     return 0;
 }
 
-int list_remove(list_t * list, node_t * node) {
+int list_remove(list_t * list, node_t * node, node_t ** nextNode) {
 
     assert(list);
     assert(node);
@@ -113,6 +113,10 @@ int list_remove(list_t * list, node_t * node) {
 
             current->next = NULL;
             current->prev = NULL;
+
+            if (*nextNode) {
+                *nextNode = next;
+            }
 
             break;
         }

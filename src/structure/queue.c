@@ -27,7 +27,7 @@ int queue_pop(queue_t * queue, node_t ** node) {
 		return -1;
 	}
 
-	return list_remove(queue->list, *node);
+    return list_remove(queue->list, *node, NULL);
 }
 
 int queue_clear(queue_t * queue) {

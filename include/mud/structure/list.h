@@ -15,7 +15,7 @@ list_t * list_new(void);
 void list_free(list_t * list);
 
 int list_insert(list_t * list, node_t * node);
-int list_remove(list_t * list, node_t * node);
+int list_remove(list_t * list, node_t * node, node_t ** nextNode);
 int list_clear(list_t * list);
 int list_count(list_t * list);
 
