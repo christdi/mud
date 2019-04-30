@@ -8,7 +8,7 @@
 #include <zlog.h>
 #include <stdlib.h>
 
-network_t * network_new() {
+network_t * network_new(void) {
     network_t * network = calloc(1, sizeof * network);
 
 	network->server = network_server_new();
@@ -17,7 +17,7 @@ network_t * network_new() {
 
 }
 
-const int network_initialise(network_t * network, int port) {
+int network_initialise(network_t * network, unsigned int port) {
     assert(network);
 
     zlog_category_t * networkCategory = zlog_get_category("network");
@@ -39,7 +39,7 @@ const int network_initialise(network_t * network, int port) {
 	return 0;
 }
 
-const int network_poll(network_t * network) {
+int network_poll(network_t * network) {
     assert(network);
 
     zlog_category_t * networkCategory = zlog_get_category("network");
@@ -53,7 +53,7 @@ const int network_poll(network_t * network) {
     return 0;
 }
 
-const int network_shutdown(network_t * network) {
+int network_shutdown(network_t * network) {
     assert(network);
 
     zlog_category_t * networkCategory = zlog_get_category("network");

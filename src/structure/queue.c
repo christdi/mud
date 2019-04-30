@@ -11,14 +11,14 @@ queue_t * queue_new() {
 	return queue;
 }
 
-const int queue_push(queue_t * queue, node_t * node) {
+int queue_push(queue_t * queue, node_t * node) {
 	assert(queue);
 	assert(node);
 
 	return list_insert(queue->list, node);
 }
 
-const int queue_pop(queue_t * queue, node_t ** node) {
+int queue_pop(queue_t * queue, node_t ** node) {
 	assert(queue);
 
 	list_last(queue->list, node);
@@ -30,13 +30,13 @@ const int queue_pop(queue_t * queue, node_t ** node) {
 	return list_remove(queue->list, *node);
 }
 
-const int queue_clear(queue_t * queue) {
+int queue_clear(queue_t * queue) {
 	assert(queue);
 
 	return list_clear(queue->list);
 }
 
-const int queue_is_empty(queue_t * queue) {
+int queue_is_empty(queue_t * queue) {
 	assert(queue);
 
 	return list_count(queue->list) > 0 ? 1 : 0;

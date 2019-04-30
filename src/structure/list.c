@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-list_t * list_new() {
+list_t * list_new(void) {
     list_t * list = calloc(1, sizeof * list);
 
     list->first = NULL;
@@ -41,7 +41,7 @@ void list_free(list_t * list) {
     list = NULL;
 }
 
-const int list_insert(list_t * list, node_t * node) {
+int list_insert(list_t * list, node_t * node) {
 
 
     assert(list);
@@ -69,6 +69,7 @@ const int list_insert(list_t * list, node_t * node) {
     last->next = node;
 
     node->prev = last;
+    node->next = NULL;
 
     list->last = node;
 
@@ -78,7 +79,7 @@ const int list_insert(list_t * list, node_t * node) {
     return 0;
 }
 
-const int list_remove(list_t * list, node_t * node) {
+int list_remove(list_t * list, node_t * node) {
 
     assert(list);
     assert(node);
@@ -109,6 +110,11 @@ const int list_remove(list_t * list, node_t * node) {
             if (next) {
                 next->prev = previous;
             }
+
+            current->next = NULL;
+            current->prev = NULL;
+
+            break;
         }
 
         search = current->next;
@@ -172,7 +178,7 @@ void list_last(list_t * list, node_t ** node) {
     pthread_mutex_unlock(&list->mutex);
 }
 
-const int list_clear(list_t * list) {
+int list_clear(list_t * list) {
     assert(list);
 
     pthread_mutex_lock(&list->mutex);
@@ -196,7 +202,7 @@ const int list_clear(list_t * list) {
     return 0;
 }
 
-const int list_count(list_t * list) {
+int list_count(list_t * list) {
     assert(list);
 
     pthread_mutex_lock(&list->mutex);

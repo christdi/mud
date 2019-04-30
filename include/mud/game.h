@@ -14,9 +14,9 @@ struct game {
 
 typedef struct game game_t;
 
-game_t * game_new();
+game_t * game_new(void);
 void game_free(game_t * game);
-const int game_run(config_t * config);
-const int game_tick(game_t * game, const long nanosecondsPerTick);
+int game_run(config_t * config);
+int game_tick(game_t * game, const long nanosecondsPerTick);
 
 #endif

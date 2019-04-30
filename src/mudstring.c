@@ -2,18 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "mud/string.h"
-
-char * string_copy(const char * source) {
-    assert(source);
-    
-    char * copy = malloc(strlen(source) + 1);
-
-    strcpy(copy, source);
-
-    return copy;
-}
+#include "mud/mudstring.h"
 
 char * string_remove(char * source, const char token) {
 	assert(source);
@@ -40,8 +31,8 @@ char * string_integer_to_ascii(int input) {
     char string[15];
 
     if ( sprintf(string, "%d", input) < 0 ) {
-        return 0;
+        return NULL;
     }
 
-    return string_copy(string);
+    return strdup(string);
 }

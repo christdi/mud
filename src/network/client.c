@@ -1,6 +1,6 @@
 #include "mud/network/client.h"
 #include "mud/structure/node.h"
-#include "mud/string.h"
+#include "mud/mudstring.h"
 
 #include <assert.h>
 #include <sys/socket.h>
@@ -22,21 +22,21 @@ client_t * network_client_new() {
     return client;
 }
 
-const int network_client_send(client_t * client, char * data) {
+int network_client_send(client_t * client, char * data) {
 	assert(client);
 	assert(data);
 
     zlog_category_t * networkCategory = zlog_get_category("network");
 
-	int len = strlen(data);
-	int bytes_sent = 0;
+    unsigned long len = strlen(data);
+    long bytes_sent = 0;
 
-	while ( bytes_sent < len ) {
+    while ( bytes_sent < (long) len ) {
 		data = data + bytes_sent;
 		
-		bytes_sent = send(client->fd, data, len, 0);
+        bytes_sent = send(client->fd, data, len, 0);
 
-		if ( bytes_sent == -1 ) {
+        if ( bytes_sent == -1L ) {
 			zlog_error(networkCategory, "%s", strerror(errno));
 
 			return -1;
@@ -48,7 +48,7 @@ const int network_client_send(client_t * client, char * data) {
 	return 0;
 }
 
-const int network_client_create_thread(client_t * client) {
+int network_client_create_thread(client_t * client) {
 	assert(client);
 
     zlog_category_t * networkCategory = zlog_get_category("network");
@@ -71,12 +71,12 @@ void * network_client_receive_thread(void * receiveThreadData) {
 
 	client_t * client = (client_t *) receiveThreadData;
 
-	int len = 0;
+    ssize_t len = 0;
 
 	while(client->fd > 0) {
 		char * buffer = calloc(1024, sizeof(char));
 
-		if (( len = recv(client->fd, buffer, 1024, 0)) == -1 ) {
+        if (( len = recv(client->fd, buffer, 1024, 0)) == -1 ) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				continue;
 			}
@@ -93,14 +93,18 @@ void * network_client_receive_thread(void * receiveThreadData) {
 
 		buffer = string_remove(buffer, '\r');
 
-		char * line;
+        char * position;
 
-		while (( line = strtok_r(buffer, "\n", &buffer)) != NULL ) {
-			node_t * node = node_new();
-			node->data = string_copy(line);
-			
-			queue_push(client->inputQueue, node);
-		}
+        char * token = strtok_r(buffer, "\n", &position);
+
+        if ( token != NULL ) {
+            do {
+                node_t * node = node_new();
+                node->data = strdup(token);
+
+                queue_push(client->inputQueue, node);
+            } while (( token = strtok_r(NULL, "\n", &position)) != NULL);
+        }
 
 		free(buffer);
 	}
@@ -108,7 +112,7 @@ void * network_client_receive_thread(void * receiveThreadData) {
 	return 0;
 }
 
-const int network_client_join_thread(client_t * client) {
+ int network_client_join_thread(client_t * client) {
 	assert(client);
 	assert(client->thread);
 
@@ -123,7 +127,7 @@ const int network_client_join_thread(client_t * client) {
     return 0;
 }
 
-const int network_client_close(client_t * client) {
+int network_client_close(client_t * client) {
 	assert(client);
 
     zlog_category_t * networkCategory = zlog_get_category("network");

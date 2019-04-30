@@ -1,6 +1,6 @@
 #include "mud/network/server.h"
 #include "mud/network/client.h"
-#include "mud/string.h"
+#include "mud/mudstring.h"
 
 #include <assert.h>
 #include <sys/time.h>
@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <zlog.h>
 
-server_t * network_server_new() {
+server_t * network_server_new(void) {
     server_t * server = calloc(1, sizeof * server);
 
     server->fd = 0;
@@ -26,7 +26,7 @@ server_t * network_server_new() {
     return server;
 }
 
-const int network_server_initialise(server_t * server) {
+int network_server_initialise(server_t * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( network_server_create_thread(server) == -1 ) {
@@ -39,7 +39,7 @@ const int network_server_initialise(server_t * server) {
 }
 
 
-const int network_server_listen(server_t * server) {
+int network_server_listen(server_t * server) {
     assert(server);
     assert(server->port != 0);
 
@@ -120,7 +120,7 @@ const int network_server_listen(server_t * server) {
     return 0;
 }
 
-const int network_server_create_thread(server_t * server) {
+int network_server_create_thread(server_t * server) {
     zlog_category_t * networkCategory = zlog_get_category("network");
 
     if ( pthread_create(&server->thread, NULL, network_server_accept_thread, server) != 0 ) {
@@ -203,7 +203,7 @@ void * network_server_accept_thread(void * serverThreadData) {
     return 0;
 }
 
-const int network_server_poll_clients(server_t * server) {
+int network_server_poll_clients(server_t * server) {
     assert(server);
     assert(server->clients);
 
@@ -222,9 +222,13 @@ const int network_server_poll_clients(server_t * server) {
                 zlog_error(networkCategory, "Failed to close hungup client");            
             }
 
-            list_remove(server->clients, node);
+            node_t * next;
+
+            list_remove(server->clients, node, &next);
             network_client_free(client);
             node_free(node);
+
+            node = next;
         }
 
         list_next(server->clients, &node);
@@ -233,7 +237,7 @@ const int network_server_poll_clients(server_t * server) {
     return 0;
 }
 
-const int network_server_join_thread(server_t * server) {
+int network_server_join_thread(server_t * server) {
     assert(server);
     assert(server->thread);
 
@@ -248,7 +252,7 @@ const int network_server_join_thread(server_t * server) {
     return 0;
 }
 
-const int network_server_shutdown(server_t * server) {
+int network_server_shutdown(server_t * server) {
     assert(server);
 
     zlog_category_t * networkCategory = zlog_get_category("network");
@@ -268,7 +272,7 @@ const int network_server_shutdown(server_t * server) {
     return 0;
 }
 
-const int network_server_close(server_t * server) {
+int network_server_close(server_t * server) {
     assert(server);
 
     zlog_category_t * networkCategory = zlog_get_category("network");

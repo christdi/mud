@@ -4,17 +4,17 @@
 #include <string.h>
 
 #include "mud/config.h"
-#include "mud/string.h"
+#include "mud/mudstring.h"
 
-config_t * config_new() {
+config_t * config_new(void) {
     config_t * config = calloc(1, sizeof * config);
-    config->logConfigFile = string_copy("config.ini");
+    config->logConfigFile = strdup("config.ini");
     config->ticksPerSecond = 20;
 
     return config;
 }
 
-const int config_load(const char * filename, config_t * config) {
+int config_load(const char * filename, config_t * config) {
     assert(filename);
 
     FILE * fp = fopen(filename, "r");
@@ -38,7 +38,7 @@ const int config_load(const char * filename, config_t * config) {
     return 0;
 }
 
-const int config_parse_line(char * line, config_t * config) {
+int config_parse_line(char * line, config_t * config) {
     if ( !line || !config ) {
         return - 1;
     }
@@ -55,7 +55,7 @@ const int config_parse_line(char * line, config_t * config) {
             free(config->logConfigFile);
         }
 
-        config->logConfigFile = string_copy(value);
+        config->logConfigFile = strdup(value);
     }
 
     if ( strcmp(key, "ticks_per_second") == 0 ) {
@@ -70,7 +70,5 @@ void config_free(config_t * config) {
     
     if ( config->logConfigFile ) {
         free(config->logConfigFile);
-
-        config->logConfigFile = NULL;
     }
 }

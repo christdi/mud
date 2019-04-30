@@ -1,27 +1,24 @@
-#ifndef _CLIENT_H_
-#define _CLIENT_H_
+#ifndef HG_CLIENT_H
+#define HG_CLIENT_H
 
 #include <pthread.h>
 
 #include "mud/structure/queue.h"
 
-struct client {
-    unsigned int fd;
+typedef struct client {
+    int fd;
     pthread_t thread;
     unsigned int hungup;
 
     queue_t * inputQueue;
+} client_t;
 
-};
-
-typedef struct client client_t;
-
-client_t * network_client_new();
-const int network_client_send(client_t * client, char * data);
-const int network_client_create_thread(client_t * client);
+client_t * network_client_new(void);
+int network_client_send(client_t * client, char * data);
+int network_client_create_thread(client_t * client);
 void * network_client_receive_thread(void * receiveThreadData);
-const int network_client_join_thread(client_t * client);
-const int network_client_close(client_t * client);
+int network_client_join_thread(client_t * client);
+int network_client_close(client_t * client);
 void network_client_free(client_t * client);
 
 #endif

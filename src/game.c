@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <zlog.h>
 
-game_t * game_new() {
+game_t * game_new(void) {
     game_t * game = calloc(1, sizeof * game);
 
     game->shutdown = 0;
@@ -22,7 +22,7 @@ void game_free(game_t * game) {
     free(game);
 }
 
-const int game_run(config_t * config) {
+int game_run(config_t * config) {
     zlog_category_t * gameCategory = zlog_get_category("game");
 
     zlog_info(gameCategory, "Starting MUD engine");
@@ -58,7 +58,7 @@ const int game_run(config_t * config) {
     return 0;
 }
 
-const int game_tick(game_t * game, const long nanosecondsPerTick) {
+int game_tick(game_t * game, const long nanosecondsPerTick) {
     struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
 

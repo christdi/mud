@@ -8,9 +8,9 @@ struct config {
     unsigned int ticksPerSecond;
 };
 
-config_t * config_new();
-const int config_load(const char * filename, config_t * config);
-const int config_parse_line(char * line, config_t * config);
+config_t * config_new(void);
+int config_load(const char * filename, config_t * config);
+int config_parse_line(char * line, config_t * config);
 void config_free(config_t * config);
 
 #endif

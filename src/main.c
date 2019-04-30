@@ -3,7 +3,7 @@
 
 #include "mud/config.h"
 #include "mud/game.h"
-#include "mud/string.h"
+#include "mud/mudstring.h"
 
 const int load_configuration();
 
