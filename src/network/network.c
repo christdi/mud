@@ -5,73 +5,71 @@
 #include "mud/structure/node.h"
 
 #include <assert.h>
-#include <zlog.h>
 #include <stdlib.h>
+#include <zlog.h>
 
-network_t * network_new(void) {
-    network_t * network = calloc(1, sizeof * network);
+network_t *network_new(void) {
+  network_t *network = calloc(1, sizeof *network);
 
-	network->server = network_server_new();
+  network->server = network_server_new();
 
-    return network;
-
+  return network;
 }
 
-int network_initialise(network_t * network, unsigned int port) {
-    assert(network);
+int network_initialise(network_t *network, unsigned int port) {
+  assert(network);
 
-    zlog_category_t * networkCategory = zlog_get_category("network");
+  zlog_category_t *networkCategory = zlog_get_category("network");
 
-    network->server->port = port;
+  network->server->port = port;
 
-    if ( network_server_listen(network->server) == -1 ) {
-        zlog_error(networkCategory, "Failed to listen on server.");
+  if (network_server_listen(network->server) == -1) {
+    zlog_error(networkCategory, "Failed to listen on server.");
 
-        return -1;
-    }
+    return -1;
+  }
 
-    if ( network_server_create_thread(network->server) == -1 ) {
-        zlog_error(networkCategory, "Failed to create server accept thread.");
+  if (network_server_create_thread(network->server) == -1) {
+    zlog_error(networkCategory, "Failed to create server accept thread.");
 
-        return -1;
-    }
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }
 
-int network_poll(network_t * network) {
-    assert(network);
+int network_poll(network_t *network) {
+  assert(network);
 
-    zlog_category_t * networkCategory = zlog_get_category("network");
+  zlog_category_t *networkCategory = zlog_get_category("network");
 
-    if ( network_server_poll_clients(network->server) == -1 ) {
-        zlog_error(networkCategory, "Failed to poll server.");
+  if (network_server_poll_clients(network->server) == -1) {
+    zlog_error(networkCategory, "Failed to poll server.");
 
-        return -1;
-    }
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
-int network_shutdown(network_t * network) {
-    assert(network);
+int network_shutdown(network_t *network) {
+  assert(network);
 
-    zlog_category_t * networkCategory = zlog_get_category("network");
+  zlog_category_t *networkCategory = zlog_get_category("network");
 
-    if ( network_server_shutdown(network->server) == -1 ) {
-        zlog_error(networkCategory, "Network server failed to shutdown.");
+  if (network_server_shutdown(network->server) == -1) {
+    zlog_error(networkCategory, "Network server failed to shutdown.");
 
-        return -1;
-    }
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }
 
-void network_free(network_t * network) {
-    assert(network);
-    assert(network->server);
+void network_free(network_t *network) {
+  assert(network);
+  assert(network->server);
 
-    
-    network_server_free(network->server);
-    free(network);
+  network_server_free(network->server);
+  free(network);
 }

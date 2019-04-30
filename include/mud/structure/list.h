@@ -1,5 +1,5 @@
-#ifndef _LIST_H_
-#define _LIST_H_
+#ifndef HG_LIST_H
+#define HG_LIST_H
 
 #include "mud/structure/node.h"
 

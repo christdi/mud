@@ -1,5 +1,5 @@
-#ifndef _NODE_H_
-#define _NODE_H_
+#ifndef HG_NODE_H
+#define HG_NODE_H
 
 typedef struct node node_t;
 

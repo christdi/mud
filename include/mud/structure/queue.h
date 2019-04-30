@@ -1,5 +1,5 @@
-#ifndef _QUEUE_H_
-#define _QUEUE_H_
+#ifndef HG_QUEUE_H
+#define HG_QUEUE_H
 
 #include "mud/structure/list.h"
 

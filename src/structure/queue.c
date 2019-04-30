@@ -3,54 +3,54 @@
 #include <assert.h>
 #include <stdlib.h>
 
-queue_t * queue_new() {
-	queue_t * queue = calloc(1, sizeof * queue);
+queue_t *queue_new() {
+  queue_t *queue = calloc(1, sizeof *queue);
 
-	queue->list = list_new();
+  queue->list = list_new();
 
-	return queue;
+  return queue;
 }
 
-int queue_push(queue_t * queue, node_t * node) {
-	assert(queue);
-	assert(node);
+int queue_push(queue_t *queue, node_t *node) {
+  assert(queue);
+  assert(node);
 
-	return list_insert(queue->list, node);
+  return list_insert(queue->list, node);
 }
 
-int queue_pop(queue_t * queue, node_t ** node) {
-	assert(queue);
+int queue_pop(queue_t *queue, node_t **node) {
+  assert(queue);
 
-	list_last(queue->list, node);
+  list_last(queue->list, node);
 
-	if (!(*node)) {
-		return -1;
-	}
+  if (!(*node)) {
+    return -1;
+  }
 
-    return list_remove(queue->list, *node, NULL);
+  return list_remove(queue->list, *node, NULL);
 }
 
-int queue_clear(queue_t * queue) {
-	assert(queue);
+int queue_clear(queue_t *queue) {
+  assert(queue);
 
-	return list_clear(queue->list);
+  return list_clear(queue->list);
 }
 
-int queue_is_empty(queue_t * queue) {
-	assert(queue);
+int queue_is_empty(queue_t *queue) {
+  assert(queue);
 
-	return list_count(queue->list) > 0 ? 1 : 0;
+  return list_count(queue->list) > 0 ? 1 : 0;
 }
 
-void queue_free(queue_t * queue) {
-	assert(queue);
-	
-	if (queue->list) {
-		list_free(queue->list);
+void queue_free(queue_t *queue) {
+  assert(queue);
 
-		queue->list = NULL;
-	}
+  if (queue->list) {
+    list_free(queue->list);
 
-	free(queue);
-	queue = NULL;
+    queue->list = NULL;
+  }
+
+  free(queue);
+  queue = NULL;
 }
