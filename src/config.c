@@ -6,16 +6,43 @@
 #include "mud/config.h"
 #include "mud/mudstring.h"
 
-config_t *config_new(void) {
-  config_t *config = calloc(1, sizeof *config);
-  config->logConfigFile = strdup("config.ini");
+int config_parse_line(char *line, config_t *config);
+
+/**
+ * Allocates a new config_t structure.
+ *
+ * Returns the allocated and default populated config_t.
+**/
+config_t * config_new(void) {
+  config_t * config = calloc(1, sizeof *config);
+  config->logConfigFile = strdup("log.ini");
   config->ticksPerSecond = 20;
 
   return config;
 }
 
-int config_load(const char *filename, config_t *config) {
+/**
+ * Frees a config_t struct.
+**/
+void config_free(config_t * config) {
+  assert(config);
+
+  if (config->logConfigFile) {
+    free(config->logConfigFile);
+  }
+}
+
+
+/**
+ * Attempts to read the file specified by the filename parameter and parse the 
+ * contents as key value pairs to populate the config_t struct represented by
+ * the config parameter.
+ *
+ * Returns 0 on success or -1 on error.
+**/
+int load_configuration(const char *filename, config_t *config) {
   assert(filename);
+  assert(config);
 
   FILE *fp = fopen(filename, "r");
 
@@ -38,13 +65,20 @@ int config_load(const char *filename, config_t *config) {
   return 0;
 }
 
-int config_parse_line(char *line, config_t *config) {
-  if (!line || !config) {
-    return -1;
-  }
 
-  char *key = strtok(line, "=");
-  char *value = strtok(NULL, "\n");
+/**
+ * Parses a single line of configuration with the expected format of key=value.
+ * If a key is recognised, the associated field is populated in the config_t
+ * represented by the config parameter.
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int config_parse_line(char * line, config_t * config) {
+  assert(line);
+  assert(config);
+
+  char * key = strtok(line, "=");
+  char * value = strtok(NULL, "\n");
 
   if (!key || !value) {
     return -1;
@@ -65,10 +99,4 @@ int config_parse_line(char *line, config_t *config) {
   return 0;
 }
 
-void config_free(config_t *config) {
-  assert(config);
 
-  if (config->logConfigFile) {
-    free(config->logConfigFile);
-  }
-}

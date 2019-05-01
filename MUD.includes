@@ -1,7 +1,0 @@
-include/mud
-include/mud/network
-include/mud/structure
-src
-src/structure
-src/network
-include

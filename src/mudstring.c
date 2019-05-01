@@ -25,6 +25,26 @@ char *string_remove(char *source, const char token) {
   return source;
 }
 
+char *string_remove_range(char *source, unsigned int index, size_t len) {
+    assert(source);
+    assert(index < strlen(source));
+
+    size_t length = strlen(source);
+
+    while(source[index] != '\0') {
+        size_t offset = index + len;
+
+        if (offset < length) {
+            source[index] = source[offset];
+            index++;
+        } else {
+            source[index] = '\0';
+        }
+    }
+
+    return source;
+}
+
 char *string_integer_to_ascii(int input) {
   char string[15];
 
@@ -33,4 +53,19 @@ char *string_integer_to_ascii(int input) {
   }
 
   return strdup(string);
+}
+
+void string_to_hex(char * input, char * destination, size_t len) {
+  assert(input);
+
+  size_t i = 0;
+  size_t j = 0;
+  
+  for (i = 0; i < len; i++) {
+    sprintf(destination + j, "%02X ", input[i]);
+
+    j += 3;
+  }
+
+  destination[j - 1] = '\0';
 }

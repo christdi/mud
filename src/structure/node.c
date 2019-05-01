@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-node_t *node_new(void) {
-  node_t *node = calloc(1, sizeof *node);
+node_t * node_new(void) {
+  node_t * node = calloc(1, sizeof *node);
 
   node->data = NULL;
   node->next = NULL;
@@ -13,7 +13,7 @@ node_t *node_new(void) {
   return node;
 }
 
-void node_free(node_t *node) {
+void node_free(node_t * node) {
   if (node) {
     node->data = NULL;
     node->next = NULL;

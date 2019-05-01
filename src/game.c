@@ -1,12 +1,22 @@
 #include "mud/game.h"
+#include "mud/log/log.h"
 #include "mud/network/network.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
 
-game_t *game_new(void) {
-  game_t *game = calloc(1, sizeof *game);
+
+void game_tick(game_t * game, unsigned int ticksPerSecond);
+
+
+/**
+ * Allocate a new instance of a game_t struct.
+ *
+ * Returns an allocated game_t struct with default values.
+**/
+game_t * game_new(void) {
+  game_t * game = calloc(1, sizeof * game);
 
   game->shutdown = 0;
   game->network = 0;
@@ -14,59 +24,81 @@ game_t *game_new(void) {
   return game;
 }
 
-void game_free(game_t *game) {
+
+/**
+ * Frees an allocated game_t struct.
+**/
+void game_free(game_t * game) {
   assert(game);
   assert(game->network);
 
-  network_free(game->network);
+  free_network_t(game->network);
   free(game);
 }
 
-int game_run(config_t *config) {
-  zlog_category_t *gameCategory = zlog_get_category("game");
 
-  zlog_info(gameCategory, "Starting MUD engine");
+/**
+ * Starts running the game, binds a server and enters the game loop.
+ *
+ * Returns a 0 on success or -1 on failure.
+**/
+int start_game(config_t * config) {
+  zlog_info(gc, "Starting MUD engine");
 
-  game_t *game = game_new();
-  gettimeofday(&game->last_tick, NULL);
+  game_t * game = game_new();
+  gettimeofday(&game->lastTick, NULL);
 
-  game->network = network_new();
+  game->network = create_network_t();
 
-  if (network_initialise(game->network, 5000) == -1) {
-    zlog_error(gameCategory, "Failed to initialise network");
+  if (initialise_network(game->network) != 0) {
+    zlog_error(gc, "Failed to initialise network");
 
     return -1;
   }
 
-  long nanosecondsPerTick = 1000000000L / config->ticksPerSecond;
+  if (start_game_server(game->network, 5000) == -1) {
+    zlog_error(gc, "Failed to start game server");
 
-  while (!game->shutdown) {
-    game_tick(game, nanosecondsPerTick);
-    network_poll(game->network);
+    return -1;
   }
 
-  if (network_shutdown(game->network) == -1) {
-    zlog_error(gameCategory, "Failed to shutdown network");
+  while (!game->shutdown) {
+    game_tick(game, config->ticksPerSecond);
+  }
+
+  if (stop_game_server(game->network, 5000) == -1) {
+    zlog_error(gc, "Failed to shutdown server");
+
+    return -1;
+  }
+
+  if (shutdown_network(game->network) != 0) {
+    zlog_error(gc, "Failed to shutdown network");
 
     return -1;
   }
 
   game_free(game);
 
-  zlog_info(gameCategory, "Stopping MUD engine");
+  zlog_info(gc, "Stopping MUD engine");
 
   return 0;
 }
 
-int game_tick(game_t *game, const long nanosecondsPerTick) {
+
+/**
+ * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time
+ * time since the last time the method was called and makes the thread sleep if it's less than
+ * the amount of time calculated per tick.
+**/
+void game_tick(game_t * game, const unsigned int ticksPerSecond) {
   struct timeval currentTime;
   gettimeofday(&currentTime, NULL);
 
-  time_t secondsElapsed = currentTime.tv_sec - game->last_tick.tv_sec;
-  suseconds_t microsecondsElapsed =
-      currentTime.tv_usec - game->last_tick.tv_usec;
-  long nanosecondsElapsed =
-      (secondsElapsed * 1000000000L) + (microsecondsElapsed * 1000);
+  time_t secondsElapsed = currentTime.tv_sec - game->lastTick.tv_sec;
+  suseconds_t microsecondsElapsed = currentTime.tv_usec - game->lastTick.tv_usec;
+  long nanosecondsElapsed = (secondsElapsed * 1000000000L) + (microsecondsElapsed * 1000);
+  long nanosecondsPerTick = 1000000000L / ticksPerSecond;
 
   if (nanosecondsElapsed < nanosecondsPerTick) {
     struct timespec sleepTime;
@@ -76,7 +108,5 @@ int game_tick(game_t *game, const long nanosecondsPerTick) {
     nanosleep(&sleepTime, NULL);
   }
 
-  game->last_tick = currentTime;
-
-  return 0;
+  game->lastTick = currentTime;
 }

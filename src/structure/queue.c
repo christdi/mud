@@ -3,54 +3,28 @@
 #include <assert.h>
 #include <stdlib.h>
 
-queue_t *queue_new() {
-  queue_t *queue = calloc(1, sizeof *queue);
+/**
+ * Syntactic sugar method to insert a node into a queue which is backed by a linked list.
+**/
+void queue_enqueue(list_t * queue, void * data) {
+  assert(queue);
+  assert(data);
 
-  queue->list = list_new();
-
-  return queue;
+  list_add(queue, data);
 }
 
-int queue_push(queue_t *queue, node_t *node) {
-  assert(queue);
-  assert(node);
-
-  return list_insert(queue->list, node);
-}
-
-int queue_pop(queue_t *queue, node_t **node) {
-  assert(queue);
-
-  list_last(queue->list, node);
-
-  if (!(*node)) {
-    return -1;
-  }
-
-  return list_remove(queue->list, *node, NULL);
-}
-
-int queue_clear(queue_t *queue) {
+/**
+ * Syntactic sugar method to retrieve and then remove the first entry from a queue backed 
+ * by a linked list.
+ *
+ * Returns the data at the front of the linked list.
+**/
+void * queue_dequeue(list_t * queue) {
   assert(queue);
 
-  return list_clear(queue->list);
-}
+  it_t it = list_begin(queue);
+  void * data = it_get(it);
+  list_remove(queue, data);
 
-int queue_is_empty(queue_t *queue) {
-  assert(queue);
-
-  return list_count(queue->list) > 0 ? 1 : 0;
-}
-
-void queue_free(queue_t *queue) {
-  assert(queue);
-
-  if (queue->list) {
-    list_free(queue->list);
-
-    queue->list = NULL;
-  }
-
-  free(queue);
-  queue = NULL;
+  return data;
 }

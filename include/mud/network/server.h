@@ -2,31 +2,27 @@
 #define HG_SERVER_H
 
 #include "mud/structure/list.h"
+#include "mud/network/client.h"
 
 #include <pthread.h>
 
-
-typedef struct server server_t;
-
-struct server {
-    unsigned int fd;
-    pthread_t thread;
+/**
+ * Structs
+**/
+typedef struct server {
+    unsigned int fd;  
     unsigned int port;
     unsigned int backlog;
+} server_t;
 
-    list_t * clients;
-};
+/**
+ * Function prototypes
+**/
+server_t * create_server_t(void);
+void free_server_t(server_t * server);
 
-server_t * network_server_new();
-int network_server_initialise(server_t * server);
-int network_server_listen(server_t * server);
-int network_server_create_thread(server_t * server);
-void * network_server_accept_thread(void * serverThreadData);
-int network_server_poll_clients(server_t * server);
-int network_server_join_thread(server_t * server);
-int network_server_close(server_t * server);
-int network_server_shutdown(server_t * server);
-void network_server_free(server_t * server);
-
+int listen_on_server(server_t * server);
+int accept_on_server(server_t * server, client_t * client);
+int close_server(server_t * server);
 
 #endif
