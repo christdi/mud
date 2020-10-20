@@ -1,55 +1,34 @@
 #include <stdio.h>
-#include <zlog.h>
+#include <stdlib.h>
 
 #include "mud/config.h"
 #include "mud/game.h"
 #include "mud/mudstring.h"
+#include "mud/log/log.h"
 
-const int load_configuration();
-
+/**
+ * Entry point for the application.  Will exit if unable to load to 
+ * configuration or initialise logging.  Otherwise, starts the game.
+**/
 int main(int argc, char *argv[]) {
-  config_t *config = config_new();
+  config_t * config = config_new();
 
-  if (!config) {
-    printf("Unable to allocate configuration.  Shutting down\n\r");
-    fflush(stdout);
-
-    return -1;
-  }
-
-  if (load_configuration("config.ini", config) != 0) {
+  if (!config || load_configuration("config.ini", config) != 0) {
     printf("Unable to load configuration.  Shutting down\n\r");
-    fflush(stdout);
-
-    return -1;
+    exit(-1);
   }
 
-  if (zlog_init(config->logConfigFile) != 0) {
+  if (log_initialise(config->logConfigFile) != 0) {
     printf("Unable to initialise logging.  Shutting down\n\r");
-    fflush(stdout);
 
-    return -1;
+    exit(-1);
   }
 
-  if (game_run(config) != 0) {
-    return -1;
+  if (start_game(config) != 0) {
+    exit(-1);
   }
 
-  config_free(config);
-
-  fflush(stdout);
-
-  zlog_fini();
-
-  return 0;
-}
-
-const int load_configuration(const char *filename, config_t *config) {
-  if (config_load(filename, config) != 0) {
-    config_free(config);
-
-    return -1;
-  }
+  log_shutdown();
 
   return 0;
 }

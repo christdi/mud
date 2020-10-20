@@ -1,11 +1,18 @@
 #include "mud/structure/list.h"
 #include "mud/structure/node.h"
+#include "mud/log/log.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
-list_t *list_new(void) {
-  list_t *list = calloc(1, sizeof *list);
+
+/**
+ * Allocates a new empty linked list.
+ *
+ * Returns the allocated list.
+**/
+list_t * list_new(void) {
+  list_t * list = calloc(1, sizeof * list);
 
   list->first = NULL;
   list->last = NULL;
@@ -15,204 +22,134 @@ list_t *list_new(void) {
   return list;
 }
 
-void list_free(list_t *list) {
+
+/**
+ * Frees a list.  The list must be empty before it can be successfully
+ * freed as it doesn't know how to deallocate node data.  
+**/
+void list_free(list_t * list) {
   assert(list);
+  assert(list->first == NULL);
+  assert(list->last == NULL);
 
-  node_t *node = NULL;
-
-  list_first(list, &node);
-
-  while (node != NULL) {
-    node_t *next = NULL;
-
-    list_next(list, &next);
-    node_free(node);
-
-    node = next;
-  }
-
-  list->first = NULL;
-  list->last = NULL;
   pthread_mutex_destroy(&list->mutex);
 
   free(list);
   list = NULL;
 }
 
-int list_insert(list_t *list, node_t *node) {
 
+/**
+ * Add a node to the end of the linked list.  
+**/
+void list_add(list_t * list, void * value) {
   assert(list);
-  assert(node);
-
-  if (!list) {
-    return -1;
-  }
+  assert(value);
 
   pthread_mutex_lock(&list->mutex);
+
+  node_t * node = node_new();
+  node->data = value;
 
   if (!list->first) {
     list->first = node;
-
     list->last = node;
-
-    pthread_mutex_unlock(&list->mutex);
-
-    return 0;
+  } else {
+    list->last->next = node;
+    node->prev = list->last;
+    node->next = NULL;
+    list->last = node;
   }
-
-  node_t *last = list->last;
-
-  last->next = node;
-
-  node->prev = last;
-  node->next = NULL;
-
-  list->last = node;
-
+  
   pthread_mutex_unlock(&list->mutex);
-
-  return 0;
 }
 
-int list_remove(list_t *list, node_t *node, node_t **nextNode) {
 
+/**
+ * Removes a node pointing to a given value from the linked list.
+ *
+ * Returns an iterator to the node after the one removed.
+**/
+it_t list_remove(list_t * list, void * value) {
   assert(list);
-  assert(node);
+  assert(value);
 
   pthread_mutex_lock(&list->mutex);
 
-  node_t *search = list->first;
+  it_t it;
+  it.node = NULL;
 
-  while (search) {
-    node_t *current = search;
+  node_t * node = list->first;
 
-    if (current == node) {
-      node_t *previous = current->prev;
-      node_t *next = current->next;
+  for(node = list->first; node != NULL; node = node->next) {
+    if (node->data == value) {
+      it.node = node->next;
 
-      if (current == list->first) {
-        list->first = next;
+      if (list->first == node) {
+        list->first = node->next;
       }
 
-      if (current == list->last) {
-        list->last = previous;
+      if (list->last == node) {
+        list->last = node->prev;
       }
 
-      if (previous) {
-        previous->next = next;
+      if (node->prev && node->next) { 
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
       }
 
-      if (next) {
-        next->prev = previous;
-      }
-
-      current->next = NULL;
-      current->prev = NULL;
-
-      if (*nextNode) {
-        *nextNode = next;
-      }
+      node_free(node);
 
       break;
     }
-
-    search = current->next;
   }
 
   pthread_mutex_unlock(&list->mutex);
 
-  return 0;
+  return it;
 }
 
-void list_next(list_t *list, node_t **node) {
-  assert(list);
-  assert(node);
 
-  pthread_mutex_lock(&list->mutex);
+/**
+ * Returns an iterator positioned at the start of the list.
+**/
+it_t list_begin(list_t * list) {
+  it_t it;
 
-  if (!(*node)->next) {
-    *node = NULL;
-  } else {
-    *node = (*node)->next;
-  }
+  it.node = list->first;
 
-  pthread_mutex_unlock(&list->mutex);
+  return it;
 }
 
-void list_prev(list_t *list, node_t **node) {
-  assert(list);
-  assert(node);
 
-  pthread_mutex_lock(&list->mutex);
+/**
+ * Returns an iterator positioned at the end of the list.
+**/
+it_t list_end(list_t * list) {
+  it_t it;
 
-  if (!(*node)->prev) {
-    *node = NULL;
-  } else {
-    *node = (*node)->prev;
-  }
+  it.node = list->last;
 
-  pthread_mutex_unlock(&list->mutex);
+  return it;
 }
 
-void list_first(list_t *list, node_t **node) {
-  assert(list);
-  assert(node);
 
-  pthread_mutex_lock(&list->mutex);
-
-  *node = list->first;
-
-  pthread_mutex_unlock(&list->mutex);
-}
-
-void list_last(list_t *list, node_t **node) {
-  assert(list);
-  assert(node);
-
-  pthread_mutex_lock(&list->mutex);
-
-  *node = list->last;
-
-  pthread_mutex_unlock(&list->mutex);
-}
-
-int list_clear(list_t *list) {
-  assert(list);
-
-  pthread_mutex_lock(&list->mutex);
-
-  node_t *node = list->first;
-
-  while (node != list->last) {
-    node_t *next = node->next;
-
-    node->prev = 0;
-    node->next = 0;
-
-    node = next;
-  }
-
-  list->first = 0;
-  list->last = 0;
-
-  pthread_mutex_unlock(&list->mutex);
-
-  return 0;
-}
-
-int list_count(list_t *list) {
+/**
+ * Calculates the amount of elements in the list.
+ *
+ * Returns the calculated amount of eleemnts in the list.
+**/
+int list_size(list_t *list) {
   assert(list);
 
   pthread_mutex_lock(&list->mutex);
 
   int count = 0;
 
-  node_t *node = list->first;
+  node_t * node;
 
-  while (node != list->last) {
+  for (node = list->first; node != NULL; node = node->next) {
     count++;
-
-    node = node->next;
   }
 
   pthread_mutex_unlock(&list->mutex);

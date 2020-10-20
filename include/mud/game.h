@@ -1,22 +1,27 @@
 #ifndef HG_GAME_H
-#define HG_GAME_H_
+#define HG_GAME_H
 
 #include "mud/config.h"
 #include "mud/network/network.h"
 #include <sys/time.h>
 
-struct game {
+/**
+ * Structs
+**/
+typedef struct game {
   int shutdown;
-  struct timeval last_tick;
+  struct timeval lastTick;
 
-  network_t *network;
-};
+  network_t * network;
+} game_t;
 
-typedef struct game game_t;
 
-game_t *game_new(void);
-void game_free(game_t *game);
-int game_run(config_t *config);
-int game_tick(game_t *game, const long nanosecondsPerTick);
+/**
+ * Function prototypes
+**/
+game_t * game_new(void);
+void game_free(game_t * game);
+
+int start_game(config_t * config);
 
 #endif

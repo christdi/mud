@@ -1,11 +1,11 @@
 CC=gcc
-CFLAGS=-I. -I../include -ggdb -Wall
+CFLAGS=-I../include -ggdb -Wall
 LFLAGS=-lzlog -lpthread
 BUILD_DIR=build
 TARGET=mud
 
-MODULES = network structure
-_OBJS = main.o game.o config.o mudstring.o network/network.o network/server.o network/client.o structure/node.o structure/list.o structure/queue.o
+MODULES = network structure log
+_OBJS = main.o game.o config.o mudstring.o network/network.o network/server.o network/client.o structure/node.o structure/list.o structure/queue.o structure/iterator.o log/log.o
 OBJS = $(patsubst %,$(BUILD_DIR)/%,$(_OBJS))
 OBJDIRS = $(patsubst %, $(BUILD_DIR)/%, $(MODULES))
 
