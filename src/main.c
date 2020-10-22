@@ -24,9 +24,13 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
-  if (start_game(config) != 0) {
+  game_t * game = create_game_t();
+
+  if (start_game(game, config) != 0) {
     exit(-1);
   }
+
+  free_game_t(game);
 
   log_shutdown();
 
