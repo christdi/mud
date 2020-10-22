@@ -38,21 +38,27 @@ void free_server_t(server_t * server) {
 }
 
 
+/**
+ * Attempts to listen on server defined by the server parameter.  The reuse address and
+ * non-blocking flags are set automatically.
+ *
+ * Returns -1 on error on 0 on success.  
+**/
 int listen_on_server(server_t * server) {
   assert(server);
   assert(server->port != 0);
 
   struct addrinfo hints;
-  struct addrinfo *serverInfo;
+  struct addrinfo *server_info;
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
 
-  char * portString = string_integer_to_ascii(server->port);
+  char * port_string = string_integer_to_ascii(server->port);
 
-  if (!portString) {
+  if (!port_string) {
     zlog_error(nc, "Failed to convert port from integer to string.");
 
     return -1;
@@ -60,14 +66,15 @@ int listen_on_server(server_t * server) {
 
   int status = 0;
 
-  if ((status = getaddrinfo(0, portString, &hints, &serverInfo)) != 0) {
+  if ((status = getaddrinfo(0, port_string, &hints, &server_info)) != 0) {
     zlog_error(nc, "%s", gai_strerror(status));
 
     return -1;
   }
 
-  server->fd = socket(serverInfo->ai_family, serverInfo->ai_socktype,
-                      serverInfo->ai_protocol);
+  free(port_string);
+
+  server->fd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
   if (!server->fd) {
     zlog_error(nc, "%s", strerror(errno));
@@ -89,7 +96,7 @@ int listen_on_server(server_t * server) {
     return -1;
   }
 
-  if (bind(server->fd, serverInfo->ai_addr, serverInfo->ai_addrlen) != 0) {
+  if (bind(server->fd, server_info->ai_addr, server_info->ai_addrlen) != 0) {
     zlog_error(nc, "%s", strerror(errno));
 
     return -1;
@@ -101,7 +108,7 @@ int listen_on_server(server_t * server) {
     return -1;
   }
 
-  freeaddrinfo(serverInfo);
+  freeaddrinfo(server_info);
 
   zlog_info(nc, "Successfully bound to port [%d].", server->port);
 
@@ -109,6 +116,13 @@ int listen_on_server(server_t * server) {
 }
 
 
+/**
+ * Attempts to accept on the server defined by the server_t parameter.  The client_t
+ * parameter is populated with the connection details of the client.  The non
+ * blocking flag is also set on the client.
+ *
+ * Returns -1 on error or 0 on success.
+**/
 int accept_on_server(server_t * server, client_t * client) {
   struct sockaddr_storage remote_address;
   socklen_t remote_address_size = sizeof remote_address;
@@ -130,6 +144,11 @@ int accept_on_server(server_t * server, client_t * client) {
   return 0;
 }
 
+/**
+ * Attempts to close the server defined by the server_t parameter.
+ *
+ * Returns -1 on error on 0 on success.
+**/
 int close_server(server_t * server) {
   assert(server);
   

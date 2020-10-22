@@ -15,6 +15,10 @@ int log_initialise(const char * configFilePath) {
 		return -1;
 	}
 
+	if ((dc = zlog_get_category("data")) == NULL) {
+		return -1;
+	}
+
 	return 0;
 }
 

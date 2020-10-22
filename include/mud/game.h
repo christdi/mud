@@ -3,6 +3,8 @@
 
 #include "mud/config.h"
 #include "mud/network/network.h"
+#include "mud/entity/components.h"
+
 #include <sys/time.h>
 
 /**
@@ -10,18 +12,19 @@
 **/
 typedef struct game {
   int shutdown;
-  struct timeval lastTick;
+  struct timeval last_tick;
 
   network_t * network;
+  components_t * components;
 } game_t;
 
 
 /**
  * Function prototypes
 **/
-game_t * game_new(void);
-void game_free(game_t * game);
+game_t * create_game_t(void);
+void free_game_t(game_t * game);
 
-int start_game(config_t * config);
+int start_game(game_t * game, config_t * config);
 
 #endif

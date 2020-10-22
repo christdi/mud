@@ -15,11 +15,14 @@ void game_tick(game_t * game, unsigned int ticksPerSecond);
  *
  * Returns an allocated game_t struct with default values.
 **/
-game_t * game_new(void) {
+game_t * create_game_t(void) {
   game_t * game = calloc(1, sizeof * game);
 
   game->shutdown = 0;
-  game->network = 0;
+  gettimeofday(&game->last_tick, NULL);
+
+  game->network = create_network_t();
+  game->components = create_components_t();
 
   return game;
 }
@@ -28,11 +31,13 @@ game_t * game_new(void) {
 /**
  * Frees an allocated game_t struct.
 **/
-void game_free(game_t * game) {
+void free_game_t(game_t * game) {
   assert(game);
   assert(game->network);
+  assert(game->components);
 
   free_network_t(game->network);
+  free_components_t(game->components);
   free(game);
 }
 
@@ -42,13 +47,8 @@ void game_free(game_t * game) {
  *
  * Returns a 0 on success or -1 on failure.
 **/
-int start_game(config_t * config) {
+int start_game(game_t * game, config_t * config) {
   zlog_info(gc, "Starting MUD engine");
-
-  game_t * game = game_new();
-  gettimeofday(&game->lastTick, NULL);
-
-  game->network = create_network_t();
 
   if (initialise_network(game->network) != 0) {
     zlog_error(gc, "Failed to initialise network");
@@ -78,8 +78,6 @@ int start_game(config_t * config) {
     return -1;
   }
 
-  game_free(game);
-
   zlog_info(gc, "Stopping MUD engine");
 
   return 0;
@@ -91,22 +89,22 @@ int start_game(config_t * config) {
  * time since the last time the method was called and makes the thread sleep if it's less than
  * the amount of time calculated per tick.
 **/
-void game_tick(game_t * game, const unsigned int ticksPerSecond) {
-  struct timeval currentTime;
-  gettimeofday(&currentTime, NULL);
+void game_tick(game_t * game, const unsigned int ticks_per_second) {
+  struct timeval current_time;
+  gettimeofday(&current_time, NULL);
 
-  time_t secondsElapsed = currentTime.tv_sec - game->lastTick.tv_sec;
-  suseconds_t microsecondsElapsed = currentTime.tv_usec - game->lastTick.tv_usec;
-  long nanosecondsElapsed = (secondsElapsed * 1000000000L) + (microsecondsElapsed * 1000);
-  long nanosecondsPerTick = 1000000000L / ticksPerSecond;
+  time_t seconds_elapsed = current_time.tv_sec - game->last_tick.tv_sec;
+  suseconds_t microseconds_elapsed = current_time.tv_usec - game->last_tick.tv_usec;
+  long nanoseconds_elapsed = (seconds_elapsed * 1000000000L) + (microseconds_elapsed * 1000L);
+  long nanoseconds_per_tick = 1000000000L / ticks_per_second;
 
-  if (nanosecondsElapsed < nanosecondsPerTick) {
-    struct timespec sleepTime;
-    sleepTime.tv_sec = 0;
-    sleepTime.tv_nsec = nanosecondsPerTick - nanosecondsElapsed;
+  if (nanoseconds_elapsed < nanoseconds_per_tick) {
+    struct timespec sleep_time;
+    sleep_time.tv_sec = 0;
+    sleep_time.tv_nsec = nanoseconds_per_tick - nanoseconds_elapsed;
 
-    nanosleep(&sleepTime, NULL);
+    nanosleep(&sleep_time, NULL);
   }
 
-  game->lastTick = currentTime;
+  game->last_tick = current_time;
 }
