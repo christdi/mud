@@ -24,7 +24,10 @@ void * queue_dequeue(list_t * queue) {
 
   it_t it = list_begin(queue);
   void * data = it_get(it);
-  list_remove(queue, data);
+
+  if (data) {
+  	list_remove(queue, data);
+  } 
 
   return data;
 }

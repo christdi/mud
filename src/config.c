@@ -15,8 +15,8 @@ int config_parse_line(char *line, config_t *config);
 **/
 config_t * config_new(void) {
   config_t * config = calloc(1, sizeof *config);
-  config->logConfigFile = strdup("log.ini");
-  config->ticksPerSecond = 20;
+  config->log_config_file = strdup("log.ini");
+  config->ticks_per_second = 20;
 
   return config;
 }
@@ -27,8 +27,8 @@ config_t * config_new(void) {
 void config_free(config_t * config) {
   assert(config);
 
-  if (config->logConfigFile) {
-    free(config->logConfigFile);
+  if (config->log_config_file) {
+    free(config->log_config_file);
   }
 }
 
@@ -85,15 +85,15 @@ int config_parse_line(char * line, config_t * config) {
   }
 
   if (strcmp(key, "log_config_file") == 0) {
-    if (config->logConfigFile) {
-      free(config->logConfigFile);
+    if (config->log_config_file) {
+      free(config->log_config_file);
     }
 
-    config->logConfigFile = strdup(value);
+    config->log_config_file = strdup(value);
   }
 
   if (strcmp(key, "ticks_per_second") == 0) {
-    config->ticksPerSecond = atoi(value);
+    config->ticks_per_second = atoi(value);
   }
 
   return 0;

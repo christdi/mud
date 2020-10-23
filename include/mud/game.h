@@ -4,6 +4,7 @@
 #include "mud/config.h"
 #include "mud/network/network.h"
 #include "mud/entity/components.h"
+#include "mud/structure/list.h"
 
 #include <sys/time.h>
 
@@ -16,6 +17,7 @@ typedef struct game {
 
   network_t * network;
   components_t * components;
+  list_t * events;
 } game_t;
 
 

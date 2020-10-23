@@ -5,8 +5,8 @@
  * Structs
 **/
 typedef struct config {
-  char * logConfigFile;
-  unsigned int ticksPerSecond;
+  char * log_config_file;
+  unsigned int ticks_per_second;
 } config_t;
 
 

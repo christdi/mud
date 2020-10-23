@@ -34,8 +34,8 @@ network_t * create_network_t(void) {
   FD_ZERO(&network->master_set);
 
   network->max_fd = 0;
-  network->servers = list_new();
-  network->clients = list_new();
+  network->servers = create_list_t();
+  network->clients = create_list_t();
 
   return network;
 }
@@ -60,7 +60,7 @@ void free_network_t(network_t * network) {
     it = it_next(it);
   }
 
-  list_free(network->clients);
+  free_list_t(network->clients);
 
   server_t * server = NULL;
   it = list_begin(network->servers);
@@ -70,6 +70,8 @@ void free_network_t(network_t * network) {
 
     it = it_next(it);
   }
+
+  free_list_t(network->servers);
 
   free(network);
 }
@@ -165,12 +167,7 @@ void * poll_network(void * parameter) {
 
   network_t * network = (network_t *) parameter;
 
-  struct timeval timeout;
-  timeout.tv_sec = 1;
-  timeout.tv_usec = 0;
-
   while (1) {
-
     if (pthread_mutex_lock(&network->lock) != 0) {
       zlog_error(nc, "Unable to obtain network lock, ending network thread");
       break;
@@ -190,6 +187,10 @@ void * poll_network(void * parameter) {
       zlog_error(nc, "Unable to release network lock, ending network thread");
       break;
     } 
+
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;    
 
     int results = select(network->max_fd + 1, &read_set, NULL, NULL, &timeout);
 

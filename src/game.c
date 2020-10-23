@@ -1,6 +1,8 @@
 #include "mud/game.h"
 #include "mud/log/log.h"
+#include "mud/event/event.h"
 #include "mud/network/network.h"
+#include "mud/structure/queue.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -23,6 +25,7 @@ game_t * create_game_t(void) {
 
   game->network = create_network_t();
   game->components = create_components_t();
+  game->events = create_list_t();
 
   return game;
 }
@@ -63,7 +66,13 @@ int start_game(game_t * game, config_t * config) {
   }
 
   while (!game->shutdown) {
-    game_tick(game, config->ticksPerSecond);
+    event_t * event;
+
+    while ((event = queue_dequeue(game->events)) != NULL) {
+      // TODO: Handle event
+    }
+
+    game_tick(game, config->ticks_per_second);
   }
 
   if (stop_game_server(game->network, 5000) == -1) {
