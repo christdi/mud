@@ -4,8 +4,10 @@
 #include <sys/types.h>
 #include <pthread.h>
 
+#include "mud/network/server.h"
+#include "mud/network/callback.h"
 #include "mud/structure/list.h"
-#include "server.h"
+
 
 /**
  * Sturcts
@@ -17,6 +19,10 @@ typedef struct network {
 
 	fd_set master_set;
 	unsigned int max_fd;
+
+	callback_t * connection_callback;
+	callback_t * disconnection_callback;
+	callback_t * input_callback;
 
 	list_t * servers;
 	list_t * clients;
@@ -34,5 +40,8 @@ int shutdown_network(network_t * network);
 int start_game_server(network_t * network, unsigned int port);
 int stop_game_server(network_t * network, unsigned int port);
 
+void register_connection_callback(network_t * network, callback_func func, void * context);
+void register_disconnection_callback(network_t * network, callback_func func, void * context);
+void register_input_callback(network_t * network, callback_func func, void * context);
 
 #endif

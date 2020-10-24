@@ -9,7 +9,8 @@
 #include <zlog.h>
 
 
-void game_tick(game_t * game, unsigned int ticksPerSecond);
+void game_tick(game_t * game, unsigned int ticks_per_second);
+void new_player(client_t * client, void * context);
 
 
 /**
@@ -38,11 +39,15 @@ void free_game_t(game_t * game) {
   assert(game);
   assert(game->network);
   assert(game->components);
+  assert(game->events);
 
   free_network_t(game->network);
   free_components_t(game->components);
+  free_list_t(game->events);
   free(game);
 }
+
+
 
 
 /**
@@ -51,7 +56,12 @@ void free_game_t(game_t * game) {
  * Returns a 0 on success or -1 on failure.
 **/
 int start_game(game_t * game, config_t * config) {
+  assert(game);
+  assert(config);
+
   zlog_info(gc, "Starting MUD engine");
+
+  register_connection_callback(game->network, new_player, game);
 
   if (initialise_network(game->network) != 0) {
     zlog_error(gc, "Failed to initialise network");
@@ -70,6 +80,7 @@ int start_game(game_t * game, config_t * config) {
 
     while ((event = queue_dequeue(game->events)) != NULL) {
       // TODO: Handle event
+      free(event);
     }
 
     game_tick(game, config->ticks_per_second);
@@ -116,4 +127,12 @@ void game_tick(game_t * game, const unsigned int ticks_per_second) {
   }
 
   game->last_tick = current_time;
+}
+
+
+/**
+ * Callback from the network module when a new client connects.
+**/
+void new_player(client_t * client, void * context) {
+  zlog_info(gc, "New player connected!");
 }

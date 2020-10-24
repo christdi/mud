@@ -27,13 +27,14 @@ int prune_clients(network_t * network);
 network_t * create_network_t(void) {
   network_t * network = calloc(1, sizeof * network);
 
-  network->thread = 0;
   pthread_mutex_init(&network->lock, NULL);
-  network->shutdown = 0;
 
   FD_ZERO(&network->master_set);
 
-  network->max_fd = 0;
+  network->connection_callback = create_callback_t();
+  network->disconnection_callback = create_callback_t();
+  network->input_callback = create_callback_t();
+
   network->servers = create_list_t();
   network->clients = create_list_t();
 
@@ -50,6 +51,10 @@ void free_network_t(network_t * network) {
   assert(network->clients);
 
   pthread_mutex_destroy(&network->lock);
+
+  free_callback_t(network->connection_callback);
+  free_callback_t(network->disconnection_callback);
+  free_callback_t(network->input_callback);
 
   client_t * client = NULL;
   it_t it = list_begin(network->clients);
@@ -158,6 +163,44 @@ int start_game_server(network_t * network, unsigned int port) {
 
 
 /**
+ * Sets a callback to be called when a client is accepted.
+**/
+void register_connection_callback(network_t * network, callback_func func, void * context) {
+  assert(network);
+  assert(func);
+  assert(context);
+
+  network->connection_callback->func = func;
+  network->connection_callback->context = context;
+}
+
+
+/**
+ * Sets a callback to be called when a client is pruned.
+**/
+void register_disconnection_callback(network_t * network, callback_func func, void * context) {
+  assert(network);
+  assert(func);
+  assert(context);
+
+  network->disconnection_callback->func = func;
+  network->disconnection_callback->context = context;
+}
+
+
+/**
+ * Sets a callback to be called has input.
+**/
+void register_input_callback(network_t * network, callback_func func, void * context) {
+  assert(network);
+  assert(func);
+  assert(context);
+
+  network->input_callback->func = func;
+  network->input_callback->context = context;
+}
+
+/**
  * Internal method which contains the logic to poll the network for activity.
  * Uses select to determine if we have read activity on a server or client and
  * accepts or reads as appropriate.
@@ -234,7 +277,11 @@ void * poll_network(void * parameter) {
           list_add(network->clients, client);
 
           zlog_info(nc, "Client descriptor [%d] connected", client->fd);
-          send_to_client(client, "Hello\n\r");        
+          send_to_client(client, "Hello\n\r");
+
+          if (network->connection_callback->func) {
+            network->connection_callback->func(client, network->connection_callback->context);
+          }
         }
 
         server_it = it_next(server_it);
@@ -247,6 +294,10 @@ void * poll_network(void * parameter) {
         if (FD_ISSET(client->fd, &read_set)) {
           if (receive_from_client(client) != 0) {
             zlog_error(nc, "Failed to read from client fd [%d]", client->fd);
+          } else {
+            if (network->input_callback->func) {
+              network->input_callback->func(client, network->input_callback->context);            
+            }        
           }
         }
 
@@ -289,6 +340,10 @@ int prune_clients(network_t * network) {
       } 
 
       it = list_remove(network->clients, client);
+
+      if (network->disconnection_callback->func) {
+        network->disconnection_callback->func(client, network->disconnection_callback->context);
+      }            
 
       free_client_t(client);
     } else {

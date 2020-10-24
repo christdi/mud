@@ -12,7 +12,7 @@
  * Structs
 **/
 typedef struct game {
-  int shutdown;
+  unsigned int shutdown;
   struct timeval last_tick;
 
   network_t * network;
