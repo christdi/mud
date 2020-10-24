@@ -1,5 +1,5 @@
-#ifndef HG_CONFIG_H
-#define HG_CONFIG_H
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
 /**
  * Structs

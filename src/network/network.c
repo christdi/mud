@@ -200,6 +200,7 @@ void register_input_callback(network_t * network, callback_func func, void * con
   network->input_callback->context = context;
 }
 
+
 /**
  * Internal method which contains the logic to poll the network for activity.
  * Uses select to determine if we have read activity on a server or client and

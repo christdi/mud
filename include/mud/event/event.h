@@ -1,5 +1,5 @@
-#ifndef HG_EVENT_H
-#define HG_EVENT_H
+#ifndef _EVENT_H_
+#define _EVENT_H_
 
 
 /**

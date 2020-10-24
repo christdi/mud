@@ -1,5 +1,5 @@
-#ifndef HG_ENTITY_H
-#define HG_ENTITY_H
+#ifndef _ENTITY_H_
+#define _ENTITY_H_
 
 /**
  * Definitions

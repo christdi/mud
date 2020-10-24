@@ -1,5 +1,5 @@
-#ifndef HG_GAME_H
-#define HG_GAME_H
+#ifndef _GAME_H_
+#define _GAME_H_
 
 #include "mud/config.h"
 #include "mud/network/network.h"

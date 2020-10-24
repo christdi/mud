@@ -1,5 +1,5 @@
-#ifndef HG_CALLBACK_H
-#define HG_CALLBACK_H
+#ifndef _CALLBACK_H_
+#define _CALLBACK_H_
 
 #include "mud/network/client.h"
 

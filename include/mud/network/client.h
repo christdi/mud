@@ -1,5 +1,5 @@
-#ifndef HG_CLIENT_H
-#define HG_CLIENT_H
+#ifndef _CLIENT_H_
+#define _CLIENT_H_
 
 #define MAX_INPUT_BUFFER_SIZE 1024
 #define MAX_RECV_SIZE 128

@@ -1,5 +1,5 @@
-#ifndef HG_NETWORK_H
-#define HG_NETWORK_H
+#ifndef _NETWORK_H_
+#define _NETWORK_H_
 
 #include <sys/types.h>
 #include <pthread.h>

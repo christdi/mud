@@ -1,5 +1,5 @@
-#ifndef HG_HASH_NODE_H
-#define HG_HASH_NODE_H
+#ifndef _HASH_NODE_H_
+#define _HASH_NODE_H_
 
 
 /**
