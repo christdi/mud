@@ -4,6 +4,8 @@
 #define MAX_INPUT_BUFFER_SIZE 1024
 #define MAX_RECV_SIZE 128
 
+#include "mud/util/muduuid.h"
+
 #include <pthread.h>
 
 
@@ -14,6 +16,7 @@ typedef struct client {
     int fd;  
     unsigned int hungup;
 
+    char uuid[UUID_SIZE];
     char input[MAX_INPUT_BUFFER_SIZE];
 } client_t;
 

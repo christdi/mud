@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mud/mudstring.h"
+#include "mud/util/mudstring.h"
 
 char *string_remove(char *source, const char token) {
   assert(source);

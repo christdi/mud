@@ -24,6 +24,10 @@ typedef struct network {
 	callback_t * disconnection_callback;
 	callback_t * input_callback;
 
+	list_t * new_connections;
+	list_t * closed_connections;
+	list_t * input_connections;
+
 	list_t * servers;
 	list_t * clients;
 } network_t;
@@ -39,6 +43,8 @@ int initialise_network(network_t * network);
 int shutdown_network(network_t * network);
 int start_game_server(network_t * network, unsigned int port);
 int stop_game_server(network_t * network, unsigned int port);
+
+void dispatch_client_events(network_t * network);
 
 void register_connection_callback(network_t * network, callback_func func, void * context);
 void register_disconnection_callback(network_t * network, callback_func func, void * context);

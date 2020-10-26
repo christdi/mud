@@ -3,6 +3,7 @@
 #include "mud/network/server.h"
 #include "mud/structure/list.h"
 #include "mud/structure/iterator.h"
+#include "mud/structure/queue.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -13,6 +14,7 @@
 #include <zlog.h>
 #include <sys/select.h>
 
+void free_client_list_t(list_t * list);
 void * poll_network(void * parameter);
 int add_fd_to_master_set(network_t * network, int fd);
 int remove_fd_from_master_set(network_t * network, int fd);
@@ -35,6 +37,10 @@ network_t * create_network_t(void) {
   network->disconnection_callback = create_callback_t();
   network->input_callback = create_callback_t();
 
+  network->new_connections = create_list_t();
+  network->closed_connections = create_list_t();
+  network->input_connections = create_list_t();
+
   network->servers = create_list_t();
   network->clients = create_list_t();
 
@@ -55,6 +61,10 @@ void free_network_t(network_t * network) {
   free_callback_t(network->connection_callback);
   free_callback_t(network->disconnection_callback);
   free_callback_t(network->input_callback);
+
+  free_list_t(network->new_connections);
+  free_list_t(network->closed_connections);
+  free_list_t(network->input_connections);
 
   client_t * client = NULL;
   it_t it = list_begin(network->clients);
@@ -280,9 +290,7 @@ void * poll_network(void * parameter) {
           zlog_info(nc, "Client descriptor [%d] connected", client->fd);
           send_to_client(client, "Hello\n\r");
 
-          if (network->connection_callback->func) {
-            network->connection_callback->func(client, network->connection_callback->context);
-          }
+          queue_enqueue(network->new_connections, client);
         }
 
         server_it = it_next(server_it);
@@ -296,9 +304,7 @@ void * poll_network(void * parameter) {
           if (receive_from_client(client) != 0) {
             zlog_error(nc, "Failed to read from client fd [%d]", client->fd);
           } else {
-            if (network->input_callback->func) {
-              network->input_callback->func(client, network->input_callback->context);            
-            }        
+            queue_enqueue(network->input_connections, client);
           }
         }
 
@@ -340,13 +346,9 @@ int prune_clients(network_t * network) {
         zlog_error(nc, "Unable to remove client fd [%d] from fd set", client->fd);
       } 
 
+      queue_enqueue(network->closed_connections, client);
+
       it = list_remove(network->clients, client);
-
-      if (network->disconnection_callback->func) {
-        network->disconnection_callback->func(client, network->disconnection_callback->context);
-      }            
-
-      free_client_t(client);
     } else {
       it = it_next(it);
     }
@@ -389,6 +391,40 @@ int stop_game_server(network_t * network, unsigned int port) {
   }
 
   return -1;
+}
+
+
+/**
+ * Dequeues clients from the new_connections, closed_connections and input_connections
+ * queues and calls the callbacks associated with these events.  This is intended to be
+ * called from the main thread so that the events are handled on said thread.  Clients
+ * are also freed here after calling the closed connections callback.
+**/
+void dispatch_client_events(network_t * network) {
+  assert(network);
+
+  client_t * client;
+
+  while ((client = (client_t *) queue_dequeue(network->new_connections)) != NULL) {
+    if (network->connection_callback->func) {
+      network->connection_callback->func(client, network->connection_callback->context);
+    }
+  }
+
+  while ((client = (client_t *) queue_dequeue(network->input_connections)) != NULL) {
+    if (network->input_callback->func) {
+      network->input_callback->func(client, network->input_callback->context);
+    }
+  }
+
+  while ((client = (client_t *) queue_dequeue(network->closed_connections)) != NULL) {
+    if (network->disconnection_callback->func) {
+      network->disconnection_callback->func(client, network->disconnection_callback->context);
+
+      free_client_t(client);
+    }
+  }
+
 }
 
 

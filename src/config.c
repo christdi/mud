@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "mud/config.h"
-#include "mud/mudstring.h"
+#include "mud/util/mudstring.h"
 
 int config_parse_line(char *line, config_t *config);
 

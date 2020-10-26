@@ -1,5 +1,5 @@
 #include "mud/network/client.h"
-#include "mud/mudstring.h"
+#include "mud/util/mudstring.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -22,6 +22,8 @@ client_t * create_client_t() {
 
   client->fd = 0;
   client->hungup = 0;
+
+  generate_uuid(client->uuid);
 
   return client;
 }

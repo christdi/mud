@@ -5,6 +5,7 @@
 #include "mud/network/network.h"
 #include "mud/entity/components.h"
 #include "mud/structure/list.h"
+#include "mud/structure/hash_table.h"
 
 #include <sys/time.h>
 
@@ -15,6 +16,7 @@ typedef struct game {
   unsigned int shutdown;
   struct timeval last_tick;
 
+  hash_table_t * players;
   network_t * network;
   components_t * components;
   list_t * events;
