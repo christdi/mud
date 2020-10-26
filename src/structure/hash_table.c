@@ -79,11 +79,11 @@ int hash_table_insert(hash_table_t * table, char * key, void * value) {
 
 	int index = get_hash_index(key);
 	hash_node_t * hash_node = create_hash_node_t();
-	hash_node->key = strdup(hash_node->key);
+	hash_node->key = strdup(key);
 	hash_node->value = value;
 
 	list_t * list = &table->nodes[index];
-	list_add(list, value);
+	list_add(list, hash_node);
 
 	return 0;
 }

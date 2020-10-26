@@ -29,6 +29,7 @@ void free_player_t(player_t * player) {
 }
 
 
+
 /**
  * Attempts to send formatted outputted to a player.  Will check if the underlying
  * client_t is valid before attempting to write.

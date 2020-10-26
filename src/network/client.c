@@ -83,9 +83,9 @@ int receive_from_client(client_t * client) {
 
   ssize_t len = 0;
 
-  char bytes[MAX_RECV_SIZE] = {'\0'};
+  char bytes[RECV_SIZE] = {'\0'};
 
-  if ((len = recv(client->fd, bytes, MAX_RECV_SIZE - 1, 0)) == -1) {
+  if ((len = recv(client->fd, bytes, RECV_SIZE - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
       return 0;
     }
@@ -118,7 +118,7 @@ int append_data_to_input_buffer(client_t * client, char * data, size_t len) {
   size_t existing = strlen(client->input);
   size_t total = existing + len + 1;
 
-  if (total > MAX_INPUT_BUFFER_SIZE) {
+  if (total > INPUT_BUFFER_SIZE) {
     zlog_error(nc, "Client FD [%d] has filled their input buffer, disconnecting", client->fd);
     send_to_client(client, "Maximum input buffer was exceeded.  Disconnecting.\n\r");
 
@@ -151,4 +151,42 @@ int close_client(client_t * client) {
   }
 
   return 0;
+}
+
+
+/**
+ * Attempts to extract text from the input buffer.  The buffer is read character by character.  
+ * If the delim is encountered, we take all characters up to and including the delim and move 
+ * them into the character buffer referenced by dest and then append with a null character.
+ *
+ * Returns -1 if delim is not found.  Returns 0 if successful.
+**/
+int extract_from_input(client_t * client, char * dest, size_t dest_len, const char * delim) {
+  assert(client);
+  assert(dest);
+
+  size_t delim_len = strnlen(delim, DELIM_SIZE);
+
+  size_t i = 0;
+  size_t len = strnlen(client->input, INPUT_BUFFER_SIZE);
+
+  for (i = 0; i < len; i++) {
+    char * current = &client->input[i];
+
+    if (strncmp(delim, current, delim_len) == 0) {
+      if (i > dest_len) {
+        zlog_error(nc, "Error occured in extract_from_input, supplied dest buffer was too small at [%ld], needed [%ld]", dest_len, i);
+      }
+
+      strncpy(dest, client->input, i);
+
+      dest[i] = '\0';
+      
+      memcpy(client->input, current + delim_len, len - i);
+
+      return 0;
+    }
+  }
+
+  return -1;
 }

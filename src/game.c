@@ -4,10 +4,12 @@
 #include "mud/event/event.h"
 #include "mud/network/network.h"
 #include "mud/structure/queue.h"
+#include "mud/util/mudstring.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
+#include <string.h>
 
 
 void game_tick(game_t * game, unsigned int ticks_per_second);
@@ -147,9 +149,9 @@ void game_tick(game_t * game, const unsigned int ticks_per_second) {
 void player_connected(client_t * client, void * context) {
   game_t * game = (game_t *) context;
 
-  zlog_info(gc, "Player connected, client uuid is [%s]!", client->uuid);
-
   player_t * player = create_player_t();
+  player->client = client;
+
   hash_table_insert(game->players, client->uuid, player);
 }
 
@@ -159,8 +161,6 @@ void player_connected(client_t * client, void * context) {
 **/
 void player_disconnected(client_t * client, void * context) {
   game_t * game = (game_t *) context;
-
-  zlog_info(gc, "Player disconnected, client uuid is [%s]", client->uuid);
 
   player_t * player = hash_table_delete(game->players, client->uuid);
   free_player_t(player);
@@ -173,9 +173,13 @@ void player_disconnected(client_t * client, void * context) {
 void player_input(client_t * client, void * context) {
   game_t * game = (game_t *) context;
 
-  zlog_info(gc, "Player input, client uuid is [%s]", client->uuid);
-
   player_t * player = hash_table_get(game->players, client->uuid);
+
+  char command[20];
+
+  if (extract_from_input(client, command, 20, "\r\n") != -1 ) {
+    zlog_info(nc, "Command: [%s]", command);
+  };
+
   
-  send_to_player(player, "You said: %s", client->input);
 }
