@@ -2,7 +2,6 @@
 #define _PLAYER_H_
 
 #include "mud/network/client.h"
-#include "mud/structure/list.h"
 
 
 /**
@@ -17,7 +16,6 @@
 **/
 typedef struct player {
 	client_t * client;
-	list_t * input;
 
 	char * username;
 	char * passwordHash;

@@ -1,7 +1,7 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#include "mud/structure/list.h"
+#include "mud/data/linked_list/linked_list.h"
 #include "mud/network/client.h"
 
 #include <pthread.h>

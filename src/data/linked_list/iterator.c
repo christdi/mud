@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mud/structure/iterator.h"
+#include "mud/data/linked_list/iterator.h"
 
 
 /**

@@ -2,7 +2,7 @@
 #include "mud/player.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
-#include "mud/structure/queue.h"
+#include "mud/data/queue_linked_list/queue.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>

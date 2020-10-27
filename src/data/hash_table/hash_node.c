@@ -1,4 +1,4 @@
-#include "mud/structure/hash_node.h"
+#include "mud/data/hash_table/hash_node.h"
 
 
 #include <assert.h>

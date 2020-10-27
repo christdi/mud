@@ -4,8 +4,7 @@
 #include "mud/config.h"
 #include "mud/network/network.h"
 #include "mud/entity/components.h"
-#include "mud/structure/list.h"
-#include "mud/structure/hash_table.h"
+#include "mud/data/hash_table/hash_table.h"
 
 #include <sys/time.h>
 

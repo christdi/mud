@@ -2,7 +2,7 @@
 #define _HASH_TABLE_H_
 
 
-#include "mud/structure/list.h"
+#include "mud/data/linked_list/linked_list.h"
 
 
 /**
@@ -15,7 +15,7 @@
  * Structs
 **/
 typedef struct hash_table {
-	list_t nodes[HASH_TABLE_SIZE];
+	linked_list_t nodes[HASH_TABLE_SIZE];
 } hash_table_t;
 
 

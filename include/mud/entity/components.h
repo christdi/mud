@@ -1,7 +1,7 @@
 #ifndef _COMPONENTS_H_
 #define _COMPONENTS_H_
 
-#include "mud/structure/hash_table.h"
+#include "mud/data/hash_table/hash_table.h"
 #include "mud/entity/character_details.h"
 
 /**

@@ -1,5 +1,5 @@
-#include "mud/structure/hash_table.h"
-#include "mud/structure/hash_node.h"
+#include "mud/data/hash_table/hash_table.h"
+#include "mud/data/hash_table/hash_node.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -82,7 +82,7 @@ int hash_table_insert(hash_table_t * table, char * key, void * value) {
 	hash_node->key = strdup(key);
 	hash_node->value = value;
 
-	list_t * list = &table->nodes[index];
+	linked_list_t * list = &table->nodes[index];
 	list_add(list, hash_node);
 
 	return 0;
@@ -98,7 +98,7 @@ void * hash_table_get(hash_table_t * table, char * key) {
 
 	int index = get_hash_index(key);
 
-	list_t * list = &table->nodes[index];
+	linked_list_t * list = &table->nodes[index];
 	it_t it = list_begin(list);
 	hash_node_t * node;
 
@@ -126,7 +126,7 @@ void * hash_table_delete(hash_table_t * table, char * key) {
 
 	int index = get_hash_index(key);
 
-	list_t * list = &table->nodes[index];
+	linked_list_t * list = &table->nodes[index];
 	it_t it = list_begin(list);
 	hash_node_t * node;
 

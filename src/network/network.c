@@ -1,8 +1,8 @@
 #include "mud/network/network.h"
 #include "mud/network/client.h"
 #include "mud/network/server.h"
-#include "mud/structure/list.h"
-#include "mud/structure/iterator.h"
+#include "mud/data/linked_list/linked_list.h"
+#include "mud/data/linked_list/iterator.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -13,7 +13,7 @@
 #include <zlog.h>
 #include <sys/select.h>
 
-void free_client_list_t(list_t * list);
+void free_client_list_t(linked_list_t * list);
 
 void add_fd_to_master_set(network_t * network, int fd);
 void remove_fd_from_master_set(network_t * network, int fd);
@@ -34,8 +34,8 @@ network_t * create_network_t(void) {
   network->disconnection_callback = create_callback_t();
   network->input_callback = create_callback_t();
 
-  network->servers = create_list_t();
-  network->clients = create_list_t();
+  network->servers = create_linked_list_t();
+  network->clients = create_linked_list_t();
 
   return network;
 }
@@ -62,7 +62,7 @@ void free_network_t(network_t * network) {
     it = it_next(it);
   }
 
-  free_list_t(network->clients);
+  free_linked_list_t(network->clients);
 
   server_t * server = NULL;
   it = list_begin(network->servers);
@@ -73,7 +73,7 @@ void free_network_t(network_t * network) {
     it = it_next(it);
   }
 
-  free_list_t(network->servers);
+  free_linked_list_t(network->servers);
 
   free(network);
 }
