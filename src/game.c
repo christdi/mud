@@ -32,7 +32,6 @@ game_t * create_game_t(void) {
 
   game->network = create_network_t();
   game->components = create_components_t();
-  game->events = create_list_t();
 
   return game;
 }
@@ -46,12 +45,10 @@ void free_game_t(game_t * game) {
   assert(game->players);
   assert(game->network);
   assert(game->components);
-  assert(game->events);
 
   free_hash_table_t(game->players);
   free_network_t(game->network);
   free_components_t(game->components);
-  free_list_t(game->events);
   free(game);
 }
 

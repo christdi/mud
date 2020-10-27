@@ -6,7 +6,7 @@ TARGET=mud
 OBJS = main.o game.o config.o player.o network/network.o network/server.o \
 network/client.o network/callback.o structure/node.o structure/list.o \
 structure/queue.o structure/iterator.o structure/hash_table.o structure/hash_node.o \
-log/log.o entity/components.o entity/character_details.o entity/entity.o event/event.o \
+log/log.o entity/components.o entity/character_details.o entity/entity.o \
 util/mudstring.o util/muduuid.o
 
 all: $(TARGET)
