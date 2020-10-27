@@ -176,10 +176,11 @@ int extract_from_input(client_t * client, char * dest, size_t dest_len, const ch
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
         zlog_error(nc, "Error occured in extract_from_input, supplied dest buffer was too small at [%ld], needed [%ld]", dest_len, i);
+
+        return -1;
       }
 
       strncpy(dest, client->input, i);
-
       dest[i] = '\0';
       
       memcpy(client->input, current + delim_len, len - i);

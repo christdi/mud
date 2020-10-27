@@ -93,8 +93,11 @@ it_t list_remove(list_t * list, void * value) {
         list->last = node->prev;
       }
 
-      if (node->prev && node->next) { 
+      if (node->prev) {
         node->prev->next = node->next;
+      }
+
+      if (node->next) {
         node->next->prev = node->prev;
       }
 

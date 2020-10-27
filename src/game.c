@@ -1,7 +1,6 @@
 #include "mud/game.h"
 #include "mud/player.h"
 #include "mud/log/log.h"
-#include "mud/event/event.h"
 #include "mud/network/network.h"
 #include "mud/structure/queue.h"
 #include "mud/util/mudstring.h"
@@ -74,12 +73,6 @@ int start_game(game_t * game, config_t * config) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
-  if (initialise_network(game->network) != 0) {
-    zlog_error(gc, "Failed to initialise network");
-
-    return -1;
-  }
-
   if (start_game_server(game->network, 5000) == -1) {
     zlog_error(gc, "Failed to start game server");
 
@@ -87,14 +80,7 @@ int start_game(game_t * game, config_t * config) {
   }
 
   while (!game->shutdown) {
-    event_t * event;
-
-    while ((event = queue_dequeue(game->events)) != NULL) {
-      // TODO: Handle event
-      free(event);
-    }
-
-    dispatch_client_events(game->network);
+    poll_network(game->network);
 
     game_tick(game, config->ticks_per_second);
   }
@@ -105,11 +91,7 @@ int start_game(game_t * game, config_t * config) {
     return -1;
   }
 
-  if (shutdown_network(game->network) != 0) {
-    zlog_error(gc, "Failed to shutdown network");
-
-    return -1;
-  }
+  disconnect_clients(game->network);
 
   zlog_info(gc, "Stopping MUD engine");
 
@@ -152,6 +134,8 @@ void player_connected(client_t * client, void * context) {
   player_t * player = create_player_t();
   player->client = client;
 
+  send_to_player(player, "Welcome player, your uuid is [%s]\n\r", client->uuid);
+
   hash_table_insert(game->players, client->uuid, player);
 }
 
@@ -178,7 +162,13 @@ void player_input(client_t * client, void * context) {
   char command[20];
 
   if (extract_from_input(client, command, 20, "\r\n") != -1 ) {
-    zlog_info(nc, "Command: [%s]", command);
+    if (strncmp(command, "quit", 4) == 0) {
+      client->hungup = 1;
+    }
+
+    if (strncmp(command, "shutdown", 8) == 0) {
+      game->shutdown = 1;
+    }
   };
 
   

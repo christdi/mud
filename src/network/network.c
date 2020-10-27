@@ -3,7 +3,6 @@
 #include "mud/network/server.h"
 #include "mud/structure/list.h"
 #include "mud/structure/iterator.h"
-#include "mud/structure/queue.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -15,9 +14,9 @@
 #include <sys/select.h>
 
 void free_client_list_t(list_t * list);
-void * poll_network(void * parameter);
-int add_fd_to_master_set(network_t * network, int fd);
-int remove_fd_from_master_set(network_t * network, int fd);
+
+void add_fd_to_master_set(network_t * network, int fd);
+void remove_fd_from_master_set(network_t * network, int fd);
 int prune_clients(network_t * network);
 
 
@@ -29,17 +28,11 @@ int prune_clients(network_t * network);
 network_t * create_network_t(void) {
   network_t * network = calloc(1, sizeof * network);
 
-  pthread_mutex_init(&network->lock, NULL);
-
   FD_ZERO(&network->master_set);
 
   network->connection_callback = create_callback_t();
   network->disconnection_callback = create_callback_t();
   network->input_callback = create_callback_t();
-
-  network->new_connections = create_list_t();
-  network->closed_connections = create_list_t();
-  network->input_connections = create_list_t();
 
   network->servers = create_list_t();
   network->clients = create_list_t();
@@ -56,15 +49,9 @@ void free_network_t(network_t * network) {
   assert(network->servers);
   assert(network->clients);
 
-  pthread_mutex_destroy(&network->lock);
-
   free_callback_t(network->connection_callback);
   free_callback_t(network->disconnection_callback);
   free_callback_t(network->input_callback);
-
-  free_list_t(network->new_connections);
-  free_list_t(network->closed_connections);
-  free_list_t(network->input_connections);
 
   client_t * client = NULL;
   it_t it = list_begin(network->clients);
@@ -93,48 +80,6 @@ void free_network_t(network_t * network) {
 
 
 /**
- * Starts an internal thread which polls the network for new connections and
- * data available to read on clients.
- *
- * Returns -1 if unable to create the thread or 0 on success.
-**/
-int initialise_network(network_t * network) {
-  if (pthread_create(&network->thread, NULL, poll_network, network) == -1) {
-    zlog_error(nc, "Failed to initialise network polling thread");
-
-    return -1;
-  }
-
-  return 0;
-}
-
-
-/**
- * Toggles the flag which will cause the polling thread to exit.  Uses a mutex
- * to ensure the operation is thread safe.
- *
- * Returns -1 if unable to lock or release the lock on the mutex or 0 on success.
-**/
-int shutdown_network(network_t * network) {
-  if (pthread_mutex_lock(&network->lock) != 0) {
-    zlog_error(nc, "Failed to lock network mutex");
-
-    return -1;
-  }
-
-  network->shutdown = 1;
-
-
-  if (pthread_mutex_unlock(&network->lock) != 0 ) {
-    zlog_error(nc, "Failed to unlock network mutex");
-    return -1;
-  }
-
-  return 0;
-}
-
-
-/**
  * Creates a server and begins listening to it on a given port.  It's fd
  * is added to the master set which is copied by the polling thread prior
  * to calling select.
@@ -158,14 +103,7 @@ int start_game_server(network_t * network, unsigned int port) {
     return -1;
   }
 
-  if (add_fd_to_master_set(network, server->fd) == -1) {
-    zlog_error(nc, "Failed to add server on port [%d] to fd set", port);
-    close_server(server);
-    free_server_t(server);
-
-    return -1;
-  };
-
+  add_fd_to_master_set(network, server->fd);
   list_add(network->servers, server);
 
   return 0;
@@ -216,106 +154,102 @@ void register_input_callback(network_t * network, callback_func func, void * con
  * Uses select to determine if we have read activity on a server or client and
  * accepts or reads as appropriate.
 **/
-void * poll_network(void * parameter) {
-  assert(parameter);
+void poll_network(network_t * network) {
+  assert(network);
 
-  network_t * network = (network_t *) parameter;
+  prune_clients(network); 
 
-  while (1) {
-    if (pthread_mutex_lock(&network->lock) != 0) {
-      zlog_error(nc, "Unable to obtain network lock, ending network thread");
-      break;
-    };
+  fd_set read_set = network->master_set;
 
-    if (network->shutdown) {
-      if (pthread_mutex_unlock(&network->lock) != 0) {
-        zlog_error(nc, "Unable to release network lock, ending network thread");
-      } 
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 0;    
 
-      break;
-    }
-  
-    fd_set read_set = network->master_set;
+  int results = select(network->max_fd + 1, &read_set, NULL, NULL, &timeout);
 
-    if (pthread_mutex_unlock(&network->lock) != 0) {
-      zlog_error(nc, "Unable to release network lock, ending network thread");
-      break;
-    } 
-
-    struct timeval timeout;
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;    
-
-    int results = select(network->max_fd + 1, &read_set, NULL, NULL, &timeout);
-
-    if (results == -1) {
-      if (errno == EWOULDBLOCK) {
-        continue;
-      }
-
-      zlog_error(nc, "%s", strerror(errno));
-
-      break;      
+  if (results == -1) {
+    if (errno == EWOULDBLOCK) {
+      return;
     }
 
-    if (results == 0) {
-      continue;
-    }
+    zlog_error(nc, "%s", strerror(errno));
 
-    if (results > 0) {
-      server_t * server;
-      it_t server_it = list_begin(network->servers);
-        
-
-      while ((server = (server_t *) it_get(server_it)) != NULL) {
-        if (FD_ISSET(server->fd, &read_set)) {
-          client_t * client = create_client_t();
-
-          if (accept_on_server(server, client) != 0) {
-            free_client_t(client);
-
-            continue;
-          }
-
-          if (add_fd_to_master_set(network, client->fd) != 0 ) {
-            zlog_error(nc, "Failed to add client fd [%d] to fd set", client->fd);
-            close_client(client);
-            free_client_t(client);
-
-            continue;            
-          }
-
-          list_add(network->clients, client);
-
-          zlog_info(nc, "Client descriptor [%d] connected", client->fd);
-          send_to_client(client, "Hello\n\r");
-
-          queue_enqueue(network->new_connections, client);
-        }
-
-        server_it = it_next(server_it);
-      }
-
-      it_t client_it = list_begin(network->clients);
-      client_t * client;
-
-      while ((client = (client_t *) it_get(client_it)) != NULL) {
-        if (FD_ISSET(client->fd, &read_set)) {
-          if (receive_from_client(client) != 0) {
-            zlog_error(nc, "Failed to read from client fd [%d]", client->fd);
-          } else {
-            queue_enqueue(network->input_connections, client);
-          }
-        }
-
-        client_it = it_next(client_it);
-      }      
-    }
-
-    prune_clients(network);    
+    return;    
   }
 
-  return NULL;
+  if (results == 0) {
+    return;
+  }
+
+  if (results > 0) {
+    server_t * server;
+    it_t server_it = list_begin(network->servers);
+      
+
+    while ((server = (server_t *) it_get(server_it)) != NULL) {
+      if (FD_ISSET(server->fd, &read_set)) {
+        client_t * client = create_client_t();
+
+        if (accept_on_server(server, client) != 0) {
+          free_client_t(client);
+
+          return;
+        }
+
+        add_fd_to_master_set(network, client->fd);
+        list_add(network->clients, client);
+
+        zlog_info(nc, "Client descriptor [%d] connected", client->fd);
+
+        if (network->connection_callback->func) {
+          network->connection_callback->func(client, network->connection_callback->context);
+        }
+      }
+
+      server_it = it_next(server_it);
+    }
+
+    it_t client_it = list_begin(network->clients);
+    client_t * client;
+
+    while ((client = (client_t *) it_get(client_it)) != NULL) {
+      if (FD_ISSET(client->fd, &read_set)) {
+        if (receive_from_client(client) != 0) {
+          zlog_error(nc, "Failed to read from client fd [%d]", client->fd);
+        } else {
+          if (network->input_callback->func) {
+            network->input_callback->func(client, network->input_callback->context);
+          }
+        }
+      }
+
+      client_it = it_next(client_it);
+    }      
+  }
+
+  return;
+}
+
+
+/**
+ * Disconnect all clients currently connected to the network.  This closes the client,
+ * removes the fd from the mster set, removes the client from the client list and then
+ * frees the client.  This method does not call disconnection callbacks.  It is intended
+ * to clear down the client list when shutting down.
+**/
+void disconnect_clients(network_t * network) {
+  assert(network);
+
+  client_t * client = NULL;
+
+  it_t it = list_begin(network->clients);
+
+  while ((client = (client_t *) it_get(it)) != NULL) {
+    close_client(client);
+    remove_fd_from_master_set(network, client->fd);
+    it = list_remove(network->clients, client);
+    free_client_t(client);
+  }  
 }
 
 
@@ -342,13 +276,16 @@ int prune_clients(network_t * network) {
         zlog_error(nc, "Failed to close hungup client");
       }
 
-      if (remove_fd_from_master_set(network, client->fd) != 0) {
-        zlog_error(nc, "Unable to remove client fd [%d] from fd set", client->fd);
-      } 
-
-      queue_enqueue(network->closed_connections, client);
+      remove_fd_from_master_set(network, client->fd);
 
       it = list_remove(network->clients, client);
+
+      if (network->disconnection_callback->func) {
+        network->disconnection_callback->func(client, network->disconnection_callback->context);
+      }
+
+      free_client_t(client);
+
     } else {
       it = it_next(it);
     }
@@ -377,10 +314,7 @@ int stop_game_server(network_t * network, unsigned int port) {
         zlog_error(nc, "Failed to close server on port [%d]", port);
       }
 
-      if (remove_fd_from_master_set(network, server->fd) != 0) {
-        zlog_error(nc, "Failed to remove server on port [%d] from fd set", port);
-      }
-
+      remove_fd_from_master_set(network, server->fd);
       list_remove(network->servers, server);
       free_server_t(server);
 
@@ -395,86 +329,22 @@ int stop_game_server(network_t * network, unsigned int port) {
 
 
 /**
- * Dequeues clients from the new_connections, closed_connections and input_connections
- * queues and calls the callbacks associated with these events.  This is intended to be
- * called from the main thread so that the events are handled on said thread.  Clients
- * are also freed here after calling the closed connections callback.
-**/
-void dispatch_client_events(network_t * network) {
-  assert(network);
-
-  client_t * client;
-
-  while ((client = (client_t *) queue_dequeue(network->new_connections)) != NULL) {
-    if (network->connection_callback->func) {
-      network->connection_callback->func(client, network->connection_callback->context);
-    }
-  }
-
-  while ((client = (client_t *) queue_dequeue(network->input_connections)) != NULL) {
-    if (network->input_callback->func) {
-      network->input_callback->func(client, network->input_callback->context);
-    }
-  }
-
-  while ((client = (client_t *) queue_dequeue(network->closed_connections)) != NULL) {
-    if (network->disconnection_callback->func) {
-      network->disconnection_callback->func(client, network->disconnection_callback->context);
-
-      free_client_t(client);
-    }
-  }
-
-}
-
-
-/**
- * Thread safe method to add an fd to the master fd set.
+ * Adds an fd to the master set and tracks the maximum fd.
  *
  * Returns -1 on failure or 0 on success.
 **/
-int add_fd_to_master_set(network_t * network, int fd) {
-  if (pthread_mutex_lock(&network->lock) != 0) {
-    zlog_error(nc, "Failed to lock network mutex");
-
-    return -1;
-  }
-
+void add_fd_to_master_set(network_t * network, int fd) {
   FD_SET(fd, &network->master_set);
 
   if (fd > network->max_fd) {
     network->max_fd = fd;
   }
-
-  if (pthread_mutex_unlock(&network->lock) != 0 ) {
-    zlog_error(nc, "Failed to unlock network mutex");
-
-    return -1;
-  }    
-
-  return 0;
 }
 
 
 /**
- * Thread safe method to remove an fd from the master fd set.
- *
- * Returns -1 on failure or 0 on success.
+ * Removes an FD from the master fd set
 **/
-int remove_fd_from_master_set(network_t * network, int fd) {
-  if (pthread_mutex_lock(&network->lock) != 0) {
-    zlog_error(nc, "Failed to lock network mutex");
-
-    return -1;
-  }
-
+void remove_fd_from_master_set(network_t * network, int fd) {
   FD_CLR(fd, &network->master_set);
-
-  if (pthread_mutex_unlock(&network->lock) != 0 ) {
-    zlog_error(nc, "Failed to unlock network mutex");
-
-    return -1;
-  }  
-
-  return 0;
 }

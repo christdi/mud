@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I../include -ggdb -Wall
-LFLAGS=-lzlog -lpthread -luuid
+LFLAGS=-lzlog -lpthread
 TARGET=mud
 
 OBJS = main.o game.o config.o player.o network/network.o network/server.o \
