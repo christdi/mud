@@ -1,5 +1,5 @@
-#ifndef HG_LOG_H
-#define HG_LOG_H
+#ifndef _LOG_H_
+#define _LOG_H_
 
 #include <zlog.h>
 

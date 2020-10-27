@@ -1,5 +1,5 @@
-#ifndef HG_LIST_H
-#define HG_LIST_H
+#ifndef _LIST_H_
+#define _LIST_H_
 
 #include "mud/structure/node.h"
 #include "mud/structure/iterator.h"
@@ -19,8 +19,8 @@ typedef struct list {
 /**
  * Function prototypes
 **/
-list_t * list_new(void);
-void list_free(list_t * list);
+list_t * create_list_t(void);
+void free_list_t(list_t * list);
 
 void list_add(list_t * list, void * value);
 it_t list_remove(list_t * list, void * value);

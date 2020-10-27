@@ -3,7 +3,7 @@
 
 #include "mud/config.h"
 #include "mud/game.h"
-#include "mud/mudstring.h"
+#include "mud/util/mudstring.h"
 #include "mud/log/log.h"
 
 /**
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
-  if (log_initialise(config->logConfigFile) != 0) {
+  if (log_initialise(config->log_config_file) != 0) {
     printf("Unable to initialise logging.  Shutting down\n\r");
 
     exit(-1);

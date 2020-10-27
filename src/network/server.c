@@ -1,5 +1,5 @@
 #include "mud/network/server.h"
-#include "mud/mudstring.h"
+#include "mud/util/mudstring.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -110,7 +110,7 @@ int listen_on_server(server_t * server) {
 
   freeaddrinfo(server_info);
 
-  zlog_info(nc, "Successfully bound to port [%d].", server->port);
+  zlog_info(nc, "Successfully bound to port [%d]", server->port);
 
   return 0;
 }

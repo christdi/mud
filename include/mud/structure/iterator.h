@@ -1,5 +1,5 @@
-#ifndef HG_ITERATOR_H
-#define HG_ITERATOR_H
+#ifndef _ITERATOR_H_
+#define _ITERATOR_H_
 
 #include "mud/structure/node.h"
 

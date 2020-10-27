@@ -1,5 +1,5 @@
-#ifndef HG_COMPONENTS_H
-#define HG_COMPONENTS_H
+#ifndef _COMPONENTS_H_
+#define _COMPONENTS_H_
 
 #include "mud/structure/hash_table.h"
 #include "mud/entity/character_details.h"

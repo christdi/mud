@@ -11,7 +11,7 @@
  *
  * Returns the allocated list.
 **/
-list_t * list_new(void) {
+list_t * create_list_t(void) {
   list_t * list = calloc(1, sizeof * list);
 
   list->first = NULL;
@@ -27,7 +27,7 @@ list_t * list_new(void) {
  * Frees a list.  The list must be empty before it can be successfully
  * freed as it doesn't know how to deallocate node data.  
 **/
-void list_free(list_t * list) {
+void free_list_t(list_t * list) {
   assert(list);
   assert(list->first == NULL);
   assert(list->last == NULL);
@@ -93,8 +93,11 @@ it_t list_remove(list_t * list, void * value) {
         list->last = node->prev;
       }
 
-      if (node->prev && node->next) { 
+      if (node->prev) {
         node->prev->next = node->next;
+      }
+
+      if (node->next) {
         node->next->prev = node->prev;
       }
 

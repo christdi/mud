@@ -1,5 +1,5 @@
-#ifndef HG_HASH_TABLE_H
-#define HG_HASH_TABLE_H
+#ifndef _HASH_TABLE_H_
+#define _HASH_TABLE_H_
 
 
 #include "mud/structure/list.h"

@@ -1,5 +1,5 @@
-#ifndef HG_SERVER_H
-#define HG_SERVER_H
+#ifndef _SERVER_H_
+#define _SERVER_H_
 
 #include "mud/structure/list.h"
 #include "mud/network/client.h"
