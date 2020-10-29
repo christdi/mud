@@ -1,7 +1,9 @@
 #ifndef _CHARACTER_DETAILS_H_
 #define _CHARACTER_DETAILS_H_
 
+
 #include "mud/entity/entity.h"
+
 
 /**
  * Structs
@@ -18,5 +20,6 @@ typedef struct character_details {
 **/
 character_details_t * create_character_details_t();
 void free_character_details_t(character_details_t * character_details);
+
 
 #endif

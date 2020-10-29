@@ -1,19 +1,17 @@
 #include "mud/game.h"
 #include "mud/player.h"
+#include "mud/config.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
-#include "mud/data/queue/queue.h"
-#include "mud/util/mudstring.h"
-#include "mud/data/hash_table/hash_iterator.h"
+#include "mud/entity/components.h"
+
 
 #include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
-#include <string.h>
 
 
 void game_tick(game_t * game, unsigned int ticks_per_second);
-
 
 
 /**

@@ -1,7 +1,9 @@
-#include "mud/player.h"
-#include "mud/log/log.h"
-#include "mud/data/hash_table/hash_iterator.h"
 #include "mud/game.h"
+#include "mud/player.h"
+#include "mud/data/hash_table/hash_iterator.h"
+#include "mud/log/log.h"
+#include "mud/state/login_state.h"
+
 
 #include <assert.h>
 #include <stdlib.h>
@@ -41,6 +43,7 @@ void player_connected(client_t * client, void * context) {
 
   player_t * player = create_player_t();
   player->client = client;
+  player->state = login_state;
 
   send_to_player(player, "Welcome player, your uuid is [%s]\n\r", client->uuid);
 

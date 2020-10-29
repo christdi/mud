@@ -3,6 +3,7 @@
 
 #include "mud/network/client.h"
 #include "mud/data/hash_table/hash_table.h"
+#include "mud/state/state.h"
 
 
 /**
@@ -18,6 +19,7 @@
 **/
 typedef struct player {
 	client_t * client;
+	state_func_t state;
 
 	char * username;
 	char * passwordHash;

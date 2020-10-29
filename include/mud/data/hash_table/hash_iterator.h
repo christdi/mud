@@ -2,9 +2,18 @@
 #define _HASH_ITERATOR_H_
 
 
-#include "mud/data/hash_table/hash_table.h"
-#include "mud/data/hash_table/hash_node.h"
+#include <stddef.h>
+
+
 #include "mud/data/linked_list/iterator.h"
+
+
+/**
+ * Typedefs
+**/
+typedef struct hash_table hash_table_t;
+typedef struct hash_node hash_node_t;
+
 
 /**
  * Structs
