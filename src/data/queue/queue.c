@@ -1,4 +1,4 @@
-#include "mud/data/queue_linked_list/queue.h"
+#include "mud/data/queue/queue.h"
 
 #include <assert.h>
 #include <stdlib.h>

@@ -170,24 +170,27 @@ int extract_from_input(client_t * client, char * dest, size_t dest_len, const ch
   size_t i = 0;
   size_t len = strnlen(client->input, INPUT_BUFFER_SIZE);
 
+  int ret = -1;
+
   for (i = 0; i < len; i++) {
     char * current = &client->input[i];
 
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
-        zlog_error(nc, "Error occured in extract_from_input, supplied dest buffer was too small at [%ld], needed [%ld]", dest_len, i);
-
-        return -1;
+        zlog_error(nc, "Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
+        send_to_client(client, "Your input was discarded as it was too long.\n\r");
+      } else {
+        strncpy(dest, client->input, i);
+        dest[i] = '\0';
+        
+        ret = 0;
       }
 
-      strncpy(dest, client->input, i);
-      dest[i] = '\0';
-      
       memcpy(client->input, current + delim_len, len - i);
 
-      return 0;
+      break;
     }
   }
 
-  return -1;
+  return ret;
 }

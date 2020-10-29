@@ -12,8 +12,6 @@
 hash_node_t * create_hash_node_t() {
 	hash_node_t * hash_node = calloc(1, sizeof * hash_node);
 
-	hash_node->next = NULL;
-
 	return hash_node;
 }
 

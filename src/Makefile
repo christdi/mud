@@ -9,8 +9,8 @@ $(LOG_OBJS) $(ENTITY_OBJS) $(UTIL_OBJS)
 NETWORK_OBJS = network/network.o network/server.o network/client.o network/callback.o
 
 DATA_OBJS = data/hash_table/hash_table.o data/hash_table/hash_node.o \
-data/linked_list/linked_list.o data/linked_list/node.o data/linked_list/iterator.o \
-data/queue_linked_list/queue.o
+data/hash_table/hash_iterator.o data/linked_list/linked_list.o data/linked_list/node.o \
+data/linked_list/iterator.o data/queue/queue.o
 
 LOG_OBJS = log/log.o
 

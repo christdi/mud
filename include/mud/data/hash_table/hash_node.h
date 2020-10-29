@@ -20,8 +20,6 @@ typedef struct hash_node hash_node_t;
 struct hash_node {
 	char * key;
 	void * value;
-
-	hash_node_t * next;
 };
 
 
