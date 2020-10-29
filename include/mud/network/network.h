@@ -6,7 +6,7 @@
 
 #include "mud/network/server.h"
 #include "mud/network/callback.h"
-#include "mud/structure/list.h"
+#include "mud/data/linked_list/linked_list.h"
 
 
 /**
@@ -20,8 +20,8 @@ typedef struct network {
 	callback_t * disconnection_callback;
 	callback_t * input_callback;
 
-	list_t * servers;
-	list_t * clients;
+	linked_list_t * servers;
+	linked_list_t * clients;
 } network_t;
 
 

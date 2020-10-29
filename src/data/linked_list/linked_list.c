@@ -1,5 +1,5 @@
-#include "mud/structure/list.h"
-#include "mud/structure/node.h"
+#include "mud/data/linked_list/linked_list.h"
+#include "mud/data/linked_list/node.h"
 #include "mud/log/log.h"
 
 #include <assert.h>
@@ -11,8 +11,8 @@
  *
  * Returns the allocated list.
 **/
-list_t * create_list_t(void) {
-  list_t * list = calloc(1, sizeof * list);
+linked_list_t * create_linked_list_t(void) {
+  linked_list_t * list = calloc(1, sizeof * list);
 
   list->first = NULL;
   list->last = NULL;
@@ -27,7 +27,7 @@ list_t * create_list_t(void) {
  * Frees a list.  The list must be empty before it can be successfully
  * freed as it doesn't know how to deallocate node data.  
 **/
-void free_list_t(list_t * list) {
+void free_linked_list_t(linked_list_t * list) {
   assert(list);
   assert(list->first == NULL);
   assert(list->last == NULL);
@@ -42,7 +42,7 @@ void free_list_t(list_t * list) {
 /**
  * Add a node to the end of the linked list.  
 **/
-void list_add(list_t * list, void * value) {
+void list_add(linked_list_t * list, void * value) {
   assert(list);
   assert(value);
 
@@ -70,7 +70,7 @@ void list_add(list_t * list, void * value) {
  *
  * Returns an iterator to the node after the one removed.
 **/
-it_t list_remove(list_t * list, void * value) {
+it_t list_remove(linked_list_t * list, void * value) {
   assert(list);
   assert(value);
 
@@ -116,7 +116,7 @@ it_t list_remove(list_t * list, void * value) {
 /**
  * Returns an iterator positioned at the start of the list.
 **/
-it_t list_begin(list_t * list) {
+it_t list_begin(linked_list_t * list) {
   it_t it;
 
   it.node = list->first;
@@ -128,7 +128,7 @@ it_t list_begin(list_t * list) {
 /**
  * Returns an iterator positioned at the end of the list.
 **/
-it_t list_end(list_t * list) {
+it_t list_end(linked_list_t * list) {
   it_t it;
 
   it.node = list->last;
@@ -142,7 +142,7 @@ it_t list_end(list_t * list) {
  *
  * Returns the calculated amount of eleemnts in the list.
 **/
-int list_size(list_t *list) {
+int list_size(linked_list_t * list) {
   assert(list);
 
   pthread_mutex_lock(&list->mutex);

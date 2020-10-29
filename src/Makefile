@@ -3,11 +3,20 @@ CFLAGS=-I../include -ggdb -Wall
 LFLAGS=-lzlog -lpthread
 TARGET=mud
 
-OBJS = main.o game.o config.o player.o network/network.o network/server.o \
-network/client.o network/callback.o structure/node.o structure/list.o \
-structure/queue.o structure/iterator.o structure/hash_table.o structure/hash_node.o \
-log/log.o entity/components.o entity/character_details.o entity/entity.o \
-util/mudstring.o util/muduuid.o
+OBJS = main.o game.o config.o player.o $(NETWORK_OBJS) $(DATA_OBJS) \
+$(LOG_OBJS) $(ENTITY_OBJS) $(UTIL_OBJS)
+
+NETWORK_OBJS = network/network.o network/server.o network/client.o network/callback.o
+
+DATA_OBJS = data/hash_table/hash_table.o data/hash_table/hash_node.o \
+data/hash_table/hash_iterator.o data/linked_list/linked_list.o data/linked_list/node.o \
+data/linked_list/iterator.o data/queue/queue.o
+
+LOG_OBJS = log/log.o
+
+ENTITY_OBJS = entity/components.o entity/character_details.o entity/entity.o
+
+UTIL_OBJS = util/mudstring.o util/muduuid.o
 
 all: $(TARGET)
 

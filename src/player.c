@@ -1,11 +1,15 @@
 #include "mud/player.h"
 #include "mud/log/log.h"
+#include "mud/data/hash_table/hash_iterator.h"
+#include "mud/game.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
+
 void get_player_username(player_t * player, char * username);
+void write_to_player(player_t * player, char * output);
 
 /**
  * Allocates and initialises a new player_t struct.
@@ -29,6 +33,60 @@ void free_player_t(player_t * player) {
 }
 
 
+/**
+ * Callback from the network module when a new client connects.
+**/
+void player_connected(client_t * client, void * context) {
+  game_t * game = (game_t *) context;
+
+  player_t * player = create_player_t();
+  player->client = client;
+
+  send_to_player(player, "Welcome player, your uuid is [%s]\n\r", client->uuid);
+
+  hash_table_insert(game->players, client->uuid, player);
+
+  send_to_all_players(game->players, player, "%s has joined\n\r", client->uuid);
+}
+
+
+/**
+ * Callback from the network module when a client disconnects.
+**/
+void player_disconnected(client_t * client, void * context) {
+  game_t * game = (game_t *) context;
+
+  player_t * player = hash_table_delete(game->players, client->uuid);
+
+  free_player_t(player);
+
+  send_to_all_players(game->players, player, "%s has left\n\r", client->uuid);
+}
+
+
+/**
+ * Callback from the network module when a client receives input.
+**/
+void player_input(client_t * client, void * context) {
+  game_t * game = (game_t *) context;
+
+  player_t * player = hash_table_get(game->players, client->uuid);
+
+  char command[COMMAND_SIZE];
+
+  if (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1 ) {
+    if (strncmp(command, "quit", COMMAND_SIZE) == 0) {
+      client->hungup = 1;
+    }
+
+    if (strncmp(command, "shutdown", COMMAND_SIZE) == 0) {
+      game->shutdown = 1;
+    }
+
+    send_to_all_players(game->players, NULL, "%s > %s\n\r", client->uuid, command);
+  }
+}
+
 
 /**
  * Attempts to send formatted outputted to a player.  Will check if the underlying
@@ -36,27 +94,74 @@ void free_player_t(player_t * player) {
  *
  * Returns 0 on success or -1 on failure
 **/
-int send_to_player(player_t * player, const char * fmt, ...) {
+void send_to_player(player_t * player, const char * fmt, ...) {
 	assert(player);
 	assert(fmt);
-	
-	if (player->client == NULL) {
-		char username[MAX_USERNAME_SIZE];
-		get_player_username(player, username);
 
-		zlog_warn(gc, "Send to player with username [%s] failed as they have no client", username);
-
-		return -1;
-	}
-
-	char output[MAX_SEND_SIZE];
+	char output[SEND_SIZE];
 	
 	va_list args;
 	va_start(args, fmt);
 	vsprintf(output, fmt, args);
 	va_end(args);
 
-	return send_to_client(player->client, output);
+	write_to_player(player, output);
+}
+
+
+/**
+ * Sends a formatted message to all connected players.  May optionally exclude a player
+ * by specifying them in the excluding parameter.
+**/
+void send_to_all_players(hash_table_t * players, player_t * excluding, const char * fmt, ...) {
+	assert(players);
+
+	char output[SEND_SIZE];
+
+  h_it_t it = hash_table_iterator(players);
+  player_t * target;
+
+	va_list args;
+	va_start(args, fmt);
+	vsprintf(output, fmt, args);
+
+  while ((target = h_it_get(it)) != NULL) {
+  	if (excluding && excluding == target) {
+  		it = h_it_next(it);
+  		
+  		continue;
+  	}
+
+      write_to_player(target, output);
+
+      it = h_it_next(it);
+    }
+
+    va_end(args);
+}
+
+
+/**
+ * Writes a character array to a player.  Ensures that they first have a client.
+**/
+void write_to_player(player_t * player, char * output) {
+	assert(player);
+	assert(output);
+
+	if (player->client == NULL) {
+		char username[USERNAME_SIZE];
+		get_player_username(player, username);
+
+		zlog_warn(gc, "Send to player with username [%s] failed as they have no client", username);
+
+    return;
+	}
+
+	if (send_to_client(player->client, output) != 0) {
+		zlog_warn(gc, "Send to player failed, unable to write to client [%s]", player->client->uuid);
+
+    return;
+	}
 }
 
 
@@ -68,5 +173,5 @@ void get_player_username(player_t * player, char * username) {
 	assert(player);
 	assert(username);
 
-	strncpy(username, player->username ? player->username : "anonymous", MAX_USERNAME_SIZE);
+	strncpy(username, player->username ? player->username : "anonymous", USERNAME_SIZE);
 }

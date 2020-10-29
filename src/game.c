@@ -2,8 +2,9 @@
 #include "mud/player.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
-#include "mud/structure/queue.h"
+#include "mud/data/queue/queue.h"
 #include "mud/util/mudstring.h"
+#include "mud/data/hash_table/hash_iterator.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -12,9 +13,7 @@
 
 
 void game_tick(game_t * game, unsigned int ticks_per_second);
-void player_connected(client_t * client, void * context);
-void player_disconnected(client_t * client, void * context);
-void player_input(client_t * client, void * context);
+
 
 
 /**
@@ -119,54 +118,4 @@ void game_tick(game_t * game, const unsigned int ticks_per_second) {
   }
 
   game->last_tick = current_time;
-}
-
-
-/**
- * Callback from the network module when a new client connects.
-**/
-void player_connected(client_t * client, void * context) {
-  game_t * game = (game_t *) context;
-
-  player_t * player = create_player_t();
-  player->client = client;
-
-  send_to_player(player, "Welcome player, your uuid is [%s]\n\r", client->uuid);
-
-  hash_table_insert(game->players, client->uuid, player);
-}
-
-
-/**
- * Callback from the network module when a client disconnects.
-**/
-void player_disconnected(client_t * client, void * context) {
-  game_t * game = (game_t *) context;
-
-  player_t * player = hash_table_delete(game->players, client->uuid);
-  free_player_t(player);
-}
-
-
-/**
- * Callback from the network module when a client receives input.
-**/
-void player_input(client_t * client, void * context) {
-  game_t * game = (game_t *) context;
-
-  player_t * player = hash_table_get(game->players, client->uuid);
-
-  char command[20];
-
-  if (extract_from_input(client, command, 20, "\r\n") != -1 ) {
-    if (strncmp(command, "quit", 4) == 0) {
-      client->hungup = 1;
-    }
-
-    if (strncmp(command, "shutdown", 8) == 0) {
-      game->shutdown = 1;
-    }
-  };
-
-  
 }

@@ -2,7 +2,7 @@
 #define _HASH_TABLE_H_
 
 
-#include "mud/structure/list.h"
+#include "mud/data/linked_list/linked_list.h"
 
 
 /**
@@ -15,7 +15,7 @@
  * Structs
 **/
 typedef struct hash_table {
-	list_t nodes[HASH_TABLE_SIZE];
+	linked_list_t nodes[HASH_TABLE_SIZE];
 } hash_table_t;
 
 
@@ -29,6 +29,9 @@ void free_hash_table_t(hash_table_t * hash_table);
 int hash_table_insert(hash_table_t * table, char * key, void * value);
 void * hash_table_get(hash_table_t * table, char * key);
 void * hash_table_delete(hash_table_t * table, char * key);
+
+
+
 
 
 #endif
