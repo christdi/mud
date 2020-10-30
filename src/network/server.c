@@ -1,4 +1,5 @@
 #include "mud/network/server.h"
+#include "mud/network/client.h"
 #include "mud/util/mudstring.h"
 #include "mud/log/log.h"
 
@@ -162,4 +163,3 @@ int close_server(server_t * server) {
 
   return 0;
 }
-

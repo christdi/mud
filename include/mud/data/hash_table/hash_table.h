@@ -31,7 +31,4 @@ void * hash_table_get(hash_table_t * table, char * key);
 void * hash_table_delete(hash_table_t * table, char * key);
 
 
-
-
-
 #endif

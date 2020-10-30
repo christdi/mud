@@ -1,12 +1,18 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
+
 #include <sys/types.h>
 #include <pthread.h>
 
-#include "mud/network/server.h"
+
 #include "mud/network/callback.h"
-#include "mud/data/linked_list/linked_list.h"
+
+
+/**
+ * Typedefs
+**/
+typedef struct linked_list linked_list_t;
 
 
 /**

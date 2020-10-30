@@ -1,12 +1,18 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "mud/config.h"
-#include "mud/network/network.h"
-#include "mud/entity/components.h"
-#include "mud/data/hash_table/hash_table.h"
 
 #include <sys/time.h>
+
+
+/**
+ * Typedefs
+**/
+typedef struct config config_t;
+typedef struct hash_table hash_table_t;
+typedef struct network network_t;
+typedef struct components components_t;
+
 
 /**
  * Structs
@@ -28,5 +34,6 @@ game_t * create_game_t(void);
 void free_game_t(game_t * game);
 
 int start_game(game_t * game, config_t * config);
+
 
 #endif

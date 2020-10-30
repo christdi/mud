@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include "mud/data/linked_list/iterator.h"
+#include "mud/data/linked_list/node.h"
 
 
 /**

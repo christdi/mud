@@ -1,11 +1,11 @@
 #ifndef _CALLBACK_H_
 #define _CALLBACK_H_
 
-#include "mud/network/client.h"
 
 /**
  * Typedefs
 **/
+typedef struct client client_t;
 typedef void (*callback_func)(client_t *, void *);
 
 
@@ -23,5 +23,6 @@ typedef struct callback {
 **/
 callback_t * create_callback_t();
 void free_callback_t(callback_t * callback);
+
 
 #endif

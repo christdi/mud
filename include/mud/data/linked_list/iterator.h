@@ -1,7 +1,12 @@
 #ifndef _ITERATOR_H_
 #define _ITERATOR_H_
 
-#include "mud/data/linked_list/node.h"
+
+/**
+ * Typedefs
+**/
+typedef struct node node_t; /* linked_list/node.h */
+
 
 /**
  * Structs
@@ -9,6 +14,7 @@
 typedef struct iterator {
 	node_t * node;
 } it_t;
+
 
 /**
  * Function prototypes

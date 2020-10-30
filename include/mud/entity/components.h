@@ -1,8 +1,15 @@
 #ifndef _COMPONENTS_H_
 #define _COMPONENTS_H_
 
-#include "mud/data/hash_table/hash_table.h"
+
 #include "mud/entity/character_details.h"
+
+
+/**
+ * Typedefs
+**/
+typedef struct hash_table hash_table_t; /* data/hash_table/hash_table.h */
+
 
 /**
  * Structs

@@ -1,4 +1,9 @@
 #include "mud/data/hash_table/hash_iterator.h"
+#include "mud/data/hash_table/hash_table.h"
+#include "mud/data/hash_table/hash_node.h"
+#include "mud/data/linked_list/linked_list.h"
+#include "mud/data/linked_list/node.h"
+
 
 
 /**
