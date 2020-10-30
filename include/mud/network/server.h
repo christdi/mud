@@ -9,6 +9,12 @@
 
 
 /**
+ * Defines
+**/
+#define PORT_SIZE 15
+
+
+/**
  * Typedefs
 **/
 typedef struct client client_t;

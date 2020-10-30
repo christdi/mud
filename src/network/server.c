@@ -57,9 +57,9 @@ int listen_on_server(server_t * server) {
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
 
-  char * port_string = string_integer_to_ascii(server->port);
+  char port_string[PORT_SIZE];
 
-  if (!port_string) {
+  if (int_to_string(server->port, port_string) != 0) {
     zlog_error(nc, "Failed to convert port from integer to string.");
 
     return -1;
@@ -72,8 +72,6 @@ int listen_on_server(server_t * server) {
 
     return -1;
   }
-
-  free(port_string);
 
   server->fd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
