@@ -6,7 +6,6 @@
 #include "mud/state/login_state.h"
 #include "mud/util/mudstring.h"
 
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

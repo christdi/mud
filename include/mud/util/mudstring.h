@@ -21,4 +21,5 @@ void string_to_hex(char * input, char * destination, size_t len);
 int convert_symbols_to_ansi_codes(char * input, char * destination, size_t len);
 
 
+
 #endif

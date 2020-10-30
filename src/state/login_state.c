@@ -19,6 +19,7 @@ void login_state(player_t * player, game_t * game, char * input) {
 	assert(player);
 	assert(game);
 
+
 	send_to_player(player, "Welcome.  Enter your character name or type 'new' to create one: ");
 
 	player->state = get_character_name;
@@ -52,6 +53,7 @@ void get_new_character_name(player_t * player, game_t * game, char * input) {
 	assert(game);
 
 	if (strnlen(input, COMMAND_SIZE) > USERNAME_SIZE) {
+
 		send_to_player(player, "Your name must be at most %d characters long, try again: ", USERNAME_SIZE);
 
 		return;
@@ -75,7 +77,7 @@ void get_new_character_password(player_t * player, game_t * game, char * input) 
 	if (strnlen(input, COMMAND_SIZE) > PASSWORD_SIZE) {
 		send_to_player(player, "Your password must be at most %d characters long, try again: ", USERNAME_SIZE);
 
-		return;
+    return;
 	}
 
 	// TODO: Hash password
