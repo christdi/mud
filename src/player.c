@@ -1,5 +1,6 @@
 #include "mud/game.h"
 #include "mud/player.h"
+#include "mud/data/hash_table/hash_table.h"
 #include "mud/data/hash_table/hash_iterator.h"
 #include "mud/log/log.h"
 #include "mud/state/login_state.h"
@@ -45,11 +46,9 @@ void player_connected(client_t * client, void * context) {
   player->client = client;
   player->state = login_state;
 
-  send_to_player(player, "Welcome player, your uuid is [%s]\n\r", client->uuid);
-
   hash_table_insert(game->players, client->uuid, player);
 
-  send_to_all_players(game->players, player, "%s has joined\n\r", client->uuid);
+  player->state(player, game, NULL);
 }
 
 
@@ -62,8 +61,6 @@ void player_disconnected(client_t * client, void * context) {
   player_t * player = hash_table_delete(game->players, client->uuid);
 
   free_player_t(player);
-
-  send_to_all_players(game->players, player, "%s has left\n\r", client->uuid);
 }
 
 
@@ -78,15 +75,9 @@ void player_input(client_t * client, void * context) {
   char command[COMMAND_SIZE];
 
   if (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1 ) {
-    if (strncmp(command, "quit", COMMAND_SIZE) == 0) {
-      client->hungup = 1;
+    if (strnlen(command, COMMAND_SIZE) > 0) {
+      player->state(player, game, command);
     }
-
-    if (strncmp(command, "shutdown", COMMAND_SIZE) == 0) {
-      game->shutdown = 1;
-    }
-
-    send_to_all_players(game->players, NULL, "%s > %s\n\r", client->uuid, command);
   }
 }
 
@@ -116,12 +107,13 @@ void send_to_player(player_t * player, const char * fmt, ...) {
  * Sends a formatted message to all connected players.  May optionally exclude a player
  * by specifying them in the excluding parameter.
 **/
-void send_to_all_players(hash_table_t * players, player_t * excluding, const char * fmt, ...) {
-	assert(players);
+void send_to_all_players(game_t * game, player_t * excluding, const char * fmt, ...) {
+	assert(game);
+  assert(game->players);
 
 	char output[SEND_SIZE];
 
-  h_it_t it = hash_table_iterator(players);
+  h_it_t it = hash_table_iterator(game->players);
   player_t * target;
 
 	va_list args;
@@ -176,5 +168,5 @@ void get_player_username(player_t * player, char * username) {
 	assert(player);
 	assert(username);
 
-	strncpy(username, player->username ? player->username : "anonymous", USERNAME_SIZE);
+	strncpy(username, player->username[0] != '\0' ? player->username : "anonymous", USERNAME_SIZE);
 }

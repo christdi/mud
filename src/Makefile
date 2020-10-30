@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I../include -ggdb -Wall
-LFLAGS=-lzlog -lpthread -luuid
+LFLAGS=-lzlog -lpthread
 TARGET=mud
 
 OBJS = main.o game.o config.o player.o $(DATA_OBJS) $(NETWORK_OBJS) $(ENTITY_OBJS) \
@@ -16,7 +16,7 @@ LOG_OBJS = log/log.o
 
 NETWORK_OBJS = network/network.o network/server.o network/client.o network/callback.o
 
-STATE_OBJS = state/login_state.o
+STATE_OBJS = state/login_state.o state/play_state.o
 
 UTIL_OBJS = util/mudstring.o util/muduuid.o
 

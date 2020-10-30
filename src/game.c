@@ -1,6 +1,7 @@
 #include "mud/game.h"
 #include "mud/player.h"
 #include "mud/config.h"
+#include "mud/data/hash_table/hash_table.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
 #include "mud/entity/components.h"
