@@ -19,7 +19,7 @@ void login_state(player_t * player, game_t * game, char * input) {
 	assert(player);
 	assert(game);
 
-	send_to_player(player, "Welcome.  Enter your character name or type [new] to create one: ");
+	send_to_player(player, "Sup! <red>Welcome<reset>.  Enter your character name or type [new] to create one: ");
 
 	player->state = get_character_name;
 }

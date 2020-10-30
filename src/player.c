@@ -4,6 +4,7 @@
 #include "mud/data/hash_table/hash_iterator.h"
 #include "mud/log/log.h"
 #include "mud/state/login_state.h"
+#include "mud/util/mudstring.h"
 
 
 #include <assert.h>
@@ -152,7 +153,14 @@ void write_to_player(player_t * player, char * output) {
     return;
 	}
 
-	if (send_to_client(player->client, output) != 0) {
+  char * chosen_output = output;
+  char ansi_output[SEND_SIZE];
+
+  if (convert_symbols_to_ansi_codes(output, ansi_output, SEND_SIZE) == 0) {
+    chosen_output = ansi_output;
+  }
+
+	if (send_to_client(player->client, chosen_output) != 0) {
 		zlog_warn(gc, "Send to player failed, unable to write to client [%s]", player->client->uuid);
 
     return;
