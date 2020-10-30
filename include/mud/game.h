@@ -22,6 +22,7 @@ typedef struct game {
   struct timeval last_tick;
 
   hash_table_t * players;
+  hash_table_t * commands;
   network_t * network;
   components_t * components;
 } game_t;

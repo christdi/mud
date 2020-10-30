@@ -32,12 +32,46 @@ char * const ansi_codes[ANSI_SIZE][2] = {
 
 
 /**
+ * Attempts to extract a single space deliminated argument from a source string.
+ * The extracted word is copied into the destination character buffer which must
+ * be a valid character buffer.
+ *
+ * Returns a character pointer to after the extracted word in the source
+**/
+char * extract_argument(char * source, char * destination) {
+  assert(source);
+  assert(destination);
+
+  char * current = source;
+  char * write = destination;
+
+  while (*current != ' ' && *current != '\0') {
+    *write = *current;
+
+    current++;
+    write++;
+  }
+
+  if (*current == ' ') {
+    current++;
+  }
+  
+  *write = '\0';
+
+  return current;
+}
+
+
+/**
  * Attempts to convert an integer to a string.  A valid destination character
  * buffer must be provided for the string to be written to.
  *
  * Returns 0 on success or -1 on failure
 **/
 int int_to_string(int input, char * destination) {
+  assert(input);
+  assert(destination);
+
   if (sprintf(destination, "%d", input) < 0) {
     return -1;
   }
@@ -53,6 +87,7 @@ int int_to_string(int input, char * destination) {
 **/
 void string_to_hex(char * input, char * destination, size_t len) {
   assert(input);
+  assert(destination);
 
   size_t i = 0;
   size_t j = 0;

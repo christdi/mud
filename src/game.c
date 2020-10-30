@@ -1,6 +1,7 @@
 #include "mud/game.h"
 #include "mud/player.h"
 #include "mud/config.h"
+#include "mud/command/command.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
@@ -27,6 +28,7 @@ game_t * create_game_t(void) {
   gettimeofday(&game->last_tick, NULL);
 
   game->players = create_hash_table_t();
+  game->commands = create_hash_table_t();
 
   game->network = create_network_t();
   game->components = create_components_t();
@@ -45,6 +47,7 @@ void free_game_t(game_t * game) {
   assert(game->components);
 
   free_hash_table_t(game->players);
+  free_hash_table_t(game->commands);
   free_network_t(game->network);
   free_components_t(game->components);
   free(game);
@@ -67,6 +70,8 @@ int start_game(game_t * game, config_t * config) {
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
+
+  load_commands(game);
 
   if (start_game_server(game->network, 5000) == -1) {
     zlog_error(gc, "Failed to start game server");
