@@ -5,11 +5,15 @@
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/command/communication.h"
+#include "mud/command/general.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/log/log.h"
 
 
 /**
+ * Allocate memory for and initialize a command_t.
+ *
+ * Returns the newly allocated command_t
 **/
 command_t * create_command_t() {
 	command_t * command = calloc(1, sizeof * command);
@@ -19,23 +23,25 @@ command_t * create_command_t() {
 
 
 /**
+ * Frees an allocated command_t.
 **/
 void free_command_t(command_t * command) {
 	free(command);
 }
 
 /**
- * 
+ * Populates the commands hash table from a static array of commands.
 **/
 void load_commands(game_t * game) {
-	command_t commands[] = {
+	static const command_t commands[] = {
 		{ "say", say_command },
+		{ "quit", quit_command },
 		{ "\0", NULL  }
 	};
 
 	zlog_info(gc, "Loading commands");
 
-	command_t * command;
+	const command_t * command;
 
 	for (command = commands; command->func != NULL; command++) {
 		command_t * new_command = create_command_t();
@@ -47,6 +53,9 @@ void load_commands(game_t * game) {
 
 
 /**
+ * Attempts to find a command matching a given name.
+ *
+ * Returns a pointer to the command_t or NULL if not found.
 **/
 command_t * get_command(game_t * game, char * name) {
 	command_t * command = (command_t *) hash_table_get(game->commands, name);

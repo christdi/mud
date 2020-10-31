@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "mud/util/mudstring.h"
 #include "mud/log/log.h"
@@ -61,6 +62,52 @@ char * extract_argument(char * source, char * destination) {
   return current;
 }
 
+
+/**
+ * Wrapper around trim_left and trim_right.
+**/
+char * trim(char * source) {
+  return trim_left(trim_right(source));
+}
+
+
+/**
+ * Creates a pointer which is iterated over a string until the first non
+ * whitespace character is found.  Be careful using this with dynamically
+ * allocated strings as you won't be able to free the memory if you over
+ * write the original pointer.
+ *
+ * Returns a pointer to the first non-whitespace character in the string.
+**/
+char * trim_left(char * source) {
+  char * current = source;
+
+  while(isspace(*current)) {
+    current++;
+  }
+
+  return current;
+}
+
+
+/**
+ * Finds the end of a string and iterates backwards replacing spaces with null
+ * until such time as it finds a non-space character.
+ *
+ * Returns the same pointer it was passed in so the call be chained.
+**/
+char * trim_right(char * source) {
+  size_t len = strlen(source) - 1;
+
+  char * current = source + len;
+
+  while(isspace(*current)) {
+    *current = '\0';
+    current--;
+  }
+
+  return source;
+}
 
 /**
  * Attempts to convert an integer to a string.  A valid destination character

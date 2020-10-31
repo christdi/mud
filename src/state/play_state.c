@@ -29,10 +29,10 @@ void play_state(player_t * player, game_t * game, char * input) {
 
 	char command[COMMAND_SIZE];
 	input = extract_argument(input, command);
-	command_t * cmd = get_command(game, command);
+	command_t * cmd = get_command(game, trim(command));
 
 	if (cmd) {
-		cmd->func(player, game, input);
+		cmd->func(player, game, trim(input));
 	} else {
 		send_to_player(player, "[bcyan]%s[reset] command not recognised.\n\r", command);
 	}
@@ -46,5 +46,5 @@ void play_state(player_t * player, game_t * game, char * input) {
  * Send a prompt to a player.
 **/
 void send_prompt(player_t * player) {
-	send_to_player(player, "%s => ", player->username);
+	send_to_player(player, "[bgreen]%s[reset] => ", player->username);
 }
