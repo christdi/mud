@@ -2,10 +2,11 @@
 #include "mud/player.h"
 #include "mud/config.h"
 #include "mud/command/command.h"
+#include "mud/data/linked_list/linked_list.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/log/log.h"
 #include "mud/network/network.h"
-#include "mud/entity/components.h"
+#include "mud/ecs/ecs.h"
 
 
 #include <assert.h>
@@ -31,6 +32,7 @@ game_t * create_game_t(void) {
   game->commands = create_hash_table_t();
 
   game->network = create_network_t();
+  game->entities = create_linked_list_t();
   game->components = create_components_t();
 
   return game;
@@ -71,6 +73,7 @@ int start_game(game_t * game, config_t * config) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
+  load_entities(game);
   load_commands(game);
 
   if (start_game_server(game->network, 5000) == -1) {
@@ -81,6 +84,8 @@ int start_game(game_t * game, config_t * config) {
 
   while (!game->shutdown) {
     poll_network(game->network);
+
+    update_systems(game);
 
     game_tick(game, config->ticks_per_second);
   }
