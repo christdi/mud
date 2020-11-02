@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "mud/entity/components.h"
+#include "mud/ecs/components.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/log/log.h"
 

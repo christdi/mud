@@ -4,7 +4,7 @@ LFLAGS=-lzlog -lpthread
 TARGET=mud
 
 OBJS = main.o game.o config.o player.o $(COMMAND_OBJS) $(DATA_OBJS) $(NETWORK_OBJS) \
-$(ENTITY_OBJS) $(LOG_OBJS) $(NETWORK_OBJS) $(STATE_OBJS) $(UTIL_OBJS)
+$(ECS_OBJS) $(LOG_OBJS) $(NETWORK_OBJS) $(STATE_OBJS) $(UTIL_OBJS)
 
 COMMAND_OBJS = command/command.o command/communication.o command/general.o
 
@@ -12,7 +12,7 @@ DATA_OBJS = data/hash_table/hash_table.o data/hash_table/hash_node.o \
 data/hash_table/hash_iterator.o data/linked_list/linked_list.o data/linked_list/node.o \
 data/linked_list/iterator.o data/queue/queue.o
 
-ENTITY_OBJS = entity/components.o entity/character_details.o entity/entity.o
+ECS_OBJS = ecs/components.o ecs/character_details.o ecs/entity.o ecs/system.o
 
 LOG_OBJS = log/log.o
 

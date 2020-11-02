@@ -90,6 +90,33 @@ int hash_table_insert(hash_table_t * table, char * key, void * value) {
 
 
 /**
+ * Determines if a key exists in a hash table.
+ *
+ * Returns 1 if the key exists, or 0 if not.
+**/
+int hash_table_has(hash_table_t * table, char * key) {
+	assert(table);
+	assert(key);
+
+	int index = get_hash_index(key);
+
+	linked_list_t * list = &table->nodes[index];
+	it_t it = list_begin(list);
+	hash_node_t * node;
+
+	while ((node = (hash_node_t *) it_get(it)) != NULL) {
+		if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
+			return 1;
+		}
+
+		it = it_next(it);
+	}
+
+	return 0;
+}
+
+
+/**
  * Searches a hash table for a node with a given key and returns the value if found.
 **/
 void * hash_table_get(hash_table_t * table, char * key) {

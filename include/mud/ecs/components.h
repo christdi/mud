@@ -2,13 +2,11 @@
 #define _COMPONENTS_H_
 
 
-#include "mud/entity/character_details.h"
-
-
 /**
  * Typedefs
 **/
 typedef struct hash_table hash_table_t; /* data/hash_table/hash_table.h */
+typedef struct character_details character_details_t; /* data/entity/character_details.h */
 
 
 /**
@@ -24,6 +22,5 @@ typedef struct components {
 **/
 components_t * create_components_t();
 void free_components_t(components_t * components);
-
 
 #endif
