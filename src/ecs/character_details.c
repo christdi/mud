@@ -1,8 +1,9 @@
 #include "mud/ecs/character_details.h"
 #include "mud/ecs/components.h"
 #include "mud/data/hash_table/hash_table.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 /**
@@ -41,8 +42,11 @@ void free_character_details_t(character_details_t * character_details) {
  *
  * Returns 1 if true or 0 if false.
 **/
-int has_character_details(components_t * components, char * uuid) {
-	return hash_table_has(components->character_details, uuid);
+int has_character_details(components_t * components, entity_t * entity) {
+	assert(components);
+	assert(entity);
+
+	return hash_table_has(components->character_details, entity->uuid);
 }
 
 /**
@@ -60,8 +64,11 @@ void register_character_details(components_t * components, character_details_t *
  * Returns the removed character_details_t in case it has to be freed, or null if
  * there was no matching uuid.
 **/
-character_details_t * unregister_character_details(components_t * components, char * uuid) {
-	return (character_details_t *) hash_table_delete(components->character_details, uuid);
+character_details_t * unregister_character_details(components_t * components, entity_t * entity) {
+	assert(components);
+	assert(entity);
+
+	return (character_details_t *) hash_table_delete(components->character_details, entity->uuid);
 }
 
 /**
@@ -69,8 +76,8 @@ character_details_t * unregister_character_details(components_t * components, ch
  *
  * Returns the character_details_t or null if not found.
 **/
-character_details_t * get_character_details(components_t * components, char * uuid) {
-	return (character_details_t *) hash_table_get(components->character_details, uuid);
+character_details_t * get_character_details(components_t * components, entity_t * entity) {
+	return (character_details_t *) hash_table_get(components->character_details, entity->uuid);
 }
 
 

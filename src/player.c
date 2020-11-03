@@ -1,8 +1,7 @@
 #include "mud/game.h"
 #include "mud/player.h"
-#include "mud/data/hash_table/hash_table.h"
-#include "mud/data/hash_table/hash_iterator.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
+#include "mud/data/hash_table.h"
 #include "mud/state/login_state.h"
 #include "mud/util/mudstring.h"
 
@@ -21,6 +20,8 @@ void write_to_player(player_t * player, char * output);
 **/
 player_t * create_player_t() {
 	player_t * player = calloc(1, sizeof * player);
+
+  generate_uuid(player->uuid, UUID_SIZE);
 
 	return player;
 }

@@ -3,8 +3,8 @@
 
 #include "mud/game.h"
 #include "mud/player.h"
+#include "mud/log.h"
 #include "mud/command/command.h"
-#include "mud/log/log.h"
 #include "mud/util/mudstring.h"
 #include "mud/state/play_state.h"
 

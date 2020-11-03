@@ -5,6 +5,7 @@
 /**
  * Defines
 **/
+#define ARGUMENT_SIZE 256
 #define NAME_SIZE 20
 
 

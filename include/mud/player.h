@@ -3,7 +3,7 @@
 
 #include "mud/network/client.h"
 #include "mud/state/state.h"
-#include "mud/ecs/entity.h"
+#include "mud/util/muduuid.h"
 
 
 /**
@@ -19,6 +19,7 @@
  * Typedefs
 **/
 typedef struct game game_t;
+typedef struct entity entity_t;
 
 
 /**
@@ -26,11 +27,12 @@ typedef struct game game_t;
 **/
 typedef struct player {
 	client_t * client;
+	entity_t * entity;
 	state_func_t state;
 
+	char uuid[UUID_SIZE];
 	char username[USERNAME_SIZE];
 	char password_hash[PASSWORD_SIZE];
-	char entity[UUID_SIZE];
 } player_t;
 
 
