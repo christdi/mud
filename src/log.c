@@ -1,4 +1,4 @@
-#include "mud/log/log.h"
+#include "mud/log.h"
 
 extern zlog_category_t * nc;
 

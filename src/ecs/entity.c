@@ -1,13 +1,41 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include <uuid/uuid.h>
 
 #include "mud/ecs/entity.h"
+#include "mud/action/action_callback.h"
 #include "mud/ecs/character_details.h"
-#include "mud/data/linked_list/linked_list.h"
-#include "mud/log/log.h"
+#include "mud/data/hash_table.h"
+#include "mud/util/muduuid.h"
+#include "mud/log.h"
+#include "mud/player.h"
 #include "mud/game.h"
 
+
+/**
+ * Allocates and initialises a new entity_t struct.
+ *
+ * Returns a pointer to the newly allocated entity_t struct.
+**/
+entity_t * create_entity_t() {
+	entity_t * entity = calloc(1, sizeof * entity);
+	entity->action_callback = create_action_callback_t();
+
+	return entity;
+}
+
+
+/**
+ * Frees an allocated entity_t struct.
+**/
+void free_entity_t(entity_t * entity) {
+	assert(entity);
+
+	free_action_callback_t(entity->action_callback);
+
+	free(entity);
+}
 
 /**
  * Loads entities from persistence into the game.
@@ -22,39 +50,49 @@ void load_entities(game_t * game) {
 
 	// TODO: Actually load entities
 
-	char uuid[UUID_SIZE];
-	generate_entity_uuid(uuid, UUID_SIZE);
-
-	list_add(game->entities, uuid);
+	entity_t * entity = create_entity_t();
+	generate_uuid(entity->uuid, UUID_SIZE);
+	hash_table_insert(game->entities, entity->uuid, entity);
 
 	character_details_t * character_details = create_character_details_t();
-	strncpy(character_details->uuid, uuid, UUID_SIZE);
+	strncpy(character_details->uuid, entity->uuid, UUID_SIZE);
 	character_details->name = strdup("Test Entity");
 	character_details->description = strdup("A proud Test Entity");
 
 	register_character_details(game->components, character_details);
+
+	entity = create_entity_t();
+	generate_uuid(entity->uuid, UUID_SIZE);
+	hash_table_insert(game->entities, entity->uuid, entity);
 }
 
 
 /**
- * Generate and return a 36 character uuid.
- *
- * Takes the following parameters:
- *   destination - a pointer to a character array to store the uuid
- *   size - the size of the destination buffer, used to verify uuid will fit
- *
- * Returns the generated uuid.
+ * Attempts to look up the entity associated with a given player.
 **/
-void generate_entity_uuid(char * destination, size_t size) {
-	assert(destination);
+entity_t * get_player_entity(game_t * game, player_t * player) {
+	return NULL;
+}
 
-	if (size < UUID_SIZE) {
-		zlog_error(gc, "Error when generating uuid, destination buffer supplied was not big enough.");
+/**
+ * Searches the game for an entity matching a given uuid.
+ *
+ * Returns a pointer to the entity if found or NULL if not.
+**/
+entity_t * get_entity(game_t * game, char * uuid) {
+	assert(game);
+	assert(uuid);
 
-		return;
-	}
+	return (entity_t *) hash_table_get(game->entities, uuid);
+}
 
-	uuid_t uuid_bin;
-	uuid_generate_random(uuid_bin);
-	uuid_unparse_lower(uuid_bin, destination);
+/**
+ * Assigns an entity to a given player.
+**/
+void assign_entity(entity_t * entity, player_t * player) {
+	assert(player);
+	assert(entity);
+
+	player->entity = entity;
+	entity->player = player;
 }

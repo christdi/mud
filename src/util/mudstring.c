@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 #include "mud/util/mudstring.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
 
 
 /**

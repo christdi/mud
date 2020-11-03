@@ -1,7 +1,7 @@
 #include "mud/network/server.h"
 #include "mud/network/client.h"
 #include "mud/util/mudstring.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -13,7 +13,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <zlog.h>
 
 /**
  * Allocates and returns a new server_t structure

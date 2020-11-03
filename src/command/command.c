@@ -3,11 +3,12 @@
 #include <string.h>
 
 #include "mud/game.h"
+#include "mud/log.h"
+#include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/command/communication.h"
 #include "mud/command/general.h"
 #include "mud/data/hash_table/hash_table.h"
-#include "mud/log/log.h"
 
 
 /**
@@ -34,6 +35,7 @@ void free_command_t(command_t * command) {
 **/
 void load_commands(game_t * game) {
 	static const command_t commands[] = {
+		{ "entity", entity_command },
 		{ "say", say_command },
 		{ "quit", quit_command },
 		{ "\0", NULL  }

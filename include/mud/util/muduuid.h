@@ -2,6 +2,9 @@
 #define _MUD_UUID_H_
 
 
+#include <stddef.h>
+
+
 /**
  * Definitions
 **/
@@ -11,7 +14,7 @@
 /**
  * Function prototypes
 **/
-void generate_uuid(char * dest);
+void generate_uuid(char * dest, size_t size);
 
 
 #endif

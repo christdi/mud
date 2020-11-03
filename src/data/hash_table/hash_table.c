@@ -1,6 +1,6 @@
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/data/hash_table/hash_node.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
 
 #include <assert.h>
 #include <stdlib.h>

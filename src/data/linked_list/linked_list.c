@@ -1,6 +1,6 @@
 #include "mud/data/linked_list/linked_list.h"
 #include "mud/data/linked_list/node.h"
-#include "mud/log/log.h"
+#include "mud/log.h"
 
 #include <assert.h>
 #include <stdlib.h>

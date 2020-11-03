@@ -1,10 +1,10 @@
 #include "mud/game.h"
 #include "mud/player.h"
 #include "mud/config.h"
+#include "mud/log.h"
 #include "mud/command/command.h"
 #include "mud/data/linked_list/linked_list.h"
 #include "mud/data/hash_table/hash_table.h"
-#include "mud/log/log.h"
 #include "mud/network/network.h"
 #include "mud/ecs/ecs.h"
 
@@ -30,9 +30,9 @@ game_t * create_game_t(void) {
 
   game->players = create_hash_table_t();
   game->commands = create_hash_table_t();
+  game->entities = create_hash_table_t();
 
   game->network = create_network_t();
-  game->entities = create_linked_list_t();
   game->components = create_components_t();
 
   return game;
@@ -50,12 +50,12 @@ void free_game_t(game_t * game) {
 
   free_hash_table_t(game->players);
   free_hash_table_t(game->commands);
+  free_hash_table_t(game->entities);
+
   free_network_t(game->network);
   free_components_t(game->components);
   free(game);
 }
-
-
 
 
 /**
