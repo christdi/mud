@@ -8,13 +8,13 @@ $(NARRATOR_OBJS) $(NETWORK_OBJS) $(ECS_OBJS) $(NETWORK_OBJS) $(STATE_OBJS) $(UTI
 
 ACTION_OBJS = action/action.o action/action_callback.o
 
-COMMAND_OBJS = command/admin.o command/command.o command/communication.o command/general.o
+COMMAND_OBJS = command/admin.o command/command.o command/communication.o command/explore.o command/general.o
 
 DATA_OBJS = data/hash_table/hash_table.o data/hash_table/hash_node.o \
 data/hash_table/hash_iterator.o data/linked_list/linked_list.o data/linked_list/node.o \
 data/linked_list/iterator.o data/queue/queue.o
 
-ECS_OBJS = ecs/components.o ecs/character_details.o ecs/entity.o ecs/system.o
+ECS_OBJS = ecs/components.o ecs/contained.o ecs/container.o ecs/description.o ecs/entity.o ecs/system.o
 
 LOG_OBJS = log/log.o
 

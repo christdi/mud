@@ -7,6 +7,7 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/command/communication.h"
+#include "mud/command/explore.h"
 #include "mud/command/general.h"
 #include "mud/data/hash_table/hash_table.h"
 
@@ -36,8 +37,12 @@ void free_command_t(command_t * command) {
 void load_commands(game_t * game) {
 	static const command_t commands[] = {
 		{ "entity", entity_command },
-		{ "say", say_command },
+		{ "inventory", inventory_command },
+		{ "i", inventory_command },
+		{ "look", look_command },
+		{ "l", look_command },
 		{ "quit", quit_command },
+		{ "say", say_command },
 		{ "\0", NULL  }
 	};
 

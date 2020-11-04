@@ -5,8 +5,11 @@
 
 #include "mud/ecs/entity.h"
 #include "mud/action/action_callback.h"
-#include "mud/ecs/character_details.h"
+#include "mud/ecs/description.h"
+#include "mud/ecs/container.h"
+#include "mud/ecs/contained.h"
 #include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/util/muduuid.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -50,20 +53,62 @@ void load_entities(game_t * game) {
 
 	// TODO: Actually load entities
 
-	entity_t * entity = create_entity_t();
-	generate_uuid(entity->uuid, UUID_SIZE);
-	hash_table_insert(game->entities, entity->uuid, entity);
+	// Create room
+	entity_t * room = create_entity_t();
+	generate_uuid(room->uuid, UUID_SIZE);
+	hash_table_insert(game->entities, room->uuid, room);
 
-	character_details_t * character_details = create_character_details_t();
-	strncpy(character_details->uuid, entity->uuid, UUID_SIZE);
-	character_details->name = strdup("Test Entity");
-	character_details->description = strdup("A proud Test Entity");
+	description_t * room_description = create_description_t();
+	strncpy(room_description->uuid, room->uuid, UUID_SIZE);
+	room_description->name = strdup("Test room");
+	room_description->description = strdup("A bare test room.");
+	register_description(game->components, room_description);
 
-	register_character_details(game->components, character_details);
+	container_t * room_container = create_container_t();
+	strncpy(room_container->uuid, room->uuid, UUID_SIZE);
+	register_container(game->components, room_container);
 
-	entity = create_entity_t();
-	generate_uuid(entity->uuid, UUID_SIZE);
-	hash_table_insert(game->entities, entity->uuid, entity);
+
+	// Create character
+	entity_t * character = create_entity_t();
+	generate_uuid(character->uuid, UUID_SIZE);
+	hash_table_insert(game->entities, character->uuid, character);
+
+	description_t * character_description = create_description_t();
+	strncpy(character_description->uuid, character->uuid, UUID_SIZE);
+	character_description->name = strdup("Test character");
+	character_description->description = strdup("A proud test character.");
+	register_description(game->components, character_description);
+
+	contained_t * character_contained = create_contained_t();
+	strncpy(character_contained->uuid, character->uuid, UUID_SIZE);
+	register_contained(game->components, character_contained);
+
+	container_t * character_container = create_container_t();
+	strncpy(character_container->uuid, character->uuid, UUID_SIZE);
+	register_container(game->components, character_container);
+
+
+	// Create items
+	entity_t * item = create_entity_t();
+	generate_uuid(item->uuid, UUID_SIZE);
+	hash_table_insert(game->entities, item->uuid, item);
+
+	description_t * item_description = create_description_t();
+	strncpy(item_description->uuid, item->uuid, UUID_SIZE);
+	item_description->name = strdup("Test item");
+	item_description->description = strdup("A useful test item.");
+	register_description(game->components, item_description);
+
+	contained_t * item_contained = create_contained_t();
+	strncpy(item_contained->uuid, item->uuid, UUID_SIZE);
+	register_contained(game->components, item_contained);
+
+	// Link containers
+	strncpy(character_contained->container, room->uuid, UUID_SIZE);
+	strncpy(item_contained->container, character->uuid, UUID_SIZE);
+	list_add(room_container->contains, character->uuid);
+	list_add(character_container->contains, item->uuid);
 }
 
 

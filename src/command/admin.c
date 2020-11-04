@@ -3,8 +3,10 @@
 
 #include "mud/command/command.h"
 #include "mud/command/admin.h"
-#include "mud/data/hash_table/hash_iterator.h"
-#include "mud/ecs/character_details.h"
+#include "mud/data/hash_table.h"
+#include "mud/ecs/description.h"
+#include "mud/ecs/container.h"
+#include "mud/ecs/contained.h"
 #include "mud/util/mudstring.h"
 #include "mud/player.h"
 #include "mud/game.h"
@@ -44,10 +46,22 @@ void entity_command(player_t * player, game_t * game, char * input) {
     while ((entity = (entity_t *) h_it_get(it)) != NULL) {
       send_to_player(player, "[white]%s[reset]\n\r", entity->uuid);
 
-      if (has_character_details(game->components, entity)) {
-        send_to_player(player, "- [green]character details[reset]\n\r");
+      if (has_contained(game->components, entity)) {
+        send_to_player(player, "- [green]contained[reset]\n\r");
       } else {
-        send_to_player(player, "- [red]character details[reset]\n\r");
+        send_to_player(player, "- [red]contained[reset]\n\r");
+      }      
+
+      if (has_container(game->components, entity)) {
+        send_to_player(player, "- [green]container[reset]\n\r");
+      } else {
+        send_to_player(player, "- [red]container[reset]\n\r");
+      }
+
+      if (has_description(game->components, entity)) {
+        send_to_player(player, "- [green]description[reset]\n\r");
+      } else {
+        send_to_player(player, "- [red]description[reset]\n\r");
       }
 
       it = h_it_next(it);
