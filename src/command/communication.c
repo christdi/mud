@@ -2,7 +2,6 @@
 
 #include "mud/command/communication.h"
 #include "mud/action/action.h"
-#include "mud/ecs/character_details.h"
 #include "mud/util/mudstring.h"
 #include "mud/game.h"
 #include "mud/player.h"

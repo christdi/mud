@@ -12,7 +12,7 @@ typedef struct game game_t;
 /**
  * Function prototypes
 **/
-void narrate_on_speak(game_t * game, entity_t * entity, char * what);
+void narrate_speak_action(game_t * game, entity_t * entity, char * what);
 
 
 #endif
