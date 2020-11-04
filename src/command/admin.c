@@ -41,28 +41,35 @@ void entity_command(player_t * player, game_t * game, char * input) {
 
     entity_t * entity;
 
-    send_to_player(player, "\n\r[cyan]Entities[reset]\n\n\r");
+    send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
     while ((entity = (entity_t *) h_it_get(it)) != NULL) {
-      send_to_player(player, "[white]%s[reset]\n\r", entity->uuid);
+      send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
 
-      if (has_contained(game->components, entity)) {
-        send_to_player(player, "- [green]contained[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]contained[reset]\n\r");
-      }      
+      contained_t * contained = get_contained(game->components, entity);
+      if (contained) {
+        char buffer[BUFFER_SIZE];
+        
+        describe_contained(contained, buffer, BUFFER_SIZE);
 
-      if (has_container(game->components, entity)) {
-        send_to_player(player, "- [green]container[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]container[reset]\n\r");
+        send_to_player(player, "- [green]contained[reset], %s\n\r", buffer);
       }
 
-      if (has_description(game->components, entity)) {
-        send_to_player(player, "- [green]description[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]description[reset]\n\r");
+      container_t * container = get_container(game->components, entity);
+      if (container) {
+        char buffer[BUFFER_SIZE];
+        
+        describe_container(container, buffer, BUFFER_SIZE);
+
+        send_to_player(player, "- [green]container[reset], %s\n\r", buffer);
       }
+
+      description_t * description = get_description(game->components, entity);
+      if (description) {
+        send_to_player(player, "- [green]description[reset], name => %s\n\r", description->name);
+      }
+
+      send_to_player(player, "\n\r");
 
       it = h_it_next(it);
     }

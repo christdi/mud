@@ -9,6 +9,7 @@
  * Definitions
 **/
 #define ANSI_SIZE 17
+#define BUFFER_SIZE 1024
 #define SYMBOL_START '['
 #define SYMBOL_END ']'
 

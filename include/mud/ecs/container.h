@@ -33,6 +33,7 @@ int has_container(components_t * components, entity_t * entity);
 void register_container(components_t * components, container_t * container);
 container_t * unregister_container(components_t * components, entity_t * entity);
 container_t * get_container(components_t * components, entity_t * entity);
+void describe_container(container_t * container, char * buffer, size_t len);
 
 void update_container(game_t * game);
 

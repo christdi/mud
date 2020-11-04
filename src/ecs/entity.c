@@ -108,6 +108,7 @@ void load_entities(game_t * game) {
 	strncpy(character_contained->container, room->uuid, UUID_SIZE);
 	strncpy(item_contained->container, character->uuid, UUID_SIZE);
 	list_add(room_container->contains, character->uuid);
+	list_add(room_container->contains, item->uuid);
 	list_add(character_container->contains, item->uuid);
 }
 

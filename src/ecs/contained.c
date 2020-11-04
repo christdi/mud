@@ -99,6 +99,19 @@ contained_t * get_contained(components_t * components, entity_t * entity) {
 
 
 /**
+ * Prints a description of a contained component into the buffer pointed to by dest.
+ *
+ * Accepts the following parameters:
+ *   contained - a pointer to the contained struct to be described
+ *   dest - the destination string buffer for the description to be stored.  This
+ *     must be allocated by the caller.
+ *   len - The size of the destination string buffer.
+**/
+void describe_contained(contained_t * contained, char * dest, size_t len) {
+	snprintf(dest, len, "container = %s", contained->container);
+}
+
+/**
  * Update all contained components.
  *
  * ccepts the following parameters:

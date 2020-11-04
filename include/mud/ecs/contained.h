@@ -32,6 +32,7 @@ int has_contained(components_t * components, entity_t * entity);
 void register_contained(components_t * components, contained_t * contained);
 contained_t * unregister_contained(components_t * components, entity_t * entity);
 contained_t * get_contained(components_t * components, entity_t * entity);
+void describe_contained(contained_t * contained, char * dest, size_t len);
 
 void update_contained(game_t * game);
 

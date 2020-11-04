@@ -1,10 +1,12 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mud/ecs/container.h"
 #include "mud/ecs/components.h"
 #include "mud/data/linked_list.h"
 #include "mud/data/hash_table.h"
+#include "mud/util/mudstring.h"
 #include "mud/log.h"
 
 
@@ -103,6 +105,32 @@ container_t * get_container(components_t * components, entity_t * entity) {
 	assert(entity);
 
 	return (container_t *) hash_table_get(components->container, entity->uuid);
+}
+
+
+/**
+ * Prints a description of a container component into the buffer pointed to by dest.
+ *
+ * Accepts the following parameters:
+ *   container - a pointer to the container struct to be described
+ *   dest - the destination string buffer for the description to be stored.  This
+ *     must be allocated by the caller.
+ *   len - The size of the destination string buffer.
+**/
+void describe_container(container_t * contained, char * dest, size_t len) {
+	snprintf(dest, len, "contained = ");
+	size_t size = strnlen(dest, len);
+
+	it_t it = list_begin(contained->contains);
+
+	char * entity_uuid;
+
+	while ((entity_uuid = (char *) it_get(it)) != NULL) {
+		snprintf(dest + size, len - size, "%s ", entity_uuid);
+		size = strnlen(dest, len);
+
+		it = it_next(it);
+	}
 }
 
 
