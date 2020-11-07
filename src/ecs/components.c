@@ -17,6 +17,7 @@ components_t * create_components_t() {
 	components->description = create_hash_table_t();
 	components->container = create_hash_table_t();
 	components->contained = create_hash_table_t();
+	components->location = create_hash_table_t();
 
 	return components;
 }
@@ -41,7 +42,12 @@ void free_components_t(components_t * components) {
 	if (components->contained) {
 		free_hash_table_t(components->contained);
 		components->contained = NULL;
-	}	
+	}
+
+	if (components->location) {
+		free_hash_table_t(components->location);
+		components->location = NULL;
+	}
 
 	free(components);
 	components = NULL;

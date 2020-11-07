@@ -4,9 +4,8 @@
 #include "mud/command/command.h"
 #include "mud/command/admin.h"
 #include "mud/data/hash_table.h"
+#include "mud/ecs/location.h"
 #include "mud/ecs/description.h"
-#include "mud/ecs/container.h"
-#include "mud/ecs/contained.h"
 #include "mud/util/mudstring.h"
 #include "mud/player.h"
 #include "mud/game.h"
@@ -46,27 +45,16 @@ void entity_command(player_t * player, game_t * game, char * input) {
     while ((entity = (entity_t *) h_it_get(it)) != NULL) {
       send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
 
-      contained_t * contained = get_contained(game->components, entity);
-      if (contained) {
-        char buffer[BUFFER_SIZE];
-        
-        describe_contained(contained, buffer, BUFFER_SIZE);
-
-        send_to_player(player, "- [green]contained[reset], %s\n\r", buffer);
-      }
-
-      container_t * container = get_container(game->components, entity);
-      if (container) {
-        char buffer[BUFFER_SIZE];
-        
-        describe_container(container, buffer, BUFFER_SIZE);
-
-        send_to_player(player, "- [green]container[reset], %s\n\r", buffer);
-      }
-
       description_t * description = get_description(game->components, entity);
       if (description) {
         send_to_player(player, "- [green]description[reset], name => %s\n\r", description->name);
+      }
+
+      location_t * location = get_location(game->components, entity);
+      if (location) {
+        char buffer[BUFFER_SIZE];
+        describe_location(location, buffer, BUFFER_SIZE);
+        send_to_player(player, "- [green]location[reset], %s\n\r", buffer);
       }
 
       send_to_player(player, "\n\r");
