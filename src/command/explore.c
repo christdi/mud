@@ -2,9 +2,8 @@
 
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/contained.h"
-#include "mud/ecs/container.h"
 #include "mud/ecs/description.h"
+#include "mud/ecs/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/player.h"
@@ -27,40 +26,40 @@ void inventory_command(player_t * player, game_t * game, char * input) {
 		return;
 	}
 
-	container_t * container = get_container(game->components, entity);
+	// container_t * container = get_container(game->components, entity);
 
-	if (!container) {
-		zlog_warn(gc, "Inventory command failed for entity [%s] as it did not have a container component", entity->uuid);
+	// if (!container) {
+	// 	zlog_warn(gc, "Inventory command failed for entity [%s] as it did not have a container component", entity->uuid);
 
-		return;
-	}
+	// 	return;
+	// }
 
-	send_to_player(player, "You are carrying:\n\n\r");
+	// send_to_player(player, "You are carrying:\n\n\r");
 
-	char * entity_uuid;
-	it_t it = list_begin(container->contains);
+	// char * entity_uuid;
+	// it_t it = list_begin(container->contains);
 
-	while ((entity_uuid = (char *) it_get(it)) != NULL)  {
-		entity_t * contained = get_entity(game, entity_uuid);
+	// while ((entity_uuid = (char *) it_get(it)) != NULL)  {
+	// 	entity_t * contained = get_entity(game, entity_uuid);
 
-		if (!contained) {
-			it = it_next(it);
-			continue;
-		}
+	// 	if (!contained) {
+	// 		it = it_next(it);
+	// 		continue;
+	// 	}
 
-		description_t * description = get_description(game->components, contained);
+	// 	description_t * description = get_description(game->components, contained);
 
-		if (!description) {
-			it = it_next(it);
-			continue;
-		}
+	// 	if (!description) {
+	// 		it = it_next(it);
+	// 		continue;
+	// 	}
 
-		send_to_player(player, "[cyan]%s[reset] - %s", description->name, description->description);
+	// 	send_to_player(player, "[cyan]%s[reset] - %s", description->name, description->description);
 
-		it = it_next(it);
-	}
+	// 	it = it_next(it);
+	// }
 
-	send_to_player(player, "\n");
+	// send_to_player(player, "\n");
 }
 
 
@@ -80,26 +79,27 @@ void look_command(player_t * player, game_t * game, char * input) {
 		return;
 	}
 
-	contained_t * contained = get_contained(game->components, entity);
 
-	if (!contained) {
-		zlog_warn(gc, "Look command failed for entity [%s] as it did not have a contained component", entity->uuid);
+	location_t * location_component = get_location(game->components, entity);
 
-		return;
+	if (!location_component) {
+		zlog_warn(gc, "Look command failed for entity [%s] as it did not have a location component", entity->uuid);
+
+		return;		
 	}
 
-	entity_t * contained_by = get_entity(game, contained->container);
+	entity_t * location = get_entity(game, location_component->location_uuid);
 
-	if (!contained_by) {
-		zlog_error(gc, "Look command failed for entity [%s] as contained component does not reference valid entity", entity->uuid);
+	if (!location) {
+		zlog_error(gc, "Look command failed for entity [%s] as location component does not reference valid entity", entity->uuid);
 
-		return;
+		return;		
 	}
 
-	description_t * description = get_description(game->components, contained_by);
+	description_t * description = get_description(game->components, location);
 
 	if (!description) {
-		zlog_error(gc, "Look command failed for entity [%s] as entity referenced by contained component does not have description component", entity->uuid);
+		zlog_error(gc, "Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->uuid);
 
 		return;
 	}
