@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I../include -ggdb -Wall
-LFLAGS=-lzlog -lpthread
+LFLAGS=-lzlog -lpthread -luuid
 TARGET=mud
 
 OBJS = main.o game.o config.o player.o log.o $(ACTION_OBJS) $(COMMAND_OBJS) $(DATA_OBJS) \
@@ -14,7 +14,8 @@ DATA_OBJS = data/hash_table/hash_table.o data/hash_table/hash_node.o \
 data/hash_table/hash_iterator.o data/linked_list/linked_list.o data/linked_list/node.o \
 data/linked_list/iterator.o data/queue/queue.o
 
-ECS_OBJS = ecs/components.o ecs/contained.o ecs/container.o ecs/description.o ecs/entity.o ecs/system.o
+ECS_OBJS = ecs/components.o ecs/description.o ecs/entity.o ecs/location.o ecs/system.o ecs/entity/character.o \
+ecs/entity/location.o ecs/entity/item.o
 
 LOG_OBJS = log/log.o
 

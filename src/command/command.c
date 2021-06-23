@@ -35,7 +35,7 @@ void free_command_t(command_t * command) {
  * Populates the commands hash table from a static array of commands.
 **/
 void load_commands(game_t * game) {
-	static const command_t commands[] = {
+	static command_t commands[] = {
 		{ "entity", entity_command },
 		{ "inventory", inventory_command },
 		{ "i", inventory_command },
@@ -48,13 +48,10 @@ void load_commands(game_t * game) {
 
 	zlog_info(gc, "Loading commands");
 
-	const command_t * command;
+	command_t * command;
 
 	for (command = commands; command->func != NULL; command++) {
-		command_t * new_command = create_command_t();
-		*new_command = *command;
-
-		hash_table_insert(game->commands, new_command->name, new_command);
+		hash_table_insert(game->commands, command->name, command);
 	}
 }
 

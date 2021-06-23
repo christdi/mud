@@ -4,9 +4,8 @@
 #include "mud/command/command.h"
 #include "mud/command/admin.h"
 #include "mud/data/hash_table.h"
+#include "mud/ecs/location.h"
 #include "mud/ecs/description.h"
-#include "mud/ecs/container.h"
-#include "mud/ecs/contained.h"
 #include "mud/util/mudstring.h"
 #include "mud/player.h"
 #include "mud/game.h"
@@ -41,28 +40,24 @@ void entity_command(player_t * player, game_t * game, char * input) {
 
     entity_t * entity;
 
-    send_to_player(player, "\n\r[cyan]Entities[reset]\n\n\r");
+    send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
     while ((entity = (entity_t *) h_it_get(it)) != NULL) {
-      send_to_player(player, "[white]%s[reset]\n\r", entity->uuid);
+      send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
 
-      if (has_contained(game->components, entity)) {
-        send_to_player(player, "- [green]contained[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]contained[reset]\n\r");
-      }      
-
-      if (has_container(game->components, entity)) {
-        send_to_player(player, "- [green]container[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]container[reset]\n\r");
+      description_t * description = get_description(game->components, entity);
+      if (description) {
+        send_to_player(player, "- [green]description[reset], name => %s\n\r", description->name);
       }
 
-      if (has_description(game->components, entity)) {
-        send_to_player(player, "- [green]description[reset]\n\r");
-      } else {
-        send_to_player(player, "- [red]description[reset]\n\r");
+      location_t * location = get_location(game->components, entity);
+      if (location) {
+        char buffer[BUFFER_SIZE];
+        describe_location(location, buffer, BUFFER_SIZE);
+        send_to_player(player, "- [green]location[reset], %s\n\r", buffer);
       }
+
+      send_to_player(player, "\n\r");
 
       it = h_it_next(it);
     }
