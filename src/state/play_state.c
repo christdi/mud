@@ -36,7 +36,7 @@ void play_state(player_t * player, game_t * game, char * input) {
 	if (cmd == NULL) {
 		send_to_player(player, "[bcyan]%s[reset] command not recognised.\n\r", command);
 
-		send_prompt(player);
+		send_prompt(player, game);
 
 		return;
 	}
