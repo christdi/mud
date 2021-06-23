@@ -13,8 +13,6 @@ typedef struct hash_table hash_table_t; /* data/hash_table/hash_table.h */
 **/
 typedef struct components {
 	hash_table_t * description;
-	hash_table_t * container;
-	hash_table_t * contained;
 	hash_table_t * location;
 } components_t;
 
