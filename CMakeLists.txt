@@ -8,15 +8,6 @@ set (LIB_NAME mudlib)
 
 project (${PROJECT_NAME} C)
 
-# Conan configuration
-#include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-#conan_basic_setup()
-
-# Package configuration
-#find_package(GTest REQUIRED)
-#find_package(PkgConfig REQUIRED)
-#pkg_search_module(UUID REQUIRED uuid)
-
 # Build configuration
 add_definitions("-Wall -pedantic")
 
