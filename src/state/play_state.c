@@ -31,12 +31,15 @@ void play_state(player_t * player, game_t * game, char * input) {
 	input = extract_argument(input, command);
 	command_t * cmd = get_command(game, trim(command));
 
-	if (cmd) {
-		cmd->func(player, game, trim(input));
-	} else {
+	if (cmd == NULL) {
 		send_to_player(player, "[bcyan]%s[reset] command not recognised.\n\r", command);
+
+		send_prompt(player);
+
+		return;
 	}
-	
+
+	cmd->func(player, game, trim(input));
 
 	send_prompt(player);
 }
