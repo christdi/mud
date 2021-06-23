@@ -11,7 +11,7 @@ callback_t * create_callback_t() {
 	callback_t * callback = calloc(1, sizeof * callback);
 
 	return callback;
-};
+}
 
 
 /**

@@ -1,5 +1,4 @@
 .DS_STORE
-src/build
-src/mud
+build
 dist/mud
 *.o
