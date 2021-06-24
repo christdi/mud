@@ -19,4 +19,4 @@ add_library(${LIB_NAME} ${SRC_FILES})
 # Executable configuration
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} src/main.c)
-target_link_libraries(${PROJECT_NAME} ${LIB_NAME} zlog uuid)
+target_link_libraries(${PROJECT_NAME} ${LIB_NAME} zlog uuid sqlite3 ssl crypto)

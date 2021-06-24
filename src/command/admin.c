@@ -81,12 +81,6 @@ void entity_command(player_t * player, game_t * game, char * input) {
       return;
     }
 
-    if (entity->player != NULL) {
-      send_to_player(player, "\n\rEntity [cyan]%s[reset] is already assigned to [cyan]%s[reset].\n\r", entity_uuid, entity->player->username);
-
-      return;
-    }
-
     send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->uuid);
 
     assign_entity(entity, player);

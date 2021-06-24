@@ -2,12 +2,14 @@
 #include "mud/player.h"
 #include "mud/log.h"
 #include "mud/data/hash_table.h"
+#include "mud/dbo/account.h"
 #include "mud/state/login_state.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sqlite3.h>
 
 
 void get_player_username(player_t * player, char * username);
@@ -21,7 +23,8 @@ void write_to_player(player_t * player, char * output);
 player_t * create_player_t() {
 	player_t * player = calloc(1, sizeof * player);
 
-  generate_uuid(player->uuid, UUID_SIZE);
+  player->account = create_account_t();
+  player->client = NULL;
 
 	return player;
 }
@@ -31,7 +34,15 @@ player_t * create_player_t() {
  * Frees a player_t struct.
 **/
 void free_player_t(player_t * player) {
-	free(player);
+  assert(player);
+
+  if (player->account != NULL) {
+    free_account_t(player->account);
+  }
+
+  if (player != NULL) {
+    free(player);
+  }
 
 	player = NULL;
 }
@@ -84,6 +95,18 @@ void player_input(client_t * client, void * context) {
 
 
 /**
+ * Method which changes the players current state.  It'll assign the new state
+ * and then call it with NULL input which indicates the state is being entered
+ * for the first time.
+**/
+void player_change_state(player_t * player, game_t * game, state_func_t state) {
+  player->state = state;
+
+  player->state(player, game, NULL);
+}
+
+
+/**
  * Attempts to send formatted outputted to a player.  Will check if the underlying
  * client_t is valid before attempting to write.
  *
@@ -94,7 +117,7 @@ void send_to_player(player_t * player, const char * fmt, ...) {
 	assert(fmt);
 
 	char output[SEND_SIZE];
-	
+
 	va_list args;
 	va_start(args, fmt);
 	vsprintf(output, fmt, args);
@@ -124,7 +147,7 @@ void send_to_all_players(game_t * game, player_t * excluding, const char * fmt, 
   while ((target = h_it_get(it)) != NULL) {
   	if (excluding && excluding == target) {
   		it = h_it_next(it);
-  		
+
   		continue;
   	}
 
@@ -176,5 +199,5 @@ void get_player_username(player_t * player, char * username) {
 	assert(player);
 	assert(username);
 
-	strncpy(username, player->username[0] != '\0' ? player->username : "anonymous", USERNAME_SIZE);
+	strncpy(username, player->account->username[0] != '\0' ? player->account->username : "anonymous", USERNAME_SIZE);
 }

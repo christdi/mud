@@ -4,6 +4,7 @@
 #include "mud/game.h"
 #include "mud/player.h"
 #include "mud/log.h"
+#include "mud/dbo/account.h"
 #include "mud/ecs/entity.h"
 #include "mud/ecs/description.h"
 #include "mud/command/command.h"
@@ -22,7 +23,7 @@ void play_state(player_t * player, game_t * game, char * input) {
 	assert(game);
 
 	if (!input) {
-		send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->username);
+		send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->account->username);
 
 		send_prompt(player, game);
 
@@ -60,5 +61,5 @@ void send_prompt(player_t * player, game_t * game) {
 		}
 	}
 
-	send_to_player(player, "[bgreen]%s[reset] => ", player->username);
+	send_to_player(player, "[bgreen]%s[reset] => ", player->account->username);
 }
