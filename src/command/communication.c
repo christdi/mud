@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "mud/command/communication.h"
+#include "mud/dbo/account.h"
 #include "mud/action/action.h"
 #include "mud/util/mudstring.h"
 #include "mud/game.h"
@@ -16,7 +17,7 @@ void say_command(player_t * player, game_t * game, char * input) {
 	assert(input);
 
 	if (!player->entity) {
-		zlog_error(gc, "Player [%s] did not have an assigned entity when using the say command", player->username);
+		zlog_error(gc, "Player [%s] did not have an assigned entity when using the say command", player->account->username);
 
 		return;
 	}

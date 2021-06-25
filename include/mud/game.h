@@ -3,6 +3,7 @@
 
 
 #include <sys/time.h>
+#include <sqlite3.h>
 
 
 /**
@@ -20,6 +21,8 @@ typedef struct components components_t;
 typedef struct game {
   unsigned int shutdown;
   struct timeval last_tick;
+
+  sqlite3 * database;
 
   hash_table_t * players;
   hash_table_t * commands;

@@ -20,6 +20,7 @@
 **/
 typedef struct game game_t;
 typedef struct entity entity_t;
+typedef struct account account_t;
 
 
 /**
@@ -27,12 +28,9 @@ typedef struct entity entity_t;
 **/
 typedef struct player {
 	client_t * client;
-	entity_t * entity;
+  entity_t * entity;
+  account_t * account;
 	state_func_t state;
-
-	char uuid[UUID_SIZE];
-	char username[USERNAME_SIZE];
-	char password_hash[PASSWORD_SIZE];
 } player_t;
 
 
@@ -42,11 +40,11 @@ typedef struct player {
 player_t * create_player_t();
 void free_player_t(player_t * player);
 
-
 void player_connected(client_t * client, void * context);
 void player_disconnected(client_t * client, void * context);
 void player_input(client_t * client, void * context);
 
+void player_change_state(player_t * player, game_t * game, state_func_t state);
 
 void send_to_player(player_t * player, const char * fmt, ...);
 void send_to_all_players(game_t * game, player_t * excluding, const char * fmt, ...);

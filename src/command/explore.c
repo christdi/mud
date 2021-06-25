@@ -2,6 +2,7 @@
 
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
+#include "mud/dbo/account.h"
 #include "mud/ecs/description.h"
 #include "mud/ecs/location.h"
 #include "mud/ecs/entity.h"
@@ -21,7 +22,7 @@ void inventory_command(player_t * player, game_t * game, char * input) {
 	entity_t * entity = player->entity;
 
 	if (!entity) {
-		zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->username);
+		zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->account->username);
 
 		return;
 	}
@@ -39,7 +40,7 @@ void look_command(player_t * player, game_t * game, char * input) {
 	entity_t * entity = player->entity;
 
 	if (!entity) {
-		zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->username);
+		zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->account->username);
 
 		return;
 	}

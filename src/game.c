@@ -14,6 +14,7 @@
 #include <zlog.h>
 
 
+int connect_to_database(game_t * game, const char * filename);
 void game_tick(game_t * game, unsigned int ticks_per_second);
 
 
@@ -27,6 +28,8 @@ game_t * create_game_t(void) {
 
   game->shutdown = 0;
   gettimeofday(&game->last_tick, NULL);
+
+  game->database = NULL;
 
   game->players = create_hash_table_t();
   game->commands = create_hash_table_t();
@@ -73,6 +76,12 @@ int start_game(game_t * game, config_t * config) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
+  if (connect_to_database(game, "mud.db") != 0) {
+    zlog_error(gc, "Failed to start game server");
+
+    return -1;
+  }
+
   load_entities(game);
   load_commands(game);
 
@@ -98,11 +107,32 @@ int start_game(game_t * game, config_t * config) {
 
   disconnect_clients(game->network);
 
+  sqlite3_close(game->database);
+
   zlog_info(gc, "Stopping MUD engine");
 
   return 0;
 }
-  
+
+
+/**
+ * Attempts to connect to the SQLite3 database with a given filename.  Returns -1 on failure
+ * or 0 on success.
+**/
+int connect_to_database(game_t * game, const char * filename) {
+  zlog_info(gc, "Connecting to database [%s]", filename);
+
+  if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
+    zlog_error(gc, "Failed to open game database [%s]", sqlite3_errmsg(game->database));
+
+    sqlite3_close(game->database);
+
+    return -1;
+  }
+
+  return 0;
+}
+
 
 /**
  * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time

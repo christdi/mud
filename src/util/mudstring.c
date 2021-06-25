@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -56,7 +55,7 @@ char * extract_argument(char * source, char * destination) {
   if (*current == ' ') {
     current++;
   }
-  
+
   *write = '\0';
 
   return current;
@@ -138,7 +137,7 @@ void string_to_hex(char * input, char * destination, size_t len) {
 
   size_t i = 0;
   size_t j = 0;
-  
+
   for (i = 0; i < len; i++) {
     sprintf(destination + j, "%02X ", input[i]);
 
@@ -217,7 +216,7 @@ int convert_symbols_to_ansi_codes(char * input, char * destination, size_t len) 
       write++;
       copied++;
     }
-    
+
     current++;
   }
 
