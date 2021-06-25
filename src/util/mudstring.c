@@ -1,9 +1,7 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <openssl/sha.h>
 
 #include "mud/util/mudstring.h"
 #include "mud/log.h"
@@ -225,27 +223,4 @@ int convert_symbols_to_ansi_codes(char * input, char * destination, size_t len) 
   *write = '\0';
 
   return 0;
-}
-
-/**
-**/
-void hash_string(char * input, char * output) {
-  assert(input);
-  assert(output);
-
-  unsigned char hash[SHA256_DIGEST_LENGTH];
-  size_t len = strnlen(input, 128);
-
-  SHA256_CTX context;
-  SHA256_Init(&context);
-  SHA256_Update(&context, input, len);
-  SHA256_Final(hash, &context);
-
-  int i = 0;
-
-  for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-    sprintf(output + (i * 2), "%02x", hash[i]);
-  }
-
-  output[64] = 0;
 }

@@ -5,7 +5,7 @@
 #include "mud/state/login_state.h"
 #include "mud/state/play_state.h"
 #include "mud/dbo/account.h"
-#include "mud/util/mudstring.h"
+#include "mud/util/mudhash.h"
 #include "mud/player.h"
 
 
@@ -52,8 +52,8 @@ void get_account_password(player_t * player, game_t * game, char * input) {
 		return;
 	}
 
-	char password_hash[SHA256_DIGEST_LENGTH * 2];
-	hash_string(input, password_hash);
+	char password_hash[SHA256_SIZE];
+	string_to_sha256(input, password_hash);
 
 	if (account_validate(game, player->account->username, password_hash) == -1) {
 		send_to_player(player, "No match for that [bgreen]username[reset] and [bgreen]password[reset] combination.\n\r");
@@ -99,11 +99,11 @@ void get_new_account_password(player_t * player, game_t * game, char * input) {
 	}
 
 	if (strnlen(input, COMMAND_SIZE) > PASSWORD_SIZE) {
-		send_to_player(player, "Your password must be at most [bred]%d[reset] characters long, try again: ", PASSWORD_SIZE);
+		send_to_player(player, "Your [bgreen]password[reset] must be at most [bred]%d[reset] characters long, try again: ", PASSWORD_SIZE);
     return;
 	}
 
-	hash_string(input, player->account->password_hash);
+	string_to_sha256(input, player->account->password_hash);
 	player_change_state(player, game, validate_new_account_password);
 }
 
@@ -113,15 +113,15 @@ void validate_new_account_password(player_t * player, game_t * game, char * inpu
 	assert(game);
 
 	if (input == NULL) {
-		send_to_player(player, "Please re-enter your password: ");
+		send_to_player(player, "Please re-enter your [bgreen]password[reset]: ");
 		return;
 	}
 
-	char password_hash[SHA256_DIGEST_LENGTH * 2];
-	hash_string(input, password_hash);
+	char password_hash[SHA256_SIZE];
+	string_to_sha256(input, password_hash);
 
 	if (strncmp(player->account->password_hash, password_hash, SHA256_DIGEST_LENGTH * 2) != 0) {
-		send_to_player(player, "Sorry, passwords do not match.  You will be asked for a new password.\n\r");
+		send_to_player(player, "Sorry, [bgreen]password[reset] did not match.  You will be asked for a new [bgreen]password[reset].\n\r");
 		player_change_state(player, game, get_new_account_password);
 		return;
 	}
