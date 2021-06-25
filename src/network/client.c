@@ -1,6 +1,6 @@
 #include "mud/network/client.h"
-#include "mud/util/mudstring.h"
 #include "mud/log.h"
+#include "mud/util/mudstring.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -10,15 +10,15 @@
 #include <unistd.h>
 #include <zlog.h>
 
-int append_data_to_input_buffer(client_t * client, char * data, size_t len);
+int append_data_to_input_buffer(client_t* client, char* data, size_t len);
 
 /**
  * Allocates memory for and initialises a new client_t struct.
  *
  * Returns the allocated client_t struct.
 **/
-client_t * create_client_t() {
-  client_t * client = calloc(1, sizeof *client);
+client_t* create_client_t() {
+  client_t* client = calloc(1, sizeof *client);
 
   client->fd = 0;
   client->hungup = 0;
@@ -28,25 +28,23 @@ client_t * create_client_t() {
   return client;
 }
 
-
 /**
  * Frees a client_t struct.
 **/
-void free_client_t(client_t * client) {
+void free_client_t(client_t* client) {
   assert(client);
-  
+
   free(client);
 
   client = NULL;
 }
-
 
 /**
  * Attempts to write output to the remote client represented by the client parameter.
  *
  * Returns 0 on success or -1 on failure.
 **/
-int send_to_client(client_t * client, char * data) {
+int send_to_client(client_t* client, char* data) {
   assert(client);
   assert(data);
 
@@ -70,7 +68,6 @@ int send_to_client(client_t * client, char * data) {
   return 0;
 }
 
-
 /**
  * Attempts to read data from the remote client.  If recv returns 0 or less, it is assumed the
  * client is no longer connected and it is mark as hungup.  Otherwise received data is passed
@@ -78,12 +75,12 @@ int send_to_client(client_t * client, char * data) {
  *
  * Returns 0 on success or -1 on failure
 **/
-int receive_from_client(client_t * client) {
+int receive_from_client(client_t* client) {
   assert(client);
 
   ssize_t len = 0;
 
-  char bytes[RECV_SIZE] = {'\0'};
+  char bytes[RECV_SIZE] = { '\0' };
 
   if ((len = recv(client->fd, bytes, RECV_SIZE - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -98,14 +95,13 @@ int receive_from_client(client_t * client) {
   if (len <= 0) {
     client->hungup = 1;
   } else {
-    if (append_data_to_input_buffer(client, bytes, len) != 0 ) {
+    if (append_data_to_input_buffer(client, bytes, len) != 0) {
       zlog_error(nc, "Failed to append received data to input buffer");
     }
   }
-  
+
   return 0;
 }
-
 
 /**
  * Appends data to the client input buffer.  First calculates if the received data
@@ -114,7 +110,7 @@ int receive_from_client(client_t * client) {
  *
  * Returns 0 on success or -1 on failure.
 **/
-int append_data_to_input_buffer(client_t * client, char * data, size_t len) {
+int append_data_to_input_buffer(client_t* client, char* data, size_t len) {
   size_t existing = strlen(client->input);
   size_t total = existing + len + 1;
 
@@ -133,13 +129,12 @@ int append_data_to_input_buffer(client_t * client, char * data, size_t len) {
   return 0;
 }
 
-
 /**
  * Attempts to close the client.
  *
  * Returns 0 on success or -1 on failure.
 **/
-int close_client(client_t * client) {
+int close_client(client_t* client) {
   assert(client);
 
   if (client->fd) {
@@ -153,7 +148,6 @@ int close_client(client_t * client) {
   return 0;
 }
 
-
 /**
  * Attempts to extract text from the input buffer.  The buffer is read character by character.  
  * If the delim is encountered, we take all characters up to and including the delim and move 
@@ -161,7 +155,7 @@ int close_client(client_t * client) {
  *
  * Returns -1 if delim is not found.  Returns 0 if successful.
 **/
-int extract_from_input(client_t * client, char * dest, size_t dest_len, const char * delim) {
+int extract_from_input(client_t* client, char* dest, size_t dest_len, const char* delim) {
   assert(client);
   assert(dest);
 
@@ -173,7 +167,7 @@ int extract_from_input(client_t * client, char * dest, size_t dest_len, const ch
   int ret = -1;
 
   for (i = 0; i < len; i++) {
-    char * current = &client->input[i];
+    char* current = &client->input[i];
 
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
@@ -182,7 +176,7 @@ int extract_from_input(client_t * client, char * dest, size_t dest_len, const ch
       } else {
         strncpy(dest, client->input, i);
         dest[i] = '\0';
-        
+
         ret = 0;
       }
 

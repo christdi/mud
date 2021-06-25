@@ -6,13 +6,12 @@
 #include "mud/log.h"
 #include "mud/util/mudstring.h"
 
-
 /**
  * Entry point for the application.  Will exit if unable to load to 
  * configuration or initialise logging.  Otherwise, starts the game.
 **/
-int main(int argc, char *argv[]) {
-  config_t * config = config_new();
+int main(int argc, char* argv[]) {
+  config_t* config = config_new();
 
   if (!config || load_configuration("config.ini", config) != 0) {
     printf("Unable to load configuration.  Shutting down\n\r");
@@ -25,7 +24,7 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
 
-  game_t * game = create_game_t();
+  game_t* game = create_game_t();
 
   if (start_game(game, config) != 0) {
     exit(-1);

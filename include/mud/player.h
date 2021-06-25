@@ -5,7 +5,6 @@
 #include "mud/state/state.h"
 #include "mud/util/muduuid.h"
 
-
 /**
  * Defines
 **/
@@ -14,7 +13,6 @@
 #define SEND_SIZE 1024
 #define COMMAND_SIZE 256
 
-
 /**
  * Typedefs
 **/
@@ -22,31 +20,29 @@ typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct account account_t;
 
-
 /**
  * Structs
 **/
 typedef struct player {
-	client_t * client;
-  entity_t * entity;
-  account_t * account;
-	state_func_t state;
+  client_t* client;
+  entity_t* entity;
+  account_t* account;
+  state_func_t state;
 } player_t;
-
 
 /**
  * Function prototypes
 **/
-player_t * create_player_t();
-void free_player_t(player_t * player);
+player_t* create_player_t();
+void free_player_t(player_t* player);
 
-void player_connected(client_t * client, void * context);
-void player_disconnected(client_t * client, void * context);
-void player_input(client_t * client, void * context);
+void player_connected(client_t* client, void* context);
+void player_disconnected(client_t* client, void* context);
+void player_input(client_t* client, void* context);
 
-void player_change_state(player_t * player, game_t * game, state_func_t state);
+void player_change_state(player_t* player, game_t* game, state_func_t state);
 
-void send_to_player(player_t * player, const char * fmt, ...);
-void send_to_all_players(game_t * game, player_t * excluding, const char * fmt, ...);
+void send_to_player(player_t* player, const char* fmt, ...);
+void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...);
 
 #endif

@@ -1,30 +1,27 @@
 #include "mud/game.h"
-#include "mud/player.h"
-#include "mud/config.h"
-#include "mud/log.h"
 #include "mud/command/command.h"
-#include "mud/data/linked_list/linked_list.h"
+#include "mud/config.h"
 #include "mud/data/hash_table/hash_table.h"
-#include "mud/network/network.h"
+#include "mud/data/linked_list/linked_list.h"
 #include "mud/ecs/ecs.h"
-
+#include "mud/log.h"
+#include "mud/network/network.h"
+#include "mud/player.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
 
-
-int connect_to_database(game_t * game, const char * filename);
-void game_tick(game_t * game, unsigned int ticks_per_second);
-
+int connect_to_database(game_t* game, const char* filename);
+void game_tick(game_t* game, unsigned int ticks_per_second);
 
 /**
  * Allocate a new instance of a game_t struct.
  *
  * Returns an allocated game_t struct with default values.
 **/
-game_t * create_game_t(void) {
-  game_t * game = calloc(1, sizeof * game);
+game_t* create_game_t(void) {
+  game_t* game = calloc(1, sizeof *game);
 
   game->shutdown = 0;
   gettimeofday(&game->last_tick, NULL);
@@ -41,11 +38,10 @@ game_t * create_game_t(void) {
   return game;
 }
 
-
 /**
  * Frees an allocated game_t struct.
 **/
-void free_game_t(game_t * game) {
+void free_game_t(game_t* game) {
   assert(game);
   assert(game->players);
   assert(game->network);
@@ -60,13 +56,12 @@ void free_game_t(game_t * game) {
   free(game);
 }
 
-
 /**
  * Starts running the game, binds a server and enters the game loop.
  *
  * Returns a 0 on success or -1 on failure.
 **/
-int start_game(game_t * game, config_t * config) {
+int start_game(game_t* game, config_t* config) {
   assert(game);
   assert(config);
 
@@ -114,12 +109,11 @@ int start_game(game_t * game, config_t * config) {
   return 0;
 }
 
-
 /**
  * Attempts to connect to the SQLite3 database with a given filename.  Returns -1 on failure
  * or 0 on success.
 **/
-int connect_to_database(game_t * game, const char * filename) {
+int connect_to_database(game_t* game, const char* filename) {
   zlog_info(gc, "Connecting to database [%s]", filename);
 
   if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
@@ -133,13 +127,12 @@ int connect_to_database(game_t * game, const char * filename) {
   return 0;
 }
 
-
 /**
  * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time
  * time since the last time the method was called and makes the thread sleep if it's less than
  * the amount of time calculated per tick.
 **/
-void game_tick(game_t * game, const unsigned int ticks_per_second) {
+void game_tick(game_t* game, const unsigned int ticks_per_second) {
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
 

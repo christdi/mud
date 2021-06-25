@@ -1,0 +1,5 @@
+---
+Language: Cpp
+BasedOnStyle: WebKit
+BreakBeforeBraces: Attach
+IndentWidth: 2

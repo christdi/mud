@@ -1,15 +1,14 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mud/command/command.h"
 #include "mud/command/admin.h"
+#include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/location.h"
 #include "mud/ecs/description.h"
-#include "mud/util/mudstring.h"
-#include "mud/player.h"
+#include "mud/ecs/location.h"
 #include "mud/game.h"
-
+#include "mud/player.h"
+#include "mud/util/mudstring.h"
 
 /**
  * Command which allows a player to assign an entity to themselves.
@@ -21,7 +20,7 @@
  *
  * This method does not return anything.
 **/
-void entity_command(player_t * player, game_t * game, char * input) {
+void entity_command(player_t* player, game_t* game, char* input) {
   assert(player);
   assert(game);
   assert(input);
@@ -38,19 +37,19 @@ void entity_command(player_t * player, game_t * game, char * input) {
   if (strncmp("list", subcommand, ARGUMENT_SIZE) == 0) {
     h_it_t it = hash_table_iterator(game->entities);
 
-    entity_t * entity;
+    entity_t* entity;
 
     send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
-    while ((entity = (entity_t *) h_it_get(it)) != NULL) {
+    while ((entity = (entity_t*)h_it_get(it)) != NULL) {
       send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
 
-      description_t * description = get_description(game->components, entity);
+      description_t* description = get_description(game->components, entity);
       if (description) {
         send_to_player(player, "- [green]description[reset], name => %s\n\r", description->name);
       }
 
-      location_t * location = get_location(game->components, entity);
+      location_t* location = get_location(game->components, entity);
       if (location) {
         char buffer[BUFFER_SIZE];
         describe_location(location, buffer, BUFFER_SIZE);
@@ -73,7 +72,7 @@ void entity_command(player_t * player, game_t * game, char * input) {
       return;
     }
 
-    entity_t * entity;
+    entity_t* entity;
 
     if ((entity = get_entity(game, entity_uuid)) == NULL) {
       send_to_player(player, "\nNo entity with uuid [cyan]%s[reset] found.\n\r", entity_uuid);
@@ -85,6 +84,4 @@ void entity_command(player_t * player, game_t * game, char * input) {
 
     assign_entity(entity, player);
   }
-
-
 }
