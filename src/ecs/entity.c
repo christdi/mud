@@ -3,43 +3,41 @@
 #include <string.h>
 #include <uuid/uuid.h>
 
-#include "mud/ecs/entity.h"
 #include "mud/action/action_callback.h"
-#include "mud/ecs/entity/character.h"
-#include "mud/ecs/entity/location.h"
-#include "mud/ecs/entity/item.h"
-#include "mud/ecs/description.h"
-#include "mud/ecs/location.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/util/muduuid.h"
+#include "mud/ecs/description.h"
+#include "mud/ecs/entity.h"
+#include "mud/ecs/entity/character.h"
+#include "mud/ecs/entity/item.h"
+#include "mud/ecs/entity/location.h"
+#include "mud/ecs/location.h"
+#include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
-#include "mud/game.h"
-
+#include "mud/util/muduuid.h"
 
 /**
  * Allocates and initialises a new entity_t struct.
  *
  * Returns a pointer to the newly allocated entity_t struct.
 **/
-entity_t * create_entity_t() {
-	entity_t * entity = calloc(1, sizeof * entity);
-	entity->action_callback = create_action_callback_t();
+entity_t* create_entity_t() {
+  entity_t* entity = calloc(1, sizeof *entity);
+  entity->action_callback = create_action_callback_t();
 
-	return entity;
+  return entity;
 }
-
 
 /**
  * Frees an allocated entity_t struct.
 **/
-void free_entity_t(entity_t * entity) {
-	assert(entity);
+void free_entity_t(entity_t* entity) {
+  assert(entity);
 
-	free_action_callback_t(entity->action_callback);
+  free_action_callback_t(entity->action_callback);
 
-	free(entity);
+  free(entity);
 }
 
 /**
@@ -48,30 +46,29 @@ void free_entity_t(entity_t * entity) {
  * Takes the following parameters:
  *   game - the game_t struct where the entities should be loaded to
 **/
-void load_entities(game_t * game) {
-	assert(game);
+void load_entities(game_t* game) {
+  assert(game);
 
-	zlog_info(gc, "Loading entities");
+  zlog_info(gc, "Loading entities");
 
-	// TODO: Actually load entities
+  // TODO: Actually load entities
 
-	entity_t * location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
-	entity_t * character = new_character(game, "Test character", "A proud test character.");
-	entity_t * item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
+  entity_t* location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
+  entity_t* character = new_character(game, "Test character", "A proud test character.");
+  entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
-	location_t * character_location = get_location(game->components, character);
-	strncpy(character_location->location_uuid, location->uuid, UUID_SIZE);
+  location_t* character_location = get_location(game->components, character);
+  strncpy(character_location->location_uuid, location->uuid, UUID_SIZE);
 
-	location_t * item_location = get_location(game->components, item);
-	strncpy(item_location->location_uuid, location->uuid, UUID_SIZE);
+  location_t* item_location = get_location(game->components, item);
+  strncpy(item_location->location_uuid, location->uuid, UUID_SIZE);
 }
-
 
 /**
  * Attempts to look up the entity associated with a given player.
 **/
-entity_t * get_player_entity(game_t * game, player_t * player) {
-	return NULL;
+entity_t* get_player_entity(game_t* game, player_t* player) {
+  return NULL;
 }
 
 /**
@@ -79,20 +76,20 @@ entity_t * get_player_entity(game_t * game, player_t * player) {
  *
  * Returns a pointer to the entity if found or NULL if not.
 **/
-entity_t * get_entity(game_t * game, char * uuid) {
-	assert(game);
-	assert(uuid);
+entity_t* get_entity(game_t* game, char* uuid) {
+  assert(game);
+  assert(uuid);
 
-	return (entity_t *) hash_table_get(game->entities, uuid);
+  return (entity_t*)hash_table_get(game->entities, uuid);
 }
 
 /**
  * Assigns an entity to a given player.
 **/
-void assign_entity(entity_t * entity, player_t * player) {
-	assert(player);
-	assert(entity);
+void assign_entity(entity_t* entity, player_t* player) {
+  assert(player);
+  assert(entity);
 
-	player->entity = entity;
-	entity->player = player;
+  player->entity = entity;
+  entity->player = player;
 }

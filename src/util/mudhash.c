@@ -1,11 +1,11 @@
 #include <assert.h>
-#include <string.h>
-#include <stdio.h>
 #include <openssl/sha.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "mud/util/mudhash.h"
 
-void string_to_sha256(char * input, char * output) {
+void string_to_sha256(char* input, char* output) {
   assert(input);
   assert(output);
 
