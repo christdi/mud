@@ -2,4 +2,5 @@
 build
 dist/mud
 dist/mud.db
+*.sublime-workspace
 *.o

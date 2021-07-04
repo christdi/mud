@@ -16,7 +16,8 @@ int config_parse_line(char* line, config_t* config);
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
   config->log_config_file = strdup("log.ini");
-  config->ticks_per_second = 20;
+  config->ticks_per_second = DEFAULT_TICKS_PER_SECOND;
+
 
   return config;
 }
@@ -43,15 +44,15 @@ int load_configuration(const char* filename, config_t* config) {
   assert(filename);
   assert(config);
 
-  FILE* fp = fopen(filename, "r");
+  FILE* fp = fopen(filename, "re");
 
   if (!fp) {
     return -1;
   }
 
-  char buffer[1024];
+  char buffer[MAX_CONFIG_LINE_LENGTH];
 
-  while (fgets(buffer, 1024, fp)) {
+  while (fgets(buffer, MAX_CONFIG_LINE_LENGTH, fp)) {
     if (config_parse_line(buffer, config) != 0) {
       printf("Failed to parse configuration file line: '%s'.\n\r", buffer);
 
@@ -91,7 +92,7 @@ int config_parse_line(char* line, config_t* config) {
   }
 
   if (strcmp(key, "ticks_per_second") == 0) {
-    config->ticks_per_second = atoi(value);
+    config->ticks_per_second = strtol(value, NULL, BASE_10);
   }
 
   return 0;

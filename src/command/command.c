@@ -46,7 +46,7 @@ void load_commands(game_t* game) {
 
   zlog_info(gc, "Loading commands");
 
-  command_t* command;
+  command_t* command = NULL;
 
   for (command = commands; command->func != NULL; command++) {
     hash_table_insert(game->commands, command->name, command);

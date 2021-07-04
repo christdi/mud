@@ -37,7 +37,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
   if (strncmp("list", subcommand, ARGUMENT_SIZE) == 0) {
     h_it_t it = hash_table_iterator(game->entities);
 
-    entity_t* entity;
+    entity_t* entity = NULL;
 
     send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
@@ -64,7 +64,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
   if (strncmp("assign", subcommand, ARGUMENT_SIZE) == 0) {
     char entity_uuid[UUID_SIZE];
-    input = extract_argument(input, entity_uuid);
+    extract_argument(input, entity_uuid);
 
     if (*entity_uuid == '\0') {
       send_to_player(player, "\n\rSyntax: entity assign <uuid>\n\r");
@@ -72,7 +72,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
       return;
     }
 
-    entity_t* entity;
+    entity_t* entity = NULL;
 
     if ((entity = get_entity(game, entity_uuid)) == NULL) {
       send_to_player(player, "\nNo entity with uuid [cyan]%s[reset] found.\n\r", entity_uuid);

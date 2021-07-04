@@ -75,7 +75,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   it_t it;
   it.node = NULL;
 
-  node_t* node = list->first;
+  node_t* node = NULL;
 
   for (node = list->first; node != NULL; node = node->next) {
     if (node->data == value) {
@@ -142,7 +142,7 @@ int list_size(linked_list_t* list) {
 
   int count = 0;
 
-  node_t* node;
+  node_t* node = NULL;
 
   for (node = list->first; node != NULL; node = node->next) {
     count++;

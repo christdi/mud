@@ -38,19 +38,19 @@ int get_hash_index(char* key) {
 
   size_t len = strnlen(key, MAX_KEY_LENGTH);
 
-  unsigned long hash = 5381;
-  int c;
+  unsigned long hash = HASH_BASE_VALUE;
+  unsigned char c = 0;
   int i = 0;
 
-  while ((c = *key++)) {
+  while ((c = (unsigned char) *key++)) {
     if (i++ == len) {
       break;
     }
 
-    hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    hash = ((hash << FIVE_BITS) + hash) + c; /* hash * 33 + c */
   }
 
-  return hash % HASH_TABLE_SIZE;
+  return (int) hash % HASH_TABLE_SIZE;
 }
 
 /**
@@ -95,7 +95,7 @@ int hash_table_has(hash_table_t* table, char* key) {
 
   linked_list_t* list = &table->nodes[index];
   it_t it = list_begin(list);
-  hash_node_t* node;
+  hash_node_t* node = NULL;
 
   while ((node = (hash_node_t*)it_get(it)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
@@ -119,7 +119,7 @@ void* hash_table_get(hash_table_t* table, char* key) {
 
   linked_list_t* list = &table->nodes[index];
   it_t it = list_begin(list);
-  hash_node_t* node;
+  hash_node_t* node = NULL;
 
   while ((node = (hash_node_t*)it_get(it)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
@@ -146,7 +146,7 @@ void* hash_table_delete(hash_table_t* table, char* key) {
 
   linked_list_t* list = &table->nodes[index];
   it_t it = list_begin(list);
-  hash_node_t* node;
+  hash_node_t* node = NULL;
 
   while ((node = (hash_node_t*)it_get(it)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {

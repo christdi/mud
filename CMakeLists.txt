@@ -5,6 +5,7 @@ enable_language(C)
 
 set (PROJECT_NAME mud)
 set (LIB_NAME mudlib)
+set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=*" "-header-filter=*" "-warnings-as-errors=*, -readability-non-const-parameter, -misc-unused-parameters")
 
 project (${PROJECT_NAME} C)
 

@@ -18,7 +18,7 @@ void speak_action(entity_t* entity, game_t* game, char* what) {
     return;
   }
 
-  entity_t* target;
+  entity_t* target = NULL;
 
   h_it_t it = hash_table_iterator(game->entities);
 
