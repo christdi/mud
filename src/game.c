@@ -80,7 +80,7 @@ int start_game(game_t* game, config_t* config) {
   load_entities(game);
   load_commands(game);
 
-  if (start_game_server(game->network, 5000) == -1) {
+  if (start_game_server(game->network, DEFAULT_GAME_PORT) == -1) {
     zlog_error(gc, "Failed to start game server");
 
     return -1;
@@ -94,7 +94,7 @@ int start_game(game_t* game, config_t* config) {
     game_tick(game, config->ticks_per_second);
   }
 
-  if (stop_game_server(game->network, 5000) == -1) {
+  if (stop_game_server(game->network, DEFAULT_GAME_PORT) == -1) {
     zlog_error(gc, "Failed to shutdown server");
 
     return -1;
@@ -138,8 +138,8 @@ void game_tick(game_t* game, const unsigned int ticks_per_second) {
 
   time_t seconds_elapsed = current_time.tv_sec - game->last_tick.tv_sec;
   suseconds_t microseconds_elapsed = current_time.tv_usec - game->last_tick.tv_usec;
-  long nanoseconds_elapsed = (seconds_elapsed * 1000000000L) + (microseconds_elapsed * 1000L);
-  long nanoseconds_per_tick = 1000000000L / ticks_per_second;
+  long nanoseconds_elapsed = (seconds_elapsed * ONE_SECOND_IN_NANOSECONDS) + (microseconds_elapsed * ONE_SECOND_IN_MICROSECONDS);
+  long nanoseconds_per_tick = ONE_SECOND_IN_NANOSECONDS / ticks_per_second;
 
   if (nanoseconds_elapsed < nanoseconds_per_tick) {
     struct timespec sleep_time;

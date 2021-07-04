@@ -4,6 +4,10 @@
 #include <sqlite3.h>
 #include <sys/time.h>
 
+#define DEFAULT_GAME_PORT 5000
+#define ONE_SECOND_IN_NANOSECONDS 1000000000L
+#define ONE_SECOND_IN_MICROSECONDS 100000L
+
 /**
  * Typedefs
 **/

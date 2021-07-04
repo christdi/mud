@@ -60,7 +60,9 @@ int send_to_client(client_t* client, char* data) {
       zlog_error(nc, "%s", strerror(errno));
 
       return -1;
-    } else if (bytes_sent == 0) {
+    }
+
+    if (bytes_sent == 0) {
       return -1;
     }
   }

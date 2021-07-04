@@ -51,7 +51,7 @@ void load_entities(game_t* game) {
 
   zlog_info(gc, "Loading entities");
 
-  // TODO: Actually load entities
+  // TODO(Chris I): Actually load entities
 
   entity_t* location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
   entity_t* character = new_character(game, "Test character", "A proud test character.");

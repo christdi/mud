@@ -1,5 +1,5 @@
-#ifndef _MUD_STRING_H_
-#define _MUD_STRING_H_
+#ifndef MUD_UTIL_MUDSTRING_H
+#define MUD_UTIL_MUDSTRING_H
 
 #include <stddef.h>
 

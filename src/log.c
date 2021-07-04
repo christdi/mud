@@ -1,7 +1,5 @@
 #include "mud/log.h"
 
-extern zlog_category_t* nc;
-
 int log_initialise(const char* configFilePath) {
   if (zlog_init(configFilePath) != 0) {
     return -1;
