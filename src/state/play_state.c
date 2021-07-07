@@ -21,7 +21,6 @@ void play_state(player_t* player, game_t* game, char* input) {
 
   if (!input) {
     send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->account->username);
-
     send_prompt(player, game);
 
     return;
@@ -33,7 +32,6 @@ void play_state(player_t* player, game_t* game, char* input) {
 
   if (cmd == NULL) {
     send_to_player(player, "[bcyan]%s[reset] command not recognised.\n\r", command);
-
     send_prompt(player, game);
 
     return;

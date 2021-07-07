@@ -23,6 +23,7 @@ typedef struct linked_list {
  * Function prototypes
 **/
 linked_list_t* create_linked_list_t(void);
+void init_linked_list(linked_list_t* list);
 void free_linked_list_t(linked_list_t* list);
 
 void list_add(linked_list_t* list, void* value);

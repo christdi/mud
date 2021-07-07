@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int get_hash_index(char* key);
+unsigned int get_hash_index(char* key);
 
 /**
  * Allocates and initialises a new hash_table struct.
@@ -15,6 +15,10 @@ int get_hash_index(char* key);
 **/
 hash_table_t* create_hash_table_t() {
   hash_table_t* hash_table = calloc(1, sizeof *hash_table);
+
+  for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+    hash_table->nodes[i] = create_linked_list_t();
+  }
 
   return hash_table;
 }
@@ -25,6 +29,10 @@ hash_table_t* create_hash_table_t() {
 void free_hash_table_t(hash_table_t* hash_table) {
   assert(hash_table);
 
+  for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+    free_linked_list_t(hash_table->nodes[i]);
+  }
+
   free(hash_table);
 
   hash_table = NULL;
@@ -33,7 +41,7 @@ void free_hash_table_t(hash_table_t* hash_table) {
 /**
  * Gets a table index by generating a hash value and modulating it by MAX_TABLE_SIZE;
 **/
-int get_hash_index(char* key) {
+unsigned int get_hash_index(char* key) {
   assert(key);
 
   size_t len = strnlen(key, MAX_KEY_LENGTH);
@@ -50,7 +58,7 @@ int get_hash_index(char* key) {
     hash = ((hash << FIVE_BITS) + hash) + c; /* hash * 33 + c */
   }
 
-  return (int) hash % HASH_TABLE_SIZE;
+  return (unsigned int) hash % HASH_TABLE_SIZE;
 }
 
 /**
@@ -76,7 +84,7 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   hash_node->key = strdup(key);
   hash_node->value = value;
 
-  linked_list_t* list = &table->nodes[index];
+  linked_list_t* list = table->nodes[index];
   list_add(list, hash_node);
 
   return 0;
@@ -93,7 +101,7 @@ int hash_table_has(hash_table_t* table, char* key) {
 
   int index = get_hash_index(key);
 
-  linked_list_t* list = &table->nodes[index];
+  linked_list_t* list = table->nodes[index];
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 
@@ -117,7 +125,7 @@ void* hash_table_get(hash_table_t* table, char* key) {
 
   int index = get_hash_index(key);
 
-  linked_list_t* list = &table->nodes[index];
+  linked_list_t* list = table->nodes[index];
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 
@@ -144,7 +152,7 @@ void* hash_table_delete(hash_table_t* table, char* key) {
 
   int index = get_hash_index(key);
 
-  linked_list_t* list = &table->nodes[index];
+  linked_list_t* list = table->nodes[index];
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 

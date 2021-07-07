@@ -6,7 +6,7 @@
 /**
  * Definitions
 **/
-#define HASH_TABLE_SIZE 128
+#define HASH_TABLE_SIZE 16
 #define HASH_BASE_VALUE 5381
 #define FIVE_BITS 5u
 
@@ -14,7 +14,7 @@
  * Structs
 **/
 typedef struct hash_table {
-  linked_list_t nodes[HASH_TABLE_SIZE];
+  linked_list_t * nodes[HASH_TABLE_SIZE];
 } hash_table_t;
 
 /**

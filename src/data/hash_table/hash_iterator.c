@@ -3,6 +3,7 @@
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/data/linked_list/linked_list.h"
 #include "mud/data/linked_list/node.h"
+#include "mud/log.h"
 
 /**
  * Retrieves the next hash node in a hash table.  Internally iterates over the
@@ -20,7 +21,7 @@ h_it_t h_it_next(h_it_t it) {
   }
 
   while (++it.index < it.capacity) {
-    linked_list_t* list = &it.hash_table->nodes[it.index];
+    linked_list_t* list = it.hash_table->nodes[it.index];
 
     if (list_size(list) != 0) {
       it.list_iterator = list_begin(list);
@@ -54,11 +55,12 @@ h_it_t hash_table_iterator(hash_table_t* table) {
   it.index = 0;
 
   for (it.index = 0; it.index < it.capacity; it.index++) {
-    linked_list_t* list = &table->nodes[it.index];
+    linked_list_t* list = table->nodes[it.index];
 
     if (list_size(list) > 0) {
       it.node = (hash_node_t*)list->first->data;
-      it.list_iterator = list_begin(&table->nodes[it.index]);
+
+      it.list_iterator = list_begin(table->nodes[it.index]);
 
       return it;
     }
@@ -66,7 +68,7 @@ h_it_t hash_table_iterator(hash_table_t* table) {
 
   it.index = HASH_TABLE_SIZE;
   it.node = NULL;
-  it.list_iterator = list_begin(&table->nodes[HASH_TABLE_SIZE]);
+  it.list_iterator = list_begin(table->nodes[HASH_TABLE_SIZE]);
 
   return it;
 }
