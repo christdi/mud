@@ -22,7 +22,7 @@ server_t* create_server_t(void) {
 
   server->fd = 0;
   server->port = 0;
-  server->backlog = 10;
+  server->backlog = 0;
 
   return server;
 }
