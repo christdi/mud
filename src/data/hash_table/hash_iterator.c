@@ -23,7 +23,7 @@ h_it_t h_it_next(h_it_t it) {
   while (++it.index < it.capacity) {
     linked_list_t* list = it.hash_table->nodes[it.index];
 
-    if (list_size(list) != 0) {
+    if (list != NULL) {
       it.list_iterator = list_begin(list);
       it.node = (hash_node_t*)it_get(it.list_iterator);
 
@@ -57,7 +57,7 @@ h_it_t hash_table_iterator(hash_table_t* table) {
   for (it.index = 0; it.index < it.capacity; it.index++) {
     linked_list_t* list = table->nodes[it.index];
 
-    if (list_size(list) > 0) {
+    if (list != NULL) {
       it.node = (hash_node_t*)list->first->data;
 
       it.list_iterator = list_begin(table->nodes[it.index]);

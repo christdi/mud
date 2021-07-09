@@ -16,10 +16,6 @@ unsigned int get_hash_index(char* key);
 hash_table_t* create_hash_table_t() {
   hash_table_t* hash_table = calloc(1, sizeof *hash_table);
 
-  for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-    hash_table->nodes[i] = create_linked_list_t();
-  }
-
   return hash_table;
 }
 
@@ -30,12 +26,14 @@ void free_hash_table_t(hash_table_t* hash_table) {
   assert(hash_table);
 
   for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-    free_linked_list_t(hash_table->nodes[i]);
+    linked_list_t* list = hash_table->nodes[i];
+
+    if (list != NULL) {
+      free_linked_list_t(list);
+    } 
   }
 
   free(hash_table);
-
-  hash_table = NULL;
 }
 
 /**
@@ -84,6 +82,10 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   hash_node->key = strdup(key);
   hash_node->value = value;
 
+  if (table->nodes[index] == NULL) {
+    table->nodes[index] = create_linked_list_t();
+  }
+
   linked_list_t* list = table->nodes[index];
   list_add(list, hash_node);
 
@@ -102,6 +104,11 @@ int hash_table_has(hash_table_t* table, char* key) {
   int index = get_hash_index(key);
 
   linked_list_t* list = table->nodes[index];
+
+  if (list == NULL) {
+    return 0;
+  }
+
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 
@@ -126,6 +133,11 @@ void* hash_table_get(hash_table_t* table, char* key) {
   int index = get_hash_index(key);
 
   linked_list_t* list = table->nodes[index];
+
+  if (list == NULL) {
+    return NULL;
+  }
+
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 
@@ -153,12 +165,22 @@ void* hash_table_delete(hash_table_t* table, char* key) {
   int index = get_hash_index(key);
 
   linked_list_t* list = table->nodes[index];
+
+  if (list == NULL) {
+    return NULL;
+  }
+
   it_t it = list_begin(list);
   hash_node_t* node = NULL;
 
   while ((node = (hash_node_t*)it_get(it)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
       list_remove(list, node);
+
+      if (list_size(list) == 0) {
+        free_linked_list_t(list);
+        table->nodes[index] = NULL;
+      }
 
       return node->value;
     }
