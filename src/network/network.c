@@ -27,7 +27,7 @@ int prune_clients(network_t* network);
 network_t* create_network_t(void) {
   network_t* network = calloc(1, sizeof *network);
 
-  FD_ZERO(&network->master_set);
+  FD_ZERO(&network->master_set); // NOLINT(readability-isolate-declaration)
 
   network->connection_callback = create_callback_t();
   network->disconnection_callback = create_callback_t();
@@ -91,7 +91,7 @@ int start_game_server(network_t* network, unsigned int port) {
 
   server_t* server = create_server_t();
   server->port = port;
-  server->backlog = 10;
+  server->backlog = BACKLOG;
 
   if (listen_on_server(server) == -1) {
     zlog_error(nc, "Failed to listen on server on port [%d]", port);
@@ -218,8 +218,6 @@ void poll_network(network_t* network) {
       client_it = it_next(client_it);
     }
   }
-
-  return;
 }
 
 /**

@@ -7,6 +7,11 @@
 #include "mud/network/callback.h"
 
 /**
+ * Definitions
+**/
+#define BACKLOG 10
+
+/**
  * Typedefs
 **/
 typedef struct linked_list linked_list_t;
