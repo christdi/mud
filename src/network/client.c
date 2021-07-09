@@ -1,3 +1,5 @@
+#include "bsd/string.h"
+
 #include "mud/network/client.h"
 #include "mud/log.h"
 #include "mud/util/mudstring.h"
@@ -97,6 +99,8 @@ int receive_from_client(client_t* client) {
   if (len <= 0) {
     client->hungup = 1;
   } else {
+    bytes[len] = '\0';
+
     if (append_data_to_input_buffer(client, bytes, len) != 0) {
       zlog_error(nc, "Failed to append received data to input buffer");
     }
@@ -113,7 +117,7 @@ int receive_from_client(client_t* client) {
  * Returns 0 on success or -1 on failure.
 **/
 int append_data_to_input_buffer(client_t* client, char* data, size_t len) {
-  size_t existing = strlen(client->input);
+  size_t existing = strnlen(client->input, INPUT_BUFFER_SIZE);
   size_t total = existing + len + 1;
 
   if (total > INPUT_BUFFER_SIZE) {
@@ -125,8 +129,7 @@ int append_data_to_input_buffer(client_t* client, char* data, size_t len) {
     return -1;
   }
 
-  strcpy(client->input + existing, data);
-  client->input[total] = '\0';
+  strlcpy(client->input + existing, data, INPUT_BUFFER_SIZE - existing);
 
   return 0;
 }

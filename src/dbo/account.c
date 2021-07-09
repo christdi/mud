@@ -70,12 +70,6 @@ int account_save(game_t* game, account_t* account) {
 
 /**
 **/
-int account_load(game_t* game, const char* name, account_t* account) {
-  return 0;
-}
-
-/**
-**/
 int account_validate(game_t* game, const char* username, const char* password_hash) {
   sqlite3_stmt* res = NULL;
 

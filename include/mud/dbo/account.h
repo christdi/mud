@@ -29,7 +29,6 @@ account_t* create_account_t();
 void free_account_t(account_t* account);
 
 int account_save(game_t* game, account_t* account);
-int account_load(game_t* game, const char* name, account_t* account);
 int account_validate(game_t* game, const char* username, const char* password_hash);
 int account_exists(game_t* game, const char* username);
 
