@@ -68,7 +68,6 @@ h_it_t hash_table_iterator(hash_table_t* table) {
 
   it.index = HASH_TABLE_SIZE;
   it.node = NULL;
-  it.list_iterator = list_begin(table->nodes[HASH_TABLE_SIZE]);
 
   return it;
 }

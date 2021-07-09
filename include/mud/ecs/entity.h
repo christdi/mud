@@ -31,7 +31,6 @@ entity_t* create_entity_t();
 void free_entity_t(entity_t* entity);
 
 void load_entities(game_t* game);
-entity_t* get_player_entity(game_t* game, player_t* player);
 entity_t* get_entity(game_t* game, char* uuid);
 void assign_entity(entity_t* entity, player_t* player);
 

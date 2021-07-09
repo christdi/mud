@@ -3,6 +3,8 @@
 #include <string.h>
 #include <uuid/uuid.h>
 
+#include "bsd/string.h"
+
 #include "mud/action/action_callback.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
@@ -58,17 +60,10 @@ void load_entities(game_t* game) {
   entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
   location_t* character_location = get_location(game->components, character);
-  strncpy(character_location->location_uuid, location->uuid, UUID_SIZE);
+  strlcpy(character_location->location_uuid, location->uuid, UUID_SIZE);
 
   location_t* item_location = get_location(game->components, item);
-  strncpy(item_location->location_uuid, location->uuid, UUID_SIZE);
-}
-
-/**
- * Attempts to look up the entity associated with a given player.
-**/
-entity_t* get_player_entity(game_t* game, player_t* player) {
-  return NULL;
+  strlcpy(item_location->location_uuid, location->uuid, UUID_SIZE);
 }
 
 /**
