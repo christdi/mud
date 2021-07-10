@@ -1,7 +1,7 @@
 #include "bsd/string.h"
 
-#include "mud/network/client.h"
 #include "mud/log.h"
+#include "mud/network/client.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>

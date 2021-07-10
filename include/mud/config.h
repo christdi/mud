@@ -25,7 +25,7 @@ typedef struct config {
 config_t* config_new(void);
 void config_free(config_t* config);
 
-int parse_configuration(int argc, char *argv[], config_t* config);
+int parse_configuration(int argc, char* argv[], config_t* config);
 int load_configuration(const char* filename, config_t* config);
 
 #endif

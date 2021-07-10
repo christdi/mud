@@ -42,14 +42,14 @@ int account_save(game_t* game, account_t* account) {
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 1, account->username, (int) strlen(account->username), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 1, account->username, (int)strlen(account->username), NULL) != SQLITE_OK) {
     zlog_error(dc, "Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 2, account->password_hash, (int) strlen(account->password_hash), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 2, account->password_hash, (int)strlen(account->password_hash), NULL) != SQLITE_OK) {
     zlog_error(dc, "Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
@@ -82,14 +82,14 @@ int account_validate(game_t* game, const char* username, const char* password_ha
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 1, username, (int) strlen(username), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
     zlog_error(dc, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 2, password_hash, (int) strlen(password_hash), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 2, password_hash, (int)strlen(password_hash), NULL) != SQLITE_OK) {
     zlog_error(dc, "Failed to bind password hash to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
@@ -122,7 +122,7 @@ int account_exists(game_t* game, const char* username) {
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 1, username, (int) strlen(username), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
     zlog_error(dc, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 

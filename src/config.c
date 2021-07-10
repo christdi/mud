@@ -1,8 +1,8 @@
 #include <assert.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 
 #include "bsd/string.h"
 
@@ -16,7 +16,6 @@ int set_database_file(const char* value, config_t* config);
 int set_game_port(const char* value, config_t* config);
 int set_ticks_per_second(const char* value, config_t* config);
 
-
 /**
  * Allocates a new config_t structure.
  *
@@ -28,7 +27,6 @@ config_t* config_new(void) {
   strlcpy(config->database_file, "mud.db", MAX_ARGUMENT_SIZE);
   config->game_port = DEFAULT_PORT;
   config->ticks_per_second = DEFAULT_TICKS_PER_SECOND;
-
 
   return config;
 }
@@ -42,50 +40,49 @@ void config_free(config_t* config) {
   free(config);
 }
 
-
 /**
  * Parses command line arguments into the configuration.
 **/
-int parse_configuration(int argc, char *argv[], config_t* config) {
+int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
   while ((opt = getopt(argc, argv, ":d:p:t:h")) != -1) {
-    switch(opt) {
-      case 'd':
-        if (set_database_file(optarg, config) == -1) {
-          return -1;
-        }
-
-        break;
-
-      case 'p':
-        if (set_game_port(optarg, config) == -1) {
-          return -1;
-        }
-
-        break;
-
-      case 't':
-        if (set_ticks_per_second(optarg, config) == -1) {
-          return -1;
-        }
-
-        break;
-
-      case 'h':
-        printf("%s [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
-
+    switch (opt) {
+    case 'd':
+      if (set_database_file(optarg, config) == -1) {
         return -1;
+      }
 
-      case '?':
-        printf("Unknown option [%c]\n\r", optopt);
+      break;
 
+    case 'p':
+      if (set_game_port(optarg, config) == -1) {
         return -1;
+      }
 
-      case ':':
-        printf("Missing argument for option [%c]\n\r", optopt);
+      break;
 
+    case 't':
+      if (set_ticks_per_second(optarg, config) == -1) {
         return -1;
+      }
+
+      break;
+
+    case 'h':
+      printf("%s [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+
+      return -1;
+
+    case '?':
+      printf("Unknown option [%c]\n\r", optopt);
+
+      return -1;
+
+    case ':':
+      printf("Missing argument for option [%c]\n\r", optopt);
+
+      return -1;
     }
   }
 
