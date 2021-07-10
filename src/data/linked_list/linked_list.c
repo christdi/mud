@@ -3,8 +3,8 @@
 #include "mud/log.h"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 /**

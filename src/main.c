@@ -14,23 +14,21 @@ int main(int argc, char* argv[]) {
   config_t* config = config_new();
 
   if (!config || load_configuration("config.ini", config) != 0) {
-    printf("Unable to load configuration.  Shutting down\n\r");
+    printf("Unable to load [config.ini].  Using default configuration\n\r");
+  }
+
+  if (!config || parse_configuration(argc, argv, config) != 0) {
     exit(-1);
   }
 
   if (log_initialise(config->log_config_file) != 0) {
     printf("Unable to initialise logging.  Shutting down\n\r");
-
     exit(-1);
   }
 
-  game_t* game = create_game_t();
-
-  if (start_game(game, config) != 0) {
+  if (start_game(config) != 0) {
     exit(-1);
   }
-
-  free_game_t(game);
 
   log_shutdown();
 

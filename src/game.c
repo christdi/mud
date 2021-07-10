@@ -61,9 +61,10 @@ void free_game_t(game_t* game) {
  *
  * Returns a 0 on success or -1 on failure.
 **/
-int start_game(game_t* game, config_t* config) {
-  assert(game);
+int start_game(config_t* config) {
   assert(config);
+
+  game_t* game = create_game_t();
 
   zlog_info(gc, "Starting MUD engine");
 
@@ -71,7 +72,7 @@ int start_game(game_t* game, config_t* config) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
-  if (connect_to_database(game, "mud.db") != 0) {
+  if (connect_to_database(game, config->database_file) != 0) {
     zlog_error(gc, "Failed to start game server");
 
     return -1;
@@ -80,7 +81,7 @@ int start_game(game_t* game, config_t* config) {
   load_entities(game);
   load_commands(game);
 
-  if (start_game_server(game->network, DEFAULT_GAME_PORT) == -1) {
+  if (start_game_server(game->network, config->game_port) == -1) {
     zlog_error(gc, "Failed to start game server");
 
     return -1;
@@ -88,13 +89,11 @@ int start_game(game_t* game, config_t* config) {
 
   while (!game->shutdown) {
     poll_network(game->network);
-
     update_systems(game);
-
     game_tick(game, config->ticks_per_second);
   }
 
-  if (stop_game_server(game->network, DEFAULT_GAME_PORT) == -1) {
+  if (stop_game_server(game->network, config->game_port) == -1) {
     zlog_error(gc, "Failed to shutdown server");
 
     return -1;
@@ -105,6 +104,8 @@ int start_game(game_t* game, config_t* config) {
   sqlite3_close(game->database);
 
   zlog_info(gc, "Stopping MUD engine");
+
+  free_game_t(game);
 
   return 0;
 }

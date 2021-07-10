@@ -30,7 +30,7 @@ void free_hash_table_t(hash_table_t* hash_table) {
 
     if (list != NULL) {
       free_linked_list_t(list);
-    } 
+    }
   }
 
   free(hash_table);
@@ -48,7 +48,7 @@ unsigned int get_hash_index(char* key) {
   unsigned char c = 0;
   int i = 0;
 
-  while ((c = (unsigned char) *key++)) {
+  while ((c = (unsigned char)*key++)) {
     if (i++ == len) {
       break;
     }
@@ -56,7 +56,7 @@ unsigned int get_hash_index(char* key) {
     hash = ((hash << FIVE_BITS) + hash) + c; /* hash * 33 + c */
   }
 
-  return (unsigned int) hash % HASH_TABLE_SIZE;
+  return (unsigned int)hash % HASH_TABLE_SIZE;
 }
 
 /**

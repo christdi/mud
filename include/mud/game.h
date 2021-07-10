@@ -4,7 +4,6 @@
 #include <sqlite3.h>
 #include <sys/time.h>
 
-#define DEFAULT_GAME_PORT 5000
 #define ONE_SECOND_IN_NANOSECONDS 1000000000L
 #define ONE_SECOND_IN_MICROSECONDS 100000L
 
@@ -39,6 +38,6 @@ typedef struct game {
 game_t* create_game_t(void);
 void free_game_t(game_t* game);
 
-int start_game(game_t* game, config_t* config);
+int start_game(config_t* config);
 
 #endif

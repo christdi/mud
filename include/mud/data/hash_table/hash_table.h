@@ -14,7 +14,7 @@
  * Structs
 **/
 typedef struct hash_table {
-  linked_list_t * nodes[HASH_TABLE_SIZE];
+  linked_list_t* nodes[HASH_TABLE_SIZE];
 } hash_table_t;
 
 /**
