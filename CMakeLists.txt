@@ -7,7 +7,7 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_C_STANDARD_REQUIRED)
 set (PROJECT_NAME mud)
 set (LIB_NAME mudlib)
-set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling" "-header-filter=*")
+set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -readability-non-const-parameter" "-header-filter=*")
 # "-warnings-as-errors=*, -readability-non-const-parameter, -misc-unused-parameters, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
 
 project (${PROJECT_NAME} C)

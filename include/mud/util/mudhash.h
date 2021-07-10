@@ -5,6 +5,7 @@
  * Definitions
 **/
 #define SHA256_SIZE 64
+#define MAX_SHA256_STRING_LENGTH 128
 
 /**
  * Function prototypes
