@@ -1,6 +1,10 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#define DEFAULT_TICKS_PER_SECOND 20
+#define MAX_CONFIG_LINE_LENGTH 1024
+#define BASE_10 10
+
 /**
  * Structs
 **/

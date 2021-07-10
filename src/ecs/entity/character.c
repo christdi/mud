@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include "bsd/string.h"
+
 #include "mud/data/hash_table.h"
 #include "mud/ecs/description.h"
 #include "mud/ecs/entity.h"

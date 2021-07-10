@@ -4,6 +4,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 /**
  * Allocates a new empty linked list.
@@ -13,12 +15,16 @@
 linked_list_t* create_linked_list_t(void) {
   linked_list_t* list = calloc(1, sizeof *list);
 
+  init_linked_list(list);
+
+  return list;
+}
+
+void init_linked_list(linked_list_t* list) {
   list->first = NULL;
   list->last = NULL;
 
   pthread_mutex_init(&list->mutex, NULL);
-
-  return list;
 }
 
 /**
@@ -43,7 +49,10 @@ void list_add(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
 
-  pthread_mutex_lock(&list->mutex);
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+    return;
+  }
 
   node_t* node = node_new();
   node->data = value;
@@ -58,7 +67,10 @@ void list_add(linked_list_t* list, void* value) {
     list->last = node;
   }
 
-  pthread_mutex_unlock(&list->mutex);
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+    return;
+  }
 }
 
 /**
@@ -70,12 +82,16 @@ it_t list_remove(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
 
-  pthread_mutex_lock(&list->mutex);
-
   it_t it;
   it.node = NULL;
 
-  node_t* node = list->first;
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return it;
+  }
+
+  node_t* node = NULL;
 
   for (node = list->first; node != NULL; node = node->next) {
     if (node->data == value) {
@@ -103,7 +119,11 @@ it_t list_remove(linked_list_t* list, void* value) {
     }
   }
 
-  pthread_mutex_unlock(&list->mutex);
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return it;
+  }
 
   return it;
 }
@@ -138,17 +158,25 @@ it_t list_end(linked_list_t* list) {
 int list_size(linked_list_t* list) {
   assert(list);
 
-  pthread_mutex_lock(&list->mutex);
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return 0;
+  }
 
   int count = 0;
 
-  node_t* node;
+  node_t* node = NULL;
 
   for (node = list->first; node != NULL; node = node->next) {
     count++;
   }
 
-  pthread_mutex_unlock(&list->mutex);
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return 0;
+  }
 
   return count;
 }

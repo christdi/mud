@@ -1,5 +1,5 @@
-#ifndef _MUD_UUID_H_
-#define _MUD_UUID_H_
+#ifndef MUD_UTIL_MUDUUID_H
+#define MUD_UTIL_MUDUUID_H
 
 #include <stddef.h>
 

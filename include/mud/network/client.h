@@ -1,5 +1,5 @@
-#ifndef _CLIENT_H_
-#define _CLIENT_H_
+#ifndef MUD_NETWORK_CLIENT_H
+#define MUD_NETWORK_CLIENT_H
 
 #include "mud/util/muduuid.h"
 
