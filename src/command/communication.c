@@ -1,6 +1,8 @@
 #include <assert.h>
 
+#include "mud/ecs/entity.h"
 #include "mud/command/communication.h"
+#include "mud/data/linked_list.h"
 #include "mud/dbo/account.h"
 #include "mud/event/communicate.h"
 #include "mud/game.h"
@@ -29,5 +31,5 @@ void say_command(player_t* player, game_t* game, char* input) {
   }
 
 
-  list_add(game->events, communicate_event(player->entity, NULL, input));
+  list_add(game->events, communicate_event(player->entity->id, NULL, input));
 }

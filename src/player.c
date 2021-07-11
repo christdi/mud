@@ -1,5 +1,6 @@
 #include "mud/player.h"
 #include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/dbo/account.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -117,6 +118,28 @@ void send_to_player(player_t* player, const char* fmt, ...) {
   va_end(args);
 
   write_to_player(player, output);
+}
+
+void send_to_players(linked_list_t* players, const char* fmt, ...) {
+  assert(players);
+  assert(fmt);
+
+  char output[SEND_SIZE];
+
+  va_list args;
+  va_start(args, fmt);
+  vsprintf(output, fmt, args);
+  va_end(args);
+
+  it_t it = list_begin(players);
+
+  player_t* player = NULL;
+
+  while ((player = (player_t*)it_get(it)) != NULL ) {
+    write_to_player(player, output);
+
+    it = it_next(it);
+  }
 }
 
 /**

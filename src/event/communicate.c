@@ -10,7 +10,6 @@
 communicate_event_t* create_communicate_event_t() {
 	communicate_event_t* event = calloc(1, sizeof *event);
 
-	event->origin = NULL;
 	event->recipients = NULL;
 	event->what = NULL;
 
@@ -34,7 +33,7 @@ void free_communicate_event_t(communicate_event_t* event) {
 /**
  * Creates and returns a new communication event.
 **/
-event_t* communicate_event(entity_t *origin, linked_list_t* recipients, char *what) {
+event_t* communicate_event(entity_id_t origin, linked_list_t* recipients, char *what) {
 	event_t* event = create_event_t();
 	event->type = COMMUNICATION;
 

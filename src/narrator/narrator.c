@@ -2,6 +2,8 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
+#include "mud/event/event.h"
+#include "mud/event/communicate.h"
 #include "mud/narrator/narrator.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
@@ -69,7 +71,7 @@ int remove_player_from_narration(narrator_t* narrator, entity_t* entity, player_
   return 0;
 }
 
-int retrieve_entity_listeners(narrator_t* narrator, entity_t* entity, linked_list_t** listeners) {
+int retrieve_players_for_narration(narrator_t* narrator, entity_t* entity, linked_list_t** listeners) {
   assert(narrator);
   assert(entity);
   assert(listeners);
@@ -88,22 +90,20 @@ int retrieve_entity_listeners(narrator_t* narrator, entity_t* entity, linked_lis
 /**
  * Narrates an entity speaking to any entities whom have a player.
 **/
-void narrate_speak_action(game_t* game, entity_t* entity, char* what) {
+void narrate_communicate_event(game_t* game, event_t* event) {
   assert(game);
-  assert(entity);
-  assert(what);
+  assert(event);
+  assert(event->type == COMMUNICATION);
 
-  linked_list_t * origin_player = NULL;
+  communicate_event_t* data = (communicate_event_t*)event->data;
 
-  if (retrieve_entity_listeners(game->narrator, entity, &origin_player) != 0) {
-    return;
-  }
+  entity_t* origin_entity = get_entity(game, data->origin.uuid);
 
-  it_t origin_it = list_begin(origin_player);
+  linked_list_t* players = NULL;
 
-  player_t* player = NULL;
+  retrieve_players_for_narration(game->narrator, origin_entity, &players);
 
-  while ((player = (player_t*)it_get(origin_it)) != NULL) {
-    send_to_player(player, "\n\rYou say '[cyan]%s[reset]'.\n\r", what);
+  if (players != NULL) {
+    send_to_players(players, "\n\rYou say '[cyan]%s[reset]'.\n\r", data->what);
   }
 }
