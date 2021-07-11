@@ -1,6 +1,7 @@
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
+#include "mud/narrator/narrator.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/data/linked_list/linked_list.h"
 #include "mud/ecs/ecs.h"
@@ -34,6 +35,7 @@ game_t* create_game_t(void) {
 
   game->network = create_network_t();
   game->components = create_components_t();
+  game->narrator = create_narrator_t();
 
   return game;
 }
@@ -46,6 +48,7 @@ void free_game_t(game_t* game) {
   assert(game->players);
   assert(game->network);
   assert(game->components);
+  assert(game->narrator);
 
   free_hash_table_t(game->players);
   free_hash_table_t(game->commands);
@@ -53,6 +56,7 @@ void free_game_t(game_t* game) {
 
   free_network_t(game->network);
   free_components_t(game->components);
+  free_narrator_t(game->narrator);
   free(game);
 }
 

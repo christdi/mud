@@ -14,6 +14,7 @@ typedef struct config config_t;
 typedef struct hash_table hash_table_t;
 typedef struct network network_t;
 typedef struct components components_t;
+typedef struct narrator narrator_t;
 
 /**
  * Structs
@@ -30,6 +31,7 @@ typedef struct game {
 
   network_t* network;
   components_t* components;
+  narrator_t* narrator;
 } game_t;
 
 /**
