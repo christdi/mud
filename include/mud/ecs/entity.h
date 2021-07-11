@@ -3,10 +3,7 @@
 
 #include <stdlib.h>
 
-/**
- * Definitions
-**/
-#define UUID_SIZE 37
+#include "mud/ecs/entity_id.h"
 
 /**
  * Typedefs
@@ -17,7 +14,7 @@ typedef struct game game_t; /* game.h */
  * Structs
 **/
 typedef struct entity {
-  char uuid[UUID_SIZE];
+  entity_id_t id;
   char* name;
   char* description;
 } entity_t;

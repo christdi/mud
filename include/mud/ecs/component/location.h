@@ -2,6 +2,7 @@
 #define _LOCATION_H_
 
 #include "mud/ecs/entity.h"
+#include "mud/ecs/entity_id.h"
 
 /**
  * Typedefs
@@ -12,8 +13,9 @@ typedef struct components components_t;
  * Structs
 **/
 typedef struct location {
-  char uuid[UUID_SIZE];
-  char location_uuid[UUID_SIZE];
+  entity_id_t entity_id;
+
+  entity_id_t at;
 } location_t;
 
 /**

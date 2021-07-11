@@ -2,6 +2,7 @@
 #define _DESCRIPTION_H_
 
 #include "mud/ecs/entity.h"
+#include "mud/ecs/entity_id.h"
 
 /**
  * Typedefs
@@ -14,7 +15,8 @@ typedef struct game game_t; /* game.h */
  * Structs
 **/
 typedef struct description {
-  char uuid[UUID_SIZE];
+  entity_id_t entity_id;
+  
   char* name;
   char* description;
 } description_t;

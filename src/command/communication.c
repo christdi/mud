@@ -2,6 +2,7 @@
 
 #include "mud/command/communication.h"
 #include "mud/dbo/account.h"
+#include "mud/event/communicate.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -26,4 +27,7 @@ void say_command(player_t* player, game_t* game, char* input) {
 
     return;
   }
+
+
+  list_add(game->events, communicate_event(player->entity, NULL, input));
 }

@@ -44,7 +44,7 @@ int has_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return hash_table_has(components->description, entity->uuid);
+  return hash_table_has(components->description, entity->id.uuid);
 }
 
 /**
@@ -54,8 +54,8 @@ void register_description(components_t* components, description_t* description) 
   assert(components);
   assert(description);
 
-  if (hash_table_insert(components->description, description->uuid, description) != 0) {
-    zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->uuid);
+  if (hash_table_insert(components->description, description->entity_id.uuid, description) != 0) {
+    zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->entity_id.uuid);
   }
 }
 
@@ -69,7 +69,7 @@ description_t* unregister_description(components_t* components, entity_t* entity
   assert(components);
   assert(entity);
 
-  return (description_t*)hash_table_delete(components->description, entity->uuid);
+  return (description_t*)hash_table_delete(components->description, entity->id.uuid);
 }
 
 /**
@@ -81,7 +81,7 @@ description_t* get_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (description_t*)hash_table_get(components->description, entity->uuid);
+  return (description_t*)hash_table_get(components->description, entity->id.uuid);
 }
 
 /**

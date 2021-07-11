@@ -53,10 +53,10 @@ void load_entities(game_t* game) {
   entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
   location_t* character_location = get_location(game->components, character);
-  strlcpy(character_location->location_uuid, location->uuid, UUID_SIZE);
+  character_location->at = location->id;
 
   location_t* item_location = get_location(game->components, item);
-  strlcpy(item_location->location_uuid, location->uuid, UUID_SIZE);
+  item_location->at = location->id;
 }
 
 /**
@@ -82,21 +82,21 @@ entity_t* get_entity(game_t* game, char* uuid) {
  * Returns a pointer to an entity struct representing the new character
 **/
 entity_t* new_character(game_t* game, char* name, char* description) {
-  entity_t* character = create_entity_t();
-  generate_uuid(character->uuid, UUID_SIZE);
-  hash_table_insert(game->entities, character->uuid, character);
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();
+  hash_table_insert(game->entities, entity->id.uuid, entity);
 
-  description_t* character_description = create_description_t();
-  strncpy(character_description->uuid, character->uuid, UUID_SIZE);
-  character_description->name = strdup(name);
-  character_description->description = strdup(description);
-  register_description(game->components, character_description);
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
 
-  location_t* location = create_location_t();
-  strncpy(location->uuid, character->uuid, UUID_SIZE);
-  register_location(game->components, location);
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
 
-  return character;
+  return entity;
 }
 
 /**
@@ -110,21 +110,21 @@ entity_t* new_character(game_t* game, char* name, char* description) {
  * Returns a pointer to an entity struct representing the new item
 **/
 entity_t* new_item(game_t* game, char* name, char* description) {
-  entity_t* item = create_entity_t();
-  generate_uuid(item->uuid, UUID_SIZE);
-  hash_table_insert(game->entities, item->uuid, item);
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();;
+  hash_table_insert(game->entities, entity->id.uuid, entity);
 
-  description_t* item_description = create_description_t();
-  strncpy(item_description->uuid, item->uuid, UUID_SIZE);
-  item_description->name = strdup(name);
-  item_description->description = strdup(description);
-  register_description(game->components, item_description);
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
 
-  location_t* location = create_location_t();
-  strncpy(location->uuid, item->uuid, UUID_SIZE);
-  register_location(game->components, location);
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
 
-  return item;
+  return entity;
 }
 
 /**
@@ -138,19 +138,19 @@ entity_t* new_item(game_t* game, char* name, char* description) {
  * Returns a pointer to an entity struct representing the new location
 **/
 entity_t* new_location(game_t* game, char* name, char* description) {
-  entity_t* location = create_entity_t();
-  generate_uuid(location->uuid, UUID_SIZE);
-  hash_table_insert(game->entities, location->uuid, location);
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();
+  hash_table_insert(game->entities, entity->id.uuid, entity);
 
-  description_t* location_description = create_description_t();
-  strncpy(location_description->uuid, location->uuid, UUID_SIZE);
-  location_description->name = strdup(name);
-  location_description->description = strdup(description);
-  register_description(game->components, location_description);
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
 
-  location_t* parent_location = create_location_t();
-  strncpy(parent_location->uuid, location->uuid, UUID_SIZE);
-  register_location(game->components, parent_location);
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
 
-  return location;
+  return entity;
 }

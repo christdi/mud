@@ -40,7 +40,7 @@ int has_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return hash_table_has(components->location, entity->uuid);
+  return hash_table_has(components->location, entity->id.uuid);
 }
 
 /**
@@ -54,8 +54,8 @@ void register_location(components_t* components, location_t* location) {
   assert(components);
   assert(location);
 
-  if (hash_table_insert(components->location, location->uuid, location) != 0) {
-    zlog_error(gc, "Failed to register location component for entity uuid [%s]", location->uuid);
+  if (hash_table_insert(components->location, location->entity_id.uuid, location) != 0) {
+    zlog_error(gc, "Failed to register location component for entity uuid [%s]", location->entity_id.uuid);
   }
 }
 
@@ -73,7 +73,7 @@ location_t* unregister_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (location_t*)hash_table_delete(components->location, entity->uuid);
+  return (location_t*)hash_table_delete(components->location, entity->id.uuid);
 }
 
 /**
@@ -88,7 +88,7 @@ location_t* get_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (location_t*)hash_table_get(components->location, entity->uuid);
+  return (location_t*)hash_table_get(components->location, entity->id.uuid);
 }
 
 /**
@@ -101,7 +101,7 @@ location_t* get_location(components_t* components, entity_t* entity) {
  *   len - The size of the destination string buffer.
 **/
 void describe_location(location_t* location, char* dest, size_t len) {
-  snprintf(dest, len, "location_uuid = %s", location->location_uuid);
+  snprintf(dest, len, "at = %s", location->at.uuid);
 }
 
 /**

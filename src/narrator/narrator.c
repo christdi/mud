@@ -34,13 +34,13 @@ int add_player_to_narration(narrator_t* narrator, entity_t* entity, player_t *pl
 
   linked_list_t * players = NULL;
 
-  if (hash_table_has(narrator->entities, entity->uuid)) {
-    players = (linked_list_t*)hash_table_get(narrator->entities, entity->uuid);
+  if (hash_table_has(narrator->entities, entity->id.uuid)) {
+    players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
   } else {
     players = create_linked_list_t();
 
-    if (hash_table_insert(narrator->entities, entity->uuid, players) != 0) {
-      zlog_error(gc, "Failed to add player to entity [%s] narration", entity->uuid);
+    if (hash_table_insert(narrator->entities, entity->id.uuid, players) != 0) {
+      zlog_error(gc, "Failed to add player to entity [%s] narration", entity->id.uuid);
 
       return -1;
     };
@@ -56,13 +56,13 @@ int remove_player_from_narration(narrator_t* narrator, entity_t* entity, player_
   assert(entity);
   assert(player);
 
-  if (!hash_table_has(narrator->entities, entity->uuid)) {
-    zlog_error(gc, "Failed to remove player from entity narration as entity [%s] has no listeners", entity->uuid);
+  if (!hash_table_has(narrator->entities, entity->id.uuid)) {
+    zlog_error(gc, "Failed to remove player from entity narration as entity [%s] has no listeners", entity->id.uuid);
 
     return -1;
   }
 
-  linked_list_t * players = (linked_list_t*)hash_table_get(narrator->entities, entity->uuid);
+  linked_list_t * players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
 
   list_remove(players, player);
 
@@ -74,13 +74,13 @@ int retrieve_entity_listeners(narrator_t* narrator, entity_t* entity, linked_lis
   assert(entity);
   assert(listeners);
 
-  if (!hash_table_has(narrator->entities, entity->uuid)) {
+  if (!hash_table_has(narrator->entities, entity->id.uuid)) {
     *listeners = NULL;
 
     return -1;
   }
 
-  *listeners = (linked_list_t*)hash_table_get(narrator->entities, entity->uuid);
+  *listeners = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
 
   return 0;
 }

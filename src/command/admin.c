@@ -45,7 +45,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
     while ((entity = (entity_t*)h_it_get(it)) != NULL) {
-      send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
+      send_to_player(player, "[yellow]%s[reset]\n\r", entity->id.uuid);
 
       description_t* description = get_description(game->components, entity);
       if (description) {
@@ -83,20 +83,20 @@ void entity_command(player_t* player, game_t* game, char* input) {
       return;
     }
 
-    send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->uuid);
+    send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->id.uuid);
 
     if (player->entity != NULL) {
       if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
-        zlog_error(gc, "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->uuid);
-        send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->uuid);
+        zlog_error(gc, "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
+        send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->id.uuid);
       }
     }
 
     player->entity = entity;
 
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
-      zlog_error(gc, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->uuid);
-      send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->uuid);
+      zlog_error(gc, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->id.uuid);
     };
   }
 }
