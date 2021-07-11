@@ -1,6 +1,5 @@
 #include <assert.h>
 
-#include "mud/action/action.h"
 #include "mud/command/communication.h"
 #include "mud/dbo/account.h"
 #include "mud/game.h"
@@ -27,6 +26,4 @@ void say_command(player_t* player, game_t* game, char* input) {
 
     return;
   }
-
-  speak_action(player->entity, game, input);
 }

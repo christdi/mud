@@ -1,5 +1,5 @@
 #include "mud/ecs/system.h"
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
 #include "mud/game.h"
 
 /**

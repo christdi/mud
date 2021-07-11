@@ -3,7 +3,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/ecs/components.h"
-#include "mud/ecs/location.h"
+#include "mud/ecs/component/location.h"
 #include "mud/log.h"
 
 /**

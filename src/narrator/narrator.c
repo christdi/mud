@@ -3,7 +3,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/narrator/narrator.h"
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -104,14 +104,6 @@ void narrate_speak_action(game_t* game, entity_t* entity, char* what) {
   player_t* player = NULL;
 
   while ((player = (player_t*)it_get(origin_it)) != NULL) {
-
+    send_to_player(player, "\n\rYou say '[cyan]%s[reset]'.\n\r", what);
   }
-
-  if (entity->player) {
-    send_to_player(entity->player, "\n\rYou say '[cyan]%s[reset]'.\n\r", what);
-  }
-
-  description_t* description = get_description(game->components, entity);
-
-  send_to_all_players(game, entity->player, "\n\r[cyan]%s[reset] says '[cyan]%s[reset]'.\n\r", description->name, what);
 }

@@ -4,9 +4,12 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/description.h"
-#include "mud/ecs/location.h"
+#include "mud/dbo/account.h"
+#include "mud/ecs/component/description.h"
+#include "mud/ecs/component/location.h"
+#include "mud/narrator/narrator.h"
 #include "mud/game.h"
+#include "mud/log.h"
 #include "mud/player.h"
 #include "mud/util/mudstring.h"
 
@@ -82,6 +85,18 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->uuid);
 
-    assign_entity(entity, player);
+    if (player->entity != NULL) {
+      if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
+        zlog_error(gc, "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->uuid);
+        send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->uuid);
+      }
+    }
+
+    player->entity = entity;
+
+    if (add_player_to_narration(game->narrator, entity, player) != 0) {
+      zlog_error(gc, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->uuid);
+      send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->uuid);
+    };
   }
 }

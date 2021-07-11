@@ -2,7 +2,7 @@
 
 #include "mud/command/command.h"
 #include "mud/dbo/account.h"
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"

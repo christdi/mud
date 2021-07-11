@@ -185,12 +185,12 @@ int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len) {
               free(markup);
 
               return -1;
-            } else {
-              memcpy(write, ansi_codes[i][1], ansi_length);
-              write += ansi_length;
-              copied += ansi_length;
-              break;
             }
+
+            memcpy(write, ansi_codes[i][1], ansi_length);
+            write += ansi_length;
+            copied += ansi_length;
+            break;
           }
         }
 
