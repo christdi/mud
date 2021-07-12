@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "mud/data/hash_table.h"
+#include "mud/ecs/component/location.h"
 #include "mud/ecs/components.h"
-#include "mud/ecs/location.h"
 #include "mud/log.h"
 
 /**
@@ -24,7 +24,18 @@ void free_location_t(location_t* location) {
   assert(location);
 
   free(location);
-  location = NULL;
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_location_t(void* value) {
+  assert(value);
+
+  location_t* location = (location_t*)value;
+
+  free_location_t(location);
 }
 
 /**
@@ -40,7 +51,7 @@ int has_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return hash_table_has(components->location, entity->uuid);
+  return hash_table_has(components->location, entity->id.uuid);
 }
 
 /**
@@ -54,8 +65,8 @@ void register_location(components_t* components, location_t* location) {
   assert(components);
   assert(location);
 
-  if (hash_table_insert(components->location, location->uuid, location) != 0) {
-    zlog_error(gc, "Failed to register location component for entity uuid [%s]", location->uuid);
+  if (hash_table_insert(components->location, location->entity_id.uuid, location) != 0) {
+    zlog_error(gc, "Failed to register location component for entity uuid [%s]", location->entity_id.uuid);
   }
 }
 
@@ -66,14 +77,12 @@ void register_location(components_t* components, location_t* location) {
  *  components - a pointer to a components struct representative of the game components
  *  entity - a pointer to an entity struct representing the entity whose location
  *    component should be unregistered.
- *
- * Returns a pointer to the location that was unregistered if present, NULL otherwise.
 **/
-location_t* unregister_location(components_t* components, entity_t* entity) {
+void unregister_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (location_t*)hash_table_delete(components->location, entity->uuid);
+  hash_table_delete(components->location, entity->id.uuid);
 }
 
 /**
@@ -88,7 +97,7 @@ location_t* get_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (location_t*)hash_table_get(components->location, entity->uuid);
+  return (location_t*)hash_table_get(components->location, entity->id.uuid);
 }
 
 /**
@@ -101,7 +110,7 @@ location_t* get_location(components_t* components, entity_t* entity) {
  *   len - The size of the destination string buffer.
 **/
 void describe_location(location_t* location, char* dest, size_t len) {
-  snprintf(dest, len, "location_uuid = %s", location->location_uuid);
+  snprintf(dest, len, "at = %s", location->at.uuid);
 }
 
 /**

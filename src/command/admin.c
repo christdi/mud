@@ -4,11 +4,22 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/description.h"
-#include "mud/ecs/location.h"
+#include "mud/dbo/account.h"
+#include "mud/ecs/component/description.h"
+#include "mud/ecs/component/location.h"
 #include "mud/game.h"
+#include "mud/log.h"
+#include "mud/narrator/narrator.h"
 #include "mud/player.h"
 #include "mud/util/mudstring.h"
+
+void shutdown_command(player_t* player, game_t* game, char* input) {
+  assert(player);
+  assert(game);
+  assert(input);
+
+  game->shutdown = 1;
+}
 
 /**
  * Command which allows a player to assign an entity to themselves.
@@ -42,7 +53,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
 
     while ((entity = (entity_t*)h_it_get(it)) != NULL) {
-      send_to_player(player, "[yellow]%s[reset]\n\r", entity->uuid);
+      send_to_player(player, "[yellow]%s[reset]\n\r", entity->id.uuid);
 
       description_t* description = get_description(game->components, entity);
       if (description) {
@@ -80,8 +91,20 @@ void entity_command(player_t* player, game_t* game, char* input) {
       return;
     }
 
-    send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->uuid);
+    send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->id.uuid);
 
-    assign_entity(entity, player);
+    if (player->entity != NULL) {
+      if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
+        zlog_error(gc, "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
+        send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->id.uuid);
+      }
+    }
+
+    player->entity = entity;
+
+    if (add_player_to_narration(game->narrator, entity, player) != 0) {
+      zlog_error(gc, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->id.uuid);
+    };
   }
 }

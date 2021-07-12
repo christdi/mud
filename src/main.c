@@ -32,5 +32,7 @@ int main(int argc, char* argv[]) {
 
   log_shutdown();
 
+  config_free(config);
+
   return 0;
 }

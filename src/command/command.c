@@ -26,7 +26,21 @@ command_t* create_command_t() {
  * Frees an allocated command_t.
 **/
 void free_command_t(command_t* command) {
+  assert(command);
+
   free(command);
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_command(void* value) {
+  assert(value);
+
+  command_t* command = (command_t*)value;
+
+  free_command_t(command);
 }
 
 /**
@@ -35,6 +49,7 @@ void free_command_t(command_t* command) {
 void load_commands(game_t* game) {
   static command_t commands[] = {
     { "entity", entity_command },
+    { "shutdown", shutdown_command },
     { "inventory", inventory_command },
     { "i", inventory_command },
     { "look", look_command },

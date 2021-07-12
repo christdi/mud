@@ -10,6 +10,7 @@ typedef struct game game_t;
 /**
  * Function prototypes
 **/
+void shutdown_command(player_t* player, game_t* game, char* input);
 void entity_command(player_t* player, game_t* game, char* input);
 
 #endif

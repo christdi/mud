@@ -1,4 +1,4 @@
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
 #include "mud/data/hash_table.h"
 #include "mud/ecs/components.h"
 #include "mud/log.h"
@@ -14,6 +14,9 @@
 description_t* create_description_t() {
   description_t* description = calloc(1, sizeof *description);
 
+  description->name = NULL;
+  description->description = NULL;
+
   return description;
 }
 
@@ -21,18 +24,27 @@ description_t* create_description_t() {
  * Free a description_t.
 **/
 void free_description_t(description_t* description) {
-  if (description->name) {
+  if (description->name != NULL) {
     free(description->name);
-    description->name = NULL;
   }
 
-  if (description->description) {
+  if (description->description != NULL) {
     free(description->description);
-    description->description = NULL;
   }
 
   free(description);
-  description = NULL;
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_description_t(void* value) {
+  assert(value);
+
+  description_t* description = (description_t*)value;
+
+  free_description_t(description);
 }
 
 /**
@@ -44,7 +56,7 @@ int has_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return hash_table_has(components->description, entity->uuid);
+  return hash_table_has(components->description, entity->id.uuid);
 }
 
 /**
@@ -54,22 +66,19 @@ void register_description(components_t* components, description_t* description) 
   assert(components);
   assert(description);
 
-  if (hash_table_insert(components->description, description->uuid, description) != 0) {
-    zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->uuid);
+  if (hash_table_insert(components->description, description->entity_id.uuid, description) != 0) {
+    zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->entity_id.uuid);
   }
 }
 
 /**
  * Removes character details component for a given uuid.
- *
- * Returns the removed description_t in case it has to be freed, or null if
- * there was no matching uuid.
 **/
-description_t* unregister_description(components_t* components, entity_t* entity) {
+void unregister_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (description_t*)hash_table_delete(components->description, entity->uuid);
+  hash_table_delete(components->description, entity->id.uuid);
 }
 
 /**
@@ -81,7 +90,7 @@ description_t* get_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (description_t*)hash_table_get(components->description, entity->uuid);
+  return (description_t*)hash_table_get(components->description, entity->id.uuid);
 }
 
 /**

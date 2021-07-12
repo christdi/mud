@@ -1,5 +1,6 @@
 #include "mud/player.h"
 #include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/dbo/account.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -38,11 +39,19 @@ void free_player_t(player_t* player) {
     free_account_t(player->account);
   }
 
-  if (player != NULL) {
-    free(player);
-  }
+  free(player);
+}
 
-  player = NULL;
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_player(void* value) {
+  assert(value);
+
+  player_t* player = (player_t*)value;
+
+  free_player_t(player);
 }
 
 /**
@@ -66,9 +75,7 @@ void player_connected(client_t* client, void* context) {
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  player_t* player = hash_table_delete(game->players, client->uuid);
-
-  free_player_t(player);
+  hash_table_delete(game->players, client->uuid);
 }
 
 /**
@@ -113,10 +120,40 @@ void send_to_player(player_t* player, const char* fmt, ...) {
 
   va_list args;
   va_start(args, fmt);
-  vsprintf(output, fmt, args);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
+
   va_end(args);
 
   write_to_player(player, output);
+}
+
+void send_to_players(linked_list_t* players, const char* fmt, ...) {
+  assert(players);
+  assert(fmt);
+
+  char output[SEND_SIZE];
+
+  va_list args;
+  va_start(args, fmt);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
+
+  va_end(args);
+
+  it_t it = list_begin(players);
+
+  player_t* player = NULL;
+
+  while ((player = (player_t*)it_get(it)) != NULL) {
+    write_to_player(player, output);
+
+    it = it_next(it);
+  }
 }
 
 /**
@@ -134,7 +171,10 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
 
   va_list args;
   va_start(args, fmt);
-  vsprintf(output, fmt, args);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
 
   while ((target = h_it_get(it)) != NULL) {
     if (excluding && excluding == target) {

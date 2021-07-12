@@ -1,5 +1,6 @@
 #include "mud/data/linked_list/node.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -14,11 +15,11 @@ node_t* node_new(void) {
 }
 
 void node_free(node_t* node) {
-  if (node) {
-    node->data = NULL;
-    node->next = NULL;
-    node->prev = NULL;
+  assert(node);
 
-    free(node);
+  if (node->deallocator) {
+    node->deallocator(node->data);
   }
+
+  free(node);
 }

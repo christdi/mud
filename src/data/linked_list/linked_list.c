@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+void remove_node(linked_list_t* list, node_t* node);
+
 /**
  * Allocates a new empty linked list.
  *
@@ -33,13 +35,32 @@ void init_linked_list(linked_list_t* list) {
 **/
 void free_linked_list_t(linked_list_t* list) {
   assert(list);
-  assert(list->first == NULL);
-  assert(list->last == NULL);
+
+  if (list->first != NULL && list->last != NULL) {
+    node_t* node = list->first;
+
+    while (node != NULL) {
+      remove_node(list, node);
+
+      node = list->first;
+    }
+  }
 
   pthread_mutex_destroy(&list->mutex);
 
   free(list);
-  list = NULL;
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_linked_list_t(void* value) {
+  assert(value);
+
+  linked_list_t* linked_list = (linked_list_t*)value;
+
+  free_linked_list_t(linked_list);
 }
 
 /**
@@ -56,6 +77,7 @@ void list_add(linked_list_t* list, void* value) {
 
   node_t* node = node_new();
   node->data = value;
+  node->deallocator = list->deallocator;
 
   if (!list->first) {
     list->first = node;
@@ -91,30 +113,12 @@ it_t list_remove(linked_list_t* list, void* value) {
     return it;
   }
 
-  node_t* node = NULL;
+  node_t* node = list->first;
 
-  for (node = list->first; node != NULL; node = node->next) {
+  while (node != NULL) {
     if (node->data == value) {
       it.node = node->next;
-
-      if (list->first == node) {
-        list->first = node->next;
-      }
-
-      if (list->last == node) {
-        list->last = node->prev;
-      }
-
-      if (node->prev) {
-        node->prev->next = node->next;
-      }
-
-      if (node->next) {
-        node->next->prev = node->prev;
-      }
-
-      node_free(node);
-
+      remove_node(list, node);
       break;
     }
   }
@@ -126,6 +130,29 @@ it_t list_remove(linked_list_t* list, void* value) {
   }
 
   return it;
+}
+
+/**
+ * Unlinks and frees a node given the list and node.
+**/
+void remove_node(linked_list_t* list, node_t* node) {
+  if (list->first == node) {
+    list->first = node->next;
+  }
+
+  if (list->last == node) {
+    list->last = node->prev;
+  }
+
+  if (node->prev != NULL) {
+    node->prev->next = node->next;
+  }
+
+  if (node->next != NULL) {
+    node->next->prev = node->prev;
+  }
+
+  node_free(node);
 }
 
 /**

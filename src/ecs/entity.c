@@ -5,15 +5,11 @@
 
 #include "bsd/string.h"
 
-#include "mud/action/action_callback.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
+#include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
-#include "mud/ecs/entity/character.h"
-#include "mud/ecs/entity/item.h"
-#include "mud/ecs/entity/location.h"
-#include "mud/ecs/location.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -26,7 +22,6 @@
 **/
 entity_t* create_entity_t() {
   entity_t* entity = calloc(1, sizeof *entity);
-  entity->action_callback = create_action_callback_t();
 
   return entity;
 }
@@ -37,9 +32,19 @@ entity_t* create_entity_t() {
 void free_entity_t(entity_t* entity) {
   assert(entity);
 
-  free_action_callback_t(entity->action_callback);
-
   free(entity);
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_entity(void* value) {
+  assert(value);
+
+  entity_t* entity = (entity_t*)value;
+
+  free_entity_t(entity);
 }
 
 /**
@@ -60,10 +65,10 @@ void load_entities(game_t* game) {
   entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
   location_t* character_location = get_location(game->components, character);
-  strlcpy(character_location->location_uuid, location->uuid, UUID_SIZE);
+  character_location->at = location->id;
 
   location_t* item_location = get_location(game->components, item);
-  strlcpy(item_location->location_uuid, location->uuid, UUID_SIZE);
+  item_location->at = location->id;
 }
 
 /**
@@ -79,12 +84,85 @@ entity_t* get_entity(game_t* game, char* uuid) {
 }
 
 /**
- * Assigns an entity to a given player.
+ * Creates and registers the components necessary to represent a character.
+ *
+ * This function takes the following parameters:
+ *   game - a pointer to a game struct containing components
+ *   name - the name to use for the new character
+ *   description - the description to use for the new character
+ *
+ * Returns a pointer to an entity struct representing the new character
 **/
-void assign_entity(entity_t* entity, player_t* player) {
-  assert(player);
-  assert(entity);
+entity_t* new_character(game_t* game, char* name, char* description) {
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();
+  hash_table_insert(game->entities, entity->id.uuid, entity);
 
-  player->entity = entity;
-  entity->player = player;
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
+
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
+
+  return entity;
+}
+
+/**
+ * Creates and registers the components necessary to represent a item.
+ *
+ * This function takes the following parameters:
+ *   game - a pointer to a game struct containing components
+ *   name - the name to use for the new location
+ *   description - the description to use for the new item
+ *
+ * Returns a pointer to an entity struct representing the new item
+**/
+entity_t* new_item(game_t* game, char* name, char* description) {
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();
+  hash_table_insert(game->entities, entity->id.uuid, entity);
+
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
+
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
+
+  return entity;
+}
+
+/**
+ * Creates and registers the components necessary to represent a location.
+ *
+ * This function takes the following parameters:
+ *   game - a pointer to a game struct containing components
+ *   name - the name to use for the new location
+ *   description - the description to use for the new location
+ *
+ * Returns a pointer to an entity struct representing the new location
+**/
+entity_t* new_location(game_t* game, char* name, char* description) {
+  entity_t* entity = create_entity_t();
+  entity->id = entity_id();
+  hash_table_insert(game->entities, entity->id.uuid, entity);
+
+  description_t* description_component = create_description_t();
+  description_component->entity_id = entity->id;
+  description_component->name = strdup(name);
+  description_component->description = strdup(description);
+  register_description(game->components, description_component);
+
+  location_t* location_component = create_location_t();
+  location_component->entity_id = entity->id;
+  register_location(game->components, location_component);
+
+  return entity;
 }

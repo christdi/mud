@@ -10,6 +10,7 @@
  * Typedefs
 **/
 typedef struct hash_node hash_node_t;
+typedef void (*deallocate_func)(void*);
 
 /**
  * Structs
@@ -17,6 +18,7 @@ typedef struct hash_node hash_node_t;
 struct hash_node {
   char* key;
   void* value;
+  deallocate_func deallocator;
 };
 
 /**
@@ -24,5 +26,6 @@ struct hash_node {
 **/
 hash_node_t* create_hash_node_t();
 void free_hash_node_t(hash_node_t* hash_node);
+void deallocate_hash_node_t(void* value);
 
 #endif

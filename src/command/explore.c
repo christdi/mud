@@ -3,9 +3,9 @@
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
 #include "mud/dbo/account.h"
-#include "mud/ecs/description.h"
+#include "mud/ecs/component/description.h"
+#include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
-#include "mud/ecs/location.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -46,15 +46,15 @@ void look_command(player_t* player, game_t* game, char* input) {
   location_t* location_component = get_location(game->components, entity);
 
   if (!location_component) {
-    zlog_warn(gc, "Look command failed for entity [%s] as it did not have a location component", entity->uuid);
+    zlog_warn(gc, "Look command failed for entity [%s] as it did not have a location component", entity->id.uuid);
 
     return;
   }
 
-  entity_t* location = get_entity(game, location_component->location_uuid);
+  entity_t* location = get_entity(game, location_component->at.uuid);
 
   if (!location) {
-    zlog_error(gc, "Look command failed for entity [%s] as location component does not reference valid entity", entity->uuid);
+    zlog_error(gc, "Look command failed for entity [%s] as location component does not reference valid entity", entity->id.uuid);
 
     return;
   }
@@ -62,7 +62,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   description_t* description = get_description(game->components, location);
 
   if (!description) {
-    zlog_error(gc, "Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->uuid);
+    zlog_error(gc, "Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->id.uuid);
 
     return;
   }

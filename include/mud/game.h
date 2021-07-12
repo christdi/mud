@@ -12,8 +12,10 @@
 **/
 typedef struct config config_t;
 typedef struct hash_table hash_table_t;
+typedef struct linked_list linked_list_t;
 typedef struct network network_t;
 typedef struct components components_t;
+typedef struct narrator narrator_t;
 
 /**
  * Structs
@@ -28,8 +30,11 @@ typedef struct game {
   hash_table_t* commands;
   hash_table_t* entities;
 
+  linked_list_t* events;
+
   network_t* network;
   components_t* components;
+  narrator_t* narrator;
 } game_t;
 
 /**

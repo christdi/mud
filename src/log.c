@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "mud/log.h"
 
 int log_initialise(const char* configFilePath) {

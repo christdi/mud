@@ -3,25 +3,18 @@
 
 #include <stdlib.h>
 
-/**
- * Definitions
-**/
-#define UUID_SIZE 37
+#include "mud/ecs/entity_id.h"
 
 /**
  * Typedefs
 **/
 typedef struct game game_t; /* game.h */
-typedef struct player player_t; /* player.h */
-typedef struct action_callback action_callback_t; /* action/action_callback.h */
 
 /**
  * Structs
 **/
 typedef struct entity {
-  char uuid[UUID_SIZE];
-  player_t* player;
-  action_callback_t* action_callback;
+  entity_id_t id;
 } entity_t;
 
 /**
@@ -29,9 +22,13 @@ typedef struct entity {
 **/
 entity_t* create_entity_t();
 void free_entity_t(entity_t* entity);
+void deallocate_entity(void* value);
 
 void load_entities(game_t* game);
 entity_t* get_entity(game_t* game, char* uuid);
-void assign_entity(entity_t* entity, player_t* player);
+
+entity_t* new_character(game_t* game, char* name, char* description);
+entity_t* new_item(game_t* game, char* name, char* description);
+entity_t* new_location(game_t* game, char* name, char* description);
 
 #endif
