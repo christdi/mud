@@ -41,7 +41,7 @@ void free_description_t(description_t* description) {
 **/
 void deallocate_description_t(void* value) {
   assert(value);
-  
+
   description_t* description = (description_t*)value;
 
   free_description_t(description);

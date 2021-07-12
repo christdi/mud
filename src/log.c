@@ -1,4 +1,4 @@
-#include <stdlib.h> 
+#include <stdlib.h>
 
 #include "mud/log.h"
 

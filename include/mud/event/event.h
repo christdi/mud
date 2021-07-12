@@ -5,16 +5,16 @@
  * Enums
 **/
 typedef enum event_type {
-	UNDEFINED,
-	COMMUNICATION
+  UNDEFINED,
+  COMMUNICATION
 } event_type_t;
 
 /**
  * Structs
 **/
 typedef struct event {
-	event_type_t type;
-	void* data;
+  event_type_t type;
+  void* data;
 } event_t;
 
 /**

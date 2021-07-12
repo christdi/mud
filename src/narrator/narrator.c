@@ -3,13 +3,13 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/data/queue.h"
-#include "mud/event/event.h"
-#include "mud/event/communicate.h"
-#include "mud/narrator/narrator.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
+#include "mud/event/communicate.h"
+#include "mud/event/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/narrator/narrator.h"
 #include "mud/player.h"
 
 narrator_t* create_narrator_t() {
@@ -31,12 +31,12 @@ void free_narrator_t(narrator_t* narrator) {
   free(narrator);
 }
 
-int add_player_to_narration(narrator_t* narrator, entity_t* entity, player_t *player) {
+int add_player_to_narration(narrator_t* narrator, entity_t* entity, player_t* player) {
   assert(narrator);
   assert(entity);
   assert(player);
 
-  linked_list_t * players = NULL;
+  linked_list_t* players = NULL;
 
   if (hash_table_has(narrator->entities, entity->id.uuid)) {
     players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
@@ -66,7 +66,7 @@ int remove_player_from_narration(narrator_t* narrator, entity_t* entity, player_
     return -1;
   }
 
-  linked_list_t * players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
+  linked_list_t* players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
 
   list_remove(players, player);
 
@@ -89,18 +89,18 @@ int retrieve_players_for_narration(narrator_t* narrator, entity_t* entity, linke
   return 0;
 }
 
-void narrate_events(game_t *game) {
+void narrate_events(game_t* game) {
   event_t* event = NULL;
 
   while ((event = (event_t*)queue_dequeue(game->events)) != NULL) {
-    switch(event->type) {
-      case UNDEFINED:
-        zlog_error(gc, "Event with UNDEFINED type was received.  Discarding.");
-        break;
-      case COMMUNICATION:
-        narrate_communicate_event(game, event);
-        free_communicate_event_t((communicate_event_t*)event->data);
-        break;
+    switch (event->type) {
+    case UNDEFINED:
+      zlog_error(gc, "Event with UNDEFINED type was received.  Discarding.");
+      break;
+    case COMMUNICATION:
+      narrate_communicate_event(game, event);
+      free_communicate_event_t((communicate_event_t*)event->data);
+      break;
     }
 
     free_event_t(event);

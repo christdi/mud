@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "mud/data/hash_table.h"
-#include "mud/ecs/components.h"
 #include "mud/ecs/component/location.h"
+#include "mud/ecs/components.h"
 #include "mud/log.h"
 
 /**
@@ -32,7 +32,7 @@ void free_location_t(location_t* location) {
 **/
 void deallocate_location_t(void* value) {
   assert(value);
-  
+
   location_t* location = (location_t*)value;
 
   free_location_t(location);

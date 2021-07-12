@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "mud/data/hash_table.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/component/location.h"
-#include "mud/data/hash_table.h"
 #include "mud/ecs/components.h"
 #include "mud/log.h"
 

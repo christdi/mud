@@ -7,7 +7,7 @@
  * Structs
 **/
 typedef struct entity_id {
-	char uuid[UUID_SIZE];
+  char uuid[UUID_SIZE];
 } entity_id_t;
 
 entity_id_t entity_id();

@@ -1,11 +1,11 @@
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
-#include "mud/narrator/narrator.h"
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/data/linked_list/linked_list.h"
 #include "mud/ecs/ecs.h"
 #include "mud/log.h"
+#include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
 #include "mud/player.h"
 

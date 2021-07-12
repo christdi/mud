@@ -48,7 +48,7 @@ void free_player_t(player_t* player) {
 **/
 void deallocate_player(void* value) {
   assert(value);
-  
+
   player_t* player = (player_t*)value;
 
   free_player_t(player);
@@ -149,7 +149,7 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
 
   player_t* player = NULL;
 
-  while ((player = (player_t*)it_get(it)) != NULL ) {
+  while ((player = (player_t*)it_get(it)) != NULL) {
     write_to_player(player, output);
 
     it = it_next(it);

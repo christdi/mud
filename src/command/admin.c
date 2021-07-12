@@ -7,18 +7,18 @@
 #include "mud/dbo/account.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/component/location.h"
-#include "mud/narrator/narrator.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/narrator/narrator.h"
 #include "mud/player.h"
 #include "mud/util/mudstring.h"
 
-void shutdown_command(player_t* player, game_t *game, char *input) {
+void shutdown_command(player_t* player, game_t* game, char* input) {
   assert(player);
   assert(game);
   assert(input);
 
-  game->shutdown = 1;  
+  game->shutdown = 1;
 }
 
 /**

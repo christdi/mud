@@ -14,9 +14,9 @@ typedef struct linked_list linked_list_t;
  * Structs
 **/
 typedef struct communicate_event {
-	entity_id_t origin;
-	linked_list_t* recipients;
-	char* what;
+  entity_id_t origin;
+  linked_list_t* recipients;
+  char* what;
 } communicate_event_t;
 
 /**
@@ -25,6 +25,6 @@ typedef struct communicate_event {
 communicate_event_t* create_communicate_event_t();
 void free_communicate_event_t(communicate_event_t* event);
 
-event_t* communicate_event(entity_id_t origin, linked_list_t* recipients, char *what);
+event_t* communicate_event(entity_id_t origin, linked_list_t* recipients, char* what);
 
 #endif

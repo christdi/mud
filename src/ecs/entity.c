@@ -8,8 +8,8 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/component/description.h"
-#include "mud/ecs/entity.h"
 #include "mud/ecs/component/location.h"
+#include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -41,7 +41,7 @@ void free_entity_t(entity_t* entity) {
 **/
 void deallocate_entity(void* value) {
   assert(value);
-  
+
   entity_t* entity = (entity_t*)value;
 
   free_entity_t(entity);

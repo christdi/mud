@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void remove_node(linked_list_t* list, node_t *node);
+void remove_node(linked_list_t* list, node_t* node);
 
 /**
  * Allocates a new empty linked list.
@@ -136,23 +136,23 @@ it_t list_remove(linked_list_t* list, void* value) {
  * Unlinks and frees a node given the list and node.
 **/
 void remove_node(linked_list_t* list, node_t* node) {
-    if (list->first == node) {
-      list->first = node->next;
-    }
+  if (list->first == node) {
+    list->first = node->next;
+  }
 
-    if (list->last == node) {
-      list->last = node->prev;
-    }
+  if (list->last == node) {
+    list->last = node->prev;
+  }
 
-    if (node->prev != NULL) {
-      node->prev->next = node->next;
-    }
+  if (node->prev != NULL) {
+    node->prev->next = node->next;
+  }
 
-    if (node->next != NULL) {
-      node->next->prev = node->prev;
-    }
+  if (node->next != NULL) {
+    node->next->prev = node->prev;
+  }
 
-    node_free(node);
+  node_free(node);
 }
 
 /**
