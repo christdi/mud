@@ -17,5 +17,9 @@ node_t* node_new(void) {
 void node_free(node_t* node) {
   assert(node);
 
+  if (node->deallocator) {
+    node->deallocator(node->data);
+  }
+
   free(node);
 }

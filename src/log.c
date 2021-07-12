@@ -23,9 +23,5 @@ int log_initialise(const char* configFilePath) {
 }
 
 void log_shutdown(void) {
-  free(gc);
-  free(nc);
-  free(dc);
-
   zlog_fini();
 }

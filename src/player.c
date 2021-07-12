@@ -75,9 +75,7 @@ void player_connected(client_t* client, void* context) {
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  player_t* player = hash_table_delete(game->players, client->uuid);
-
-  free_player_t(player);
+  hash_table_delete(game->players, client->uuid);
 }
 
 /**

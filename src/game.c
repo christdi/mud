@@ -33,7 +33,6 @@ game_t* create_game_t(void) {
   game->players->deallocator = deallocate_player;
 
   game->commands = create_hash_table_t();
-  game->commands->deallocator = deallocate_command;
 
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;

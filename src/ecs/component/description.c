@@ -14,8 +14,6 @@
 description_t* create_description_t() {
   description_t* description = calloc(1, sizeof *description);
 
-  zlog_info(gc, "Allocated description_t [%p]", (void *)description);
-
   description->name = NULL;
   description->description = NULL;
 
@@ -26,8 +24,6 @@ description_t* create_description_t() {
  * Free a description_t.
 **/
 void free_description_t(description_t* description) {
-  zlog_info(gc, "Freeing description_t [%p]", (void*)description);
-
   if (description->name != NULL) {
     free(description->name);
   }
@@ -69,8 +65,6 @@ int has_description(components_t* components, entity_t* entity) {
 void register_description(components_t* components, description_t* description) {
   assert(components);
   assert(description);
-
-  zlog_info(gc, "Inserting description [%p]", (void *)description);
 
   if (hash_table_insert(components->description, description->entity_id.uuid, description) != 0) {
     zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->entity_id.uuid);
