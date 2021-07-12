@@ -30,7 +30,7 @@ void deallocate_description_t(void *value);
 
 int has_description(components_t* components, entity_t* entity);
 void register_description(components_t* components, description_t* description);
-description_t* unregister_description(components_t* components, entity_t* entity);
+void unregister_description(components_t* components, entity_t* entity);
 description_t* get_description(components_t* components, entity_t* entity);
 
 void update_description(game_t* game);

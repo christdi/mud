@@ -77,14 +77,12 @@ void register_location(components_t* components, location_t* location) {
  *  components - a pointer to a components struct representative of the game components
  *  entity - a pointer to an entity struct representing the entity whose location
  *    component should be unregistered.
- *
- * Returns a pointer to the location that was unregistered if present, NULL otherwise.
 **/
-location_t* unregister_location(components_t* components, entity_t* entity) {
+void unregister_location(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (location_t*)hash_table_delete(components->location, entity->id.uuid);
+  hash_table_delete(components->location, entity->id.uuid);
 }
 
 /**

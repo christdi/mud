@@ -120,7 +120,11 @@ void send_to_player(player_t* player, const char* fmt, ...) {
 
   va_list args;
   va_start(args, fmt);
-  vsprintf(output, fmt, args);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
+
   va_end(args);
 
   write_to_player(player, output);
@@ -134,7 +138,11 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
 
   va_list args;
   va_start(args, fmt);
-  vsprintf(output, fmt, args);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
+
   va_end(args);
 
   it_t it = list_begin(players);
@@ -163,7 +171,10 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
 
   va_list args;
   va_start(args, fmt);
-  vsprintf(output, fmt, args);
+
+  if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
+    zlog_error(nc, "Formatted output was too long and was truncated");
+  }
 
   while ((target = h_it_get(it)) != NULL) {
     if (excluding && excluding == target) {

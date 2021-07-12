@@ -73,15 +73,12 @@ void register_description(components_t* components, description_t* description) 
 
 /**
  * Removes character details component for a given uuid.
- *
- * Returns the removed description_t in case it has to be freed, or null if
- * there was no matching uuid.
 **/
-description_t* unregister_description(components_t* components, entity_t* entity) {
+void unregister_description(components_t* components, entity_t* entity) {
   assert(components);
   assert(entity);
 
-  return (description_t*)hash_table_delete(components->description, entity->id.uuid);
+  hash_table_delete(components->description, entity->id.uuid);
 }
 
 /**

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "mud/event/event.h"
 #include "mud/event/communicate.h"
@@ -40,7 +41,7 @@ event_t* communicate_event(entity_id_t origin, linked_list_t* recipients, char *
 	communicate_event_t* communicate_event = create_communicate_event_t();
 	communicate_event->origin = origin;
 	communicate_event->recipients = recipients;
-	communicate_event->what = what;
+	communicate_event->what = strdup(what);
 
 	event->data = (communicate_event_t*) communicate_event;
 

@@ -27,7 +27,7 @@ void deallocate_location_t(void* value);
 
 int has_location(components_t* components, entity_t* entity);
 void register_location(components_t* components, location_t* location);
-location_t* unregister_location(components_t* components, entity_t* entity);
+void unregister_location(components_t* components, entity_t* entity);
 location_t* get_location(components_t* components, entity_t* entity);
 void describe_location(location_t* location, char* dest, size_t len);
 

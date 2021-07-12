@@ -52,6 +52,18 @@ void free_linked_list_t(linked_list_t* list) {
 }
 
 /**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_linked_list_t(void* value) {
+  assert(value);
+
+  linked_list_t* linked_list = (linked_list_t*)value;
+
+  free_linked_list_t(linked_list);
+}
+
+/**
  * Add a node to the end of the linked list.  
 **/
 void list_add(linked_list_t* list, void* value) {
@@ -101,14 +113,12 @@ it_t list_remove(linked_list_t* list, void* value) {
     return it;
   }
 
-  node_t* node = NULL;
+  node_t* node = list->first;
 
-  for (node = list->first; node != NULL; node = node->next) {
+  while (node != NULL) {
     if (node->data == value) {
       it.node = node->next;
-
       remove_node(list, node);
-
       break;
     }
   }

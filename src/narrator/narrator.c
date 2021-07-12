@@ -16,6 +16,7 @@ narrator_t* create_narrator_t() {
   narrator_t* narrator = calloc(1, sizeof *narrator);
 
   narrator->entities = create_hash_table_t();
+  narrator->entities->deallocator = deallocate_linked_list_t;
 
   return narrator;
 }
@@ -98,8 +99,11 @@ void narrate_events(game_t *game) {
         break;
       case COMMUNICATION:
         narrate_communicate_event(game, event);
+        free_communicate_event_t((communicate_event_t*)event->data);
         break;
     }
+
+    free_event_t(event);
   }
 }
 

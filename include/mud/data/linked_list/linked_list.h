@@ -27,6 +27,7 @@ typedef struct linked_list {
 linked_list_t* create_linked_list_t(void);
 void init_linked_list(linked_list_t* list);
 void free_linked_list_t(linked_list_t* list);
+void deallocate_linked_list_t(void* value);
 
 void list_add(linked_list_t* list, void* value);
 it_t list_remove(linked_list_t* list, void* value);

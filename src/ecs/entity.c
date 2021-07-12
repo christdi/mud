@@ -61,14 +61,14 @@ void load_entities(game_t* game) {
   // TODO(Chris I): Actually load entities
 
   entity_t* location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
-  // entity_t* character = new_character(game, "Test character", "A proud test character.");
-  // entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
+  entity_t* character = new_character(game, "Test character", "A proud test character.");
+  entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
-  // location_t* character_location = get_location(game->components, character);
-  // character_location->at = location->id;
+  location_t* character_location = get_location(game->components, character);
+  character_location->at = location->id;
 
-  // location_t* item_location = get_location(game->components, item);
-  // item_location->at = location->id;
+  location_t* item_location = get_location(game->components, item);
+  item_location->at = location->id;
 }
 
 /**

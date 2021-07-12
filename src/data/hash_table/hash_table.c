@@ -96,6 +96,45 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
 }
 
 /**
+ * Searches a hash table for a given key and deletes if found.
+ *
+ * Note that if a deallocator has not been set for the hash_table then the
+ * value pointed to by the node is not freed.  It's the responsibility of
+ * the caller to configure a deallocator or arrange for the value to be
+ * freed first if relevant.
+**/
+void hash_table_delete(hash_table_t* table, char* key) {
+  assert(table);
+  assert(key);
+
+  int index = get_hash_index(key);
+
+  linked_list_t* list = table->nodes[index];
+
+  if (list == NULL) {
+    return;
+  }
+
+  it_t it = list_begin(list);
+  hash_node_t* node = NULL;
+
+  while ((node = (hash_node_t*)it_get(it)) != NULL) {
+    if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
+      list_remove(list, node);
+
+      if (list_size(list) == 0) {
+        free_linked_list_t(list);
+        table->nodes[index] = NULL;
+      }
+
+      return;
+    }
+
+    it = it_next(it);
+  }
+}
+
+/**
  * Determines if a key exists in a hash table.
  *
  * Returns 1 if the key exists, or 0 if not.
@@ -146,45 +185,6 @@ void* hash_table_get(hash_table_t* table, char* key) {
 
   while ((node = (hash_node_t*)it_get(it)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
-      return node->value;
-    }
-
-    it = it_next(it);
-  }
-
-  return NULL;
-}
-
-/**
- * Searches a hash table for a given key, deletes the node if found and returns the value
- * associated with the node so it can be deleted.
- *
- * Returns the value if found or NULL if no matching node is found.
-**/
-void* hash_table_delete(hash_table_t* table, char* key) {
-  assert(table);
-  assert(key);
-
-  int index = get_hash_index(key);
-
-  linked_list_t* list = table->nodes[index];
-
-  if (list == NULL) {
-    return NULL;
-  }
-
-  it_t it = list_begin(list);
-  hash_node_t* node = NULL;
-
-  while ((node = (hash_node_t*)it_get(it)) != NULL) {
-    if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
-      list_remove(list, node);
-
-      if (list_size(list) == 0) {
-        free_linked_list_t(list);
-        table->nodes[index] = NULL;
-      }
-
       return node->value;
     }
 
