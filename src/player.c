@@ -39,11 +39,19 @@ void free_player_t(player_t* player) {
     free_account_t(player->account);
   }
 
-  if (player != NULL) {
-    free(player);
-  }
+  free(player);
+}
 
-  player = NULL;
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_player(void* value) {
+  assert(value);
+  
+  player_t* player = (player_t*)value;
+
+  free_player_t(player);
 }
 
 /**

@@ -13,6 +13,14 @@
 #include "mud/player.h"
 #include "mud/util/mudstring.h"
 
+void shutdown_command(player_t* player, game_t *game, char *input) {
+  assert(player);
+  assert(game);
+  assert(input);
+
+  game->shutdown = 1;  
+}
+
 /**
  * Command which allows a player to assign an entity to themselves.
  *

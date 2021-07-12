@@ -69,6 +69,8 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   assert(key);
   assert(value);
 
+  zlog_info(gc, "hash_table_insert value address [%p]", value);
+
   size_t len = strnlen(key, MAX_KEY_LENGTH - 1);
 
   if (len > MAX_KEY_LENGTH) {
@@ -83,7 +85,13 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   hash_node->value = value;
 
   if (table->nodes[index] == NULL) {
-    table->nodes[index] = create_linked_list_t();
+    linked_list_t* linked_list = create_linked_list_t();
+
+    if (table->deallocator != NULL) {
+      linked_list->deallocator = table->deallocator;
+    }
+
+    table->nodes[index] = linked_list;
   }
 
   linked_list_t* list = table->nodes[index];

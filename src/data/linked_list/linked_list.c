@@ -33,13 +33,21 @@ void init_linked_list(linked_list_t* list) {
 **/
 void free_linked_list_t(linked_list_t* list) {
   assert(list);
-  assert(list->first == NULL);
-  assert(list->last == NULL);
+
+  if (list->first != NULL && list->last != NULL) {
+    node_t* node = NULL;
+
+    for (node = list->first; node != NULL; node = node->next) {
+      if (list->deallocator != NULL) {
+        list->deallocator(node->data);
+        node_free(node);
+      }
+    } 
+  }
 
   pthread_mutex_destroy(&list->mutex);
 
   free(list);
-  list = NULL;
 }
 
 /**
@@ -111,6 +119,10 @@ it_t list_remove(linked_list_t* list, void* value) {
 
       if (node->next) {
         node->next->prev = node->prev;
+      }
+
+      if (list->deallocator != NULL) {
+        list->deallocator(node->data);
       }
 
       node_free(node);

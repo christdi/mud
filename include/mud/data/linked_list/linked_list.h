@@ -9,12 +9,14 @@
  * Typedefs
 **/
 typedef struct node node_t; /* linked_list/node.h */
+typedef void (*deallocate_func)(void*);
 
 /**
  * Structs
 **/
 typedef struct linked_list {
   pthread_mutex_t mutex;
+  deallocate_func deallocator;
   node_t* first;
   node_t* last;
 } linked_list_t;

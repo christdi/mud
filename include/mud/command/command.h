@@ -28,6 +28,7 @@ typedef struct command {
 **/
 command_t* create_command_t();
 void free_command_t(command_t* command);
+void deallocate_command(void* value);
 
 void load_commands(game_t* game);
 command_t* get_command(game_t* game, char* name);

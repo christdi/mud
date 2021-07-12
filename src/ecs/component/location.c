@@ -24,7 +24,18 @@ void free_location_t(location_t* location) {
   assert(location);
 
   free(location);
-  location = NULL;
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_location_t(void* value) {
+  assert(value);
+  
+  location_t* location = (location_t*)value;
+
+  free_location_t(location);
 }
 
 /**

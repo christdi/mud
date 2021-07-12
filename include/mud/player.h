@@ -36,6 +36,7 @@ typedef struct player {
 **/
 player_t* create_player_t();
 void free_player_t(player_t* player);
+void deallocate_player(void* value);
 
 void player_connected(client_t* client, void* context);
 void player_disconnected(client_t* client, void* context);

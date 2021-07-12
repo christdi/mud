@@ -15,7 +15,6 @@
 
 int connect_to_database(game_t* game, const char* filename);
 void game_tick(game_t* game, unsigned int ticks_per_second);
-void process_events(game_t* game);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -31,8 +30,13 @@ game_t* create_game_t(void) {
   game->database = NULL;
 
   game->players = create_hash_table_t();
+  game->players->deallocator = deallocate_player;
+
   game->commands = create_hash_table_t();
+  game->commands->deallocator = deallocate_command;
+
   game->entities = create_hash_table_t();
+  game->entities->deallocator = deallocate_entity;
 
   game->events = create_linked_list_t();
 
@@ -99,6 +103,7 @@ int start_game(config_t* config) {
   while (!game->shutdown) {
     poll_network(game->network);
     update_systems(game);
+    narrate_events(game);
     game_tick(game, config->ticks_per_second);
   }
 

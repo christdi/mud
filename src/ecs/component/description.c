@@ -14,6 +14,11 @@
 description_t* create_description_t() {
   description_t* description = calloc(1, sizeof *description);
 
+  zlog_info(gc, "Allocated description_t [%p]", (void *)description);
+
+  description->name = NULL;
+  description->description = NULL;
+
   return description;
 }
 
@@ -21,18 +26,29 @@ description_t* create_description_t() {
  * Free a description_t.
 **/
 void free_description_t(description_t* description) {
-  if (description->name) {
+  zlog_info(gc, "Freeing description_t [%p]", (void*)description);
+
+  if (description->name != NULL) {
     free(description->name);
-    description->name = NULL;
   }
 
-  if (description->description) {
+  if (description->description != NULL) {
     free(description->description);
-    description->description = NULL;
   }
 
   free(description);
-  description = NULL;
+}
+
+/**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_description_t(void* value) {
+  assert(value);
+  
+  description_t* description = (description_t*)value;
+
+  free_description_t(description);
 }
 
 /**
@@ -53,6 +69,8 @@ int has_description(components_t* components, entity_t* entity) {
 void register_description(components_t* components, description_t* description) {
   assert(components);
   assert(description);
+
+  zlog_info(gc, "Inserting description [%p]", (void *)description);
 
   if (hash_table_insert(components->description, description->entity_id.uuid, description) != 0) {
     zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->entity_id.uuid);

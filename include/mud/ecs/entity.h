@@ -15,8 +15,6 @@ typedef struct game game_t; /* game.h */
 **/
 typedef struct entity {
   entity_id_t id;
-  char* name;
-  char* description;
 } entity_t;
 
 /**
@@ -24,6 +22,7 @@ typedef struct entity {
 **/
 entity_t* create_entity_t();
 void free_entity_t(entity_t* entity);
+void deallocate_entity(void* value);
 
 void load_entities(game_t* game);
 entity_t* get_entity(game_t* game, char* uuid);

@@ -2,6 +2,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
+#include "mud/data/queue.h"
 #include "mud/event/event.h"
 #include "mud/event/communicate.h"
 #include "mud/narrator/narrator.h"
@@ -85,6 +86,21 @@ int retrieve_players_for_narration(narrator_t* narrator, entity_t* entity, linke
   *listeners = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
 
   return 0;
+}
+
+void narrate_events(game_t *game) {
+  event_t* event = NULL;
+
+  while ((event = (event_t*)queue_dequeue(game->events)) != NULL) {
+    switch(event->type) {
+      case UNDEFINED:
+        zlog_error(gc, "Event with UNDEFINED type was received.  Discarding.");
+        break;
+      case COMMUNICATION:
+        narrate_communicate_event(game, event);
+        break;
+    }
+  }
 }
 
 /**

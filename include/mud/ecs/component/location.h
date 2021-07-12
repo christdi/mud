@@ -23,6 +23,7 @@ typedef struct location {
 **/
 location_t* create_location_t();
 void free_location_t(location_t* location);
+void deallocate_location_t(void* value);
 
 int has_location(components_t* components, entity_t* entity);
 void register_location(components_t* components, location_t* location);

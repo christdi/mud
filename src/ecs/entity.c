@@ -36,6 +36,18 @@ void free_entity_t(entity_t* entity) {
 }
 
 /**
+ * Deallocator for data structures.  Data structures only store void pointers so we need
+ * to cast to the actual type and pass it to the relevant free function.
+**/
+void deallocate_entity(void* value) {
+  assert(value);
+  
+  entity_t* entity = (entity_t*)value;
+
+  free_entity_t(entity);
+}
+
+/**
  * Loads entities from persistence into the game.
  *
  * Takes the following parameters:
@@ -49,14 +61,14 @@ void load_entities(game_t* game) {
   // TODO(Chris I): Actually load entities
 
   entity_t* location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
-  entity_t* character = new_character(game, "Test character", "A proud test character.");
-  entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
+  // entity_t* character = new_character(game, "Test character", "A proud test character.");
+  // entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
 
-  location_t* character_location = get_location(game->components, character);
-  character_location->at = location->id;
+  // location_t* character_location = get_location(game->components, character);
+  // character_location->at = location->id;
 
-  location_t* item_location = get_location(game->components, item);
-  item_location->at = location->id;
+  // location_t* item_location = get_location(game->components, item);
+  // item_location->at = location->id;
 }
 
 /**
@@ -111,7 +123,7 @@ entity_t* new_character(game_t* game, char* name, char* description) {
 **/
 entity_t* new_item(game_t* game, char* name, char* description) {
   entity_t* entity = create_entity_t();
-  entity->id = entity_id();;
+  entity->id = entity_id();
   hash_table_insert(game->entities, entity->id.uuid, entity);
 
   description_t* description_component = create_description_t();

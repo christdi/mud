@@ -26,6 +26,7 @@ typedef struct description {
 **/
 description_t* create_description_t();
 void free_description_t(description_t* description);
+void deallocate_description_t(void *value);
 
 int has_description(components_t* components, entity_t* entity);
 void register_description(components_t* components, description_t* description);
