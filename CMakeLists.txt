@@ -19,6 +19,7 @@ add_definitions("-Wall -pedantic")
 file(GLOB_RECURSE SRC_FILES RELATIVE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/src/*.c)
 list(REMOVE_ITEM SRC_FILES "src/main.c")
 add_library(${LIB_NAME} ${SRC_FILES})
+target_compile_options(${LIB_NAME} PRIVATE -Wall -Wextra -pedantic)
 
 # Executable configuration
 include_directories(${PROJECT_SOURCE_DIR}/include)
