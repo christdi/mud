@@ -4,6 +4,7 @@
 
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
+#include "mud/command/command_function.h"
 #include "mud/command/communication.h"
 #include "mud/command/explore.h"
 #include "mud/command/general.h"
@@ -47,7 +48,7 @@ void deallocate_command(void* value) {
  * Populates the commands hash table from a static array of commands.
 **/
 void load_commands(game_t* game) {
-  static command_t commands[] = {
+  static command_function_t commands[] = {
     { "entity", entity_command },
     { "shutdown", shutdown_command },
     { "inventory", inventory_command },
@@ -55,13 +56,13 @@ void load_commands(game_t* game) {
     { "look", look_command },
     { "l", look_command },
     { "quit", quit_command },
-    { "say", say_command },
+    { "function_say", say_command },
     { "\0", NULL }
   };
 
   zlog_info(gc, "Loading commands");
 
-  command_t* command = NULL;
+  command_function_t* command = NULL;
 
   for (command = commands; command->func != NULL; command++) {
     hash_table_insert(game->commands, command->name, command);

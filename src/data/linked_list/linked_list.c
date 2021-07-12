@@ -133,6 +133,49 @@ it_t list_remove(linked_list_t* list, void* value) {
 }
 
 /**
+ * Attempts to retrieve the value stored at the supplied index node.
+ *
+ * Parameters
+ *  list - the list the value is to be retrieved from
+ *  index - the n index in the linked list to be retrieving
+ *  value - output parameter which will be updated with a pointer to the value
+ *
+ * Returns 0 on success or -1 if not found.
+**/
+int list_at(linked_list_t* list, unsigned int index, void** value) {
+  assert(list);
+  assert(index >= 0);
+
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return -1;
+  }
+
+  unsigned int count = 0;
+  node_t* node = list->first;
+
+  while (node != NULL) {
+    if (count == index) {
+      *value = node->data;
+
+      return 0;
+    }
+
+    count++;
+  }
+
+
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return -1;
+  }
+
+  return -1;
+}
+
+/**
  * Unlinks and frees a node given the list and node.
 **/
 void remove_node(linked_list_t* list, node_t* node) {
