@@ -42,8 +42,7 @@ void play_state_enter(player_t* player, game_t* game) {
   assert(player);
   assert(game);
 
-  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->account->username);
-  send_prompt(player, game);
+  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->account->username);
 }
 
 /**
@@ -65,14 +64,11 @@ void play_state_input(player_t* player, game_t* game, char* input) {
 
   if (cmd == NULL) {
     send_to_player(player, "Sorry, [bcyan]%s[reset] command was not found.\n\r", command);
-    send_prompt(player, game);
 
     return;
   }
 
   cmd->func(player, game, trim(input));
-
-  send_prompt(player, game);
 }
 
 /**
@@ -88,9 +84,7 @@ void play_state_tick(player_t* player, game_t* game) {
   assert(game);
   assert(player->client);
 
-  if (client_get_idle_seconds(player->client) > IDLE_NAG_TIME_SECONDS) {
-    send_prompt(player, game);
-  }
+  send_prompt(player, game);
 }
 
 /**
@@ -104,10 +98,10 @@ void send_prompt(player_t* player, game_t* game) {
     description_t* description = get_description(game->components, player->entity);
 
     if (description) {
-      send_to_player(player, "\n\r[bgreen]%s[reset] => ", description->name);
+      send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", description->name);
       return;
     }
   }
 
-  send_to_player(player, "\n\r[bgreen]%s[reset] => ", player->account->username);
+  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->account->username);
 }
