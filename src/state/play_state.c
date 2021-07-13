@@ -1,7 +1,7 @@
 #include <assert.h>
 
 #include "mud/command/command.h"
-#include "mud/dbo/account.h"
+#include "mud/dbo/account_dbo.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"

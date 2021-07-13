@@ -1,8 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "mud/network/client.h"
-#include "mud/util/muduuid.h"
+#include <openssl/sha.h>
 
 /**
  * Defines
@@ -15,9 +14,9 @@
 /**
  * Typedefs
 **/
+typedef struct client client_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
-typedef struct account account_t;
 typedef struct state state_t;
 typedef struct linked_list linked_list_t;
 
@@ -25,9 +24,11 @@ typedef struct linked_list linked_list_t;
  * Structs
 **/
 typedef struct player {
+  char username[USERNAME_SIZE];
+  char password_hash[SHA256_DIGEST_LENGTH * 2];
+
   client_t* client;
   entity_t* entity;
-  account_t* account;
   state_t* state;
 } player_t;
 

@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mud/dbo/account.h"
+#include "mud/dbo/account_dbo.h"
 #include "mud/player.h"
 #include "mud/state/login_state.h"
 #include "mud/state/play_state.h"
@@ -40,7 +40,7 @@ void get_account_name(player_t* player, game_t* game, char* input) {
     return;
   }
 
-  strncpy(player->account->username, input, USERNAME_SIZE);
+  strncpy(player->username, input, USERNAME_SIZE);
 
   send_to_player(player, "What is the [bgreen]password[reset] for this account? ");
   player->state->on_input = get_account_password;
@@ -53,7 +53,7 @@ void get_account_password(player_t* player, game_t* game, char* input) {
   char password_hash[SHA256_SIZE];
   string_to_sha256(input, password_hash);
 
-  if (account_validate(game, player->account->username, password_hash) == -1) {
+  if (account_validate(game, player->username, password_hash) == -1) {
     send_to_player(player, "No match for that [bgreen]username[reset] and [bgreen]password[reset] combination.\n\r");
     send_to_player(player, "Enter your [bgreen]username[reset] or type [bgreen]new[reset] to create one: ");
     player->state->on_input = get_account_name;
@@ -77,9 +77,9 @@ void get_new_account_name(player_t* player, game_t* game, char* input) {
     return;
   }
 
-  strncpy(player->account->username, input, USERNAME_SIZE);
+  strncpy(player->username, input, USERNAME_SIZE);
 
-  send_to_player(player, "Okay [bgreen]%s[reset], what [bgreen]password[reset] would you like to use? ", player->account->username);
+  send_to_player(player, "Okay [bgreen]%s[reset], what [bgreen]password[reset] would you like to use? ", player->username);
   player->state->on_input = get_new_account_password;
 }
 

@@ -25,7 +25,6 @@ void write_to_player(player_t* player, char* output);
 player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
-  player->account = create_account_t();
   player->state = NULL;
   player->client = NULL;
 
@@ -37,10 +36,6 @@ player_t* create_player_t() {
 **/
 void free_player_t(player_t* player) {
   assert(player);
-
-  if (player->account != NULL) {
-    free_account_t(player->account);
-  }
 
   if (player->state != NULL) {
     free_state_t(player->state);

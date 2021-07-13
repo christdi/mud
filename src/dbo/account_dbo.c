@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mud/dbo/account.h"
+#include "mud/dbo/account_dbo.h"
 #include "mud/game.h"
 #include "mud/log.h"
 
 /**
  * Creates and returns an initialised account_t struct.
 **/
-account_t* create_account_t() {
-  account_t* account = calloc(1, sizeof *account);
+account_t* create_account_dbo_t() {
+  account_dbo_t* account = calloc(1, sizeof *account);
 
   account->username[0] = '\0';
   account->password_hash[0] = '\0';
@@ -22,14 +22,15 @@ account_t* create_account_t() {
 /**
  * Frees an initialised account_t struct and members.
 **/
-void free_account_t(account_t* account) {
+void free_account_dbo_t(account_t* account) {
   assert(account);
+
   free(account);
 }
 
 /**
 **/
-int account_save(game_t* game, account_t* account) {
+int account_dbo_save(game_t* game, account_dbo_t* account) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "INSERT INTO account(username, password_hash) VALUES(?, ?) "
@@ -70,7 +71,7 @@ int account_save(game_t* game, account_t* account) {
 
 /**
 **/
-int account_validate(game_t* game, const char* username, const char* password_hash) {
+int account_dbo_validate(game_t* game, const char* username, const char* password_hash) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=? AND password_hash=?)";
@@ -110,7 +111,7 @@ int account_validate(game_t* game, const char* username, const char* password_ha
   return exists == 1 ? 0 : -1;
 }
 
-int account_exists(game_t* game, const char* username) {
+int account_dbo_exists(game_t* game, const char* username) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=?)";
