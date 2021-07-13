@@ -46,7 +46,7 @@ unsigned int get_hash_index(char* key) {
 
   unsigned long hash = HASH_BASE_VALUE;
   unsigned char c = 0;
-  int i = 0;
+  size_t i = 0;
 
   while ((c = (unsigned char)*key++)) {
     if (i++ == len) {
@@ -72,7 +72,7 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   size_t len = strnlen(key, MAX_KEY_LENGTH - 1);
 
   if (len > MAX_KEY_LENGTH) {
-    zlog_error(dc, "Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
+    zlog_error(dc, "hash_table_insert(): Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
 
     key[MAX_KEY_LENGTH] = '\0';
   }

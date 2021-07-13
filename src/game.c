@@ -32,8 +32,6 @@ game_t* create_game_t(void) {
   game->players = create_hash_table_t();
   game->players->deallocator = deallocate_player;
 
-  game->commands = create_hash_table_t();
-
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
 
@@ -57,7 +55,6 @@ void free_game_t(game_t* game) {
   assert(game->narrator);
 
   free_hash_table_t(game->players);
-  free_hash_table_t(game->commands);
   free_hash_table_t(game->entities);
 
   free_linked_list_t(game->events);
@@ -78,23 +75,22 @@ int start_game(config_t* config) {
 
   game_t* game = create_game_t();
 
-  zlog_info(gc, "Starting MUD engine");
+  zlog_info(gc, "start_game(): Starting MUD engine");
 
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
   if (connect_to_database(game, config->database_file) != 0) {
-    zlog_error(gc, "Failed to start game server");
+    zlog_error(gc, "start_game(): Failed to start game server");
 
     return -1;
   }
 
   load_entities(game);
-  load_commands(game);
 
   if (start_game_server(game->network, config->game_port) == -1) {
-    zlog_error(gc, "Failed to start game server");
+    zlog_error(gc, "start_game(): Failed to start game server");
 
     return -1;
   }
@@ -107,7 +103,7 @@ int start_game(config_t* config) {
   }
 
   if (stop_game_server(game->network, config->game_port) == -1) {
-    zlog_error(gc, "Failed to shutdown server");
+    zlog_error(gc, "start_game(): Failed to shutdown server");
 
     return -1;
   }
@@ -116,7 +112,7 @@ int start_game(config_t* config) {
 
   sqlite3_close(game->database);
 
-  zlog_info(gc, "Stopping MUD engine");
+  zlog_info(gc, "start_game(): Stopping MUD engine");
 
   free_game_t(game);
 
@@ -128,10 +124,10 @@ int start_game(config_t* config) {
  * or 0 on success.
 **/
 int connect_to_database(game_t* game, const char* filename) {
-  zlog_info(gc, "Connecting to database [%s]", filename);
+  zlog_info(gc, "connect_to_database(): Connecting to database [%s]", filename);
 
   if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
-    zlog_error(gc, "Failed to open game database [%s]", sqlite3_errmsg(game->database));
+    zlog_error(gc, "connect_to_database(): Failed to open game database [%s]", sqlite3_errmsg(game->database));
 
     sqlite3_close(game->database);
 

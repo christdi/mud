@@ -28,10 +28,11 @@ void play_state(player_t* player, game_t* game, char* input) {
 
   char command[COMMAND_SIZE];
   input = extract_argument(input, command);
-  command_t* cmd = get_command(game, trim(command));
+
+  const command_t* cmd = get_command(game, trim(command));
 
   if (cmd == NULL) {
-    send_to_player(player, "[bcyan]%s[reset] command not recognised.\n\r", command);
+    send_to_player(player, "Sorry, [bcyan]%s[reset] command was not found.\n\r", command);
     send_prompt(player, game);
 
     return;
@@ -46,6 +47,9 @@ void play_state(player_t* player, game_t* game, char* input) {
  * Send a prompt to a player.
 **/
 void send_prompt(player_t* player, game_t* game) {
+  assert(player);
+  assert(game);
+
   if (player->entity) {
     description_t* description = get_description(game->components, player->entity);
 

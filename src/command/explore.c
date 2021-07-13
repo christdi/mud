@@ -21,7 +21,7 @@ void inventory_command(player_t* player, game_t* game, char* input) {
   entity_t* entity = player->entity;
 
   if (!entity) {
-    zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->account->username);
+    zlog_error(gc, "inventory_command(): Inventory command failed for player [%s] as they do not have an associated entity", player->account->username);
 
     return;
   }
@@ -38,7 +38,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   entity_t* entity = player->entity;
 
   if (!entity) {
-    zlog_error(gc, "Look command failed for player [%s] as they do not have an associated entity", player->account->username);
+    zlog_error(gc, "look_command(): Look command failed for player [%s] as they do not have an associated entity", player->account->username);
 
     return;
   }
@@ -46,7 +46,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   location_t* location_component = get_location(game->components, entity);
 
   if (!location_component) {
-    zlog_warn(gc, "Look command failed for entity [%s] as it did not have a location component", entity->id.uuid);
+    zlog_warn(gc, "look_command(): Look command failed for entity [%s] as it did not have a location component", entity->id.uuid);
 
     return;
   }
@@ -54,7 +54,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   entity_t* location = get_entity(game, location_component->at.uuid);
 
   if (!location) {
-    zlog_error(gc, "Look command failed for entity [%s] as location component does not reference valid entity", entity->id.uuid);
+    zlog_error(gc, "look_command(): Look command failed for entity [%s] as location component does not reference valid entity", entity->id.uuid);
 
     return;
   }
@@ -62,7 +62,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   description_t* description = get_description(game->components, location);
 
   if (!description) {
-    zlog_error(gc, "Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->id.uuid);
+    zlog_error(gc, "look_command(): Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->id.uuid);
 
     return;
   }

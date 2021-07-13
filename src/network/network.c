@@ -94,7 +94,7 @@ int start_game_server(network_t* network, unsigned int port) {
   server->backlog = BACKLOG;
 
   if (listen_on_server(server) == -1) {
-    zlog_error(nc, "Failed to listen on server on port [%d]", port);
+    zlog_error(nc, "start_game_server(): Failed to listen on server on port [%d]", port);
     free_server_t(server);
 
     return -1;
@@ -165,7 +165,7 @@ void poll_network(network_t* network) {
       return;
     }
 
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "poll_network(): %s", strerror(errno));
 
     return;
   }
@@ -191,7 +191,7 @@ void poll_network(network_t* network) {
         add_fd_to_master_set(network, client->fd);
         list_add(network->clients, client);
 
-        zlog_info(nc, "Client descriptor [%d] connected", client->fd);
+        zlog_info(nc, "poll_network(): Client descriptor [%d] connected", client->fd);
 
         if (network->connection_callback->func) {
           network->connection_callback->func(client, network->connection_callback->context);
@@ -207,7 +207,7 @@ void poll_network(network_t* network) {
     while ((client = (client_t*)it_get(client_it)) != NULL) {
       if (FD_ISSET(client->fd, &read_set)) {
         if (receive_from_client(client) != 0) {
-          zlog_error(nc, "Failed to read from client fd [%d]", client->fd);
+          zlog_error(nc, "poll_network(): Failed to read from client fd [%d]", client->fd);
         } else {
           if (network->input_callback->func) {
             network->input_callback->func(client, network->input_callback->context);
@@ -258,10 +258,10 @@ int prune_clients(network_t* network) {
 
   while ((client = (client_t*)it_get(it)) != NULL) {
     if (client->hungup == 1) {
-      zlog_info(nc, "Client descriptor [%d] disconnected", client->fd);
+      zlog_info(nc, "prune_clients(): Client descriptor [%d] disconnected", client->fd);
 
       if (close_client(client) == -1) {
-        zlog_error(nc, "Failed to close hungup client");
+        zlog_error(nc, "prune_clients(): Failed to close hungup client");
       }
 
       remove_fd_from_master_set(network, client->fd);
@@ -298,7 +298,7 @@ int stop_game_server(network_t* network, unsigned int port) {
   while ((server = (server_t*)it_get(it)) != NULL) {
     if (server->port == port) {
       if (close_server(server) == -1) {
-        zlog_error(nc, "Failed to close server on port [%d]", port);
+        zlog_error(nc, "stop_game_server(): Failed to close server on port [%d]", port);
       }
 
       remove_fd_from_master_set(network, server->fd);

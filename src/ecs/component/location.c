@@ -66,7 +66,7 @@ void register_location(components_t* components, location_t* location) {
   assert(location);
 
   if (hash_table_insert(components->location, location->entity_id.uuid, location) != 0) {
-    zlog_error(gc, "Failed to register location component for entity uuid [%s]", location->entity_id.uuid);
+    zlog_error(gc, "register_location(): Failed to register location component for entity uuid [%s]", location->entity_id.uuid);
   }
 }
 

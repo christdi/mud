@@ -36,28 +36,28 @@ int account_save(game_t* game, account_t* account) {
                     "ON CONFLICT(username) DO UPDATE SET username = excluded.username, password_hash = excluded.password_hash";
 
   if (sqlite3_prepare_v2(game->database, sql, -1, &res, 0) != SQLITE_OK) {
-    zlog_error(dc, "Failed to prepare statement to insert account into database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_save(): Failed to prepare statement to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, account->username, (int)strlen(account->username), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_save(): Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 2, account->password_hash, (int)strlen(account->password_hash), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_save(): Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   };
 
   if (sqlite3_step(res) != SQLITE_DONE) {
-    zlog_error(dc, "Failed to insert account into database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_save(): Failed to insert account into database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
@@ -76,28 +76,28 @@ int account_validate(game_t* game, const char* username, const char* password_ha
   const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=? AND password_hash=?)";
 
   if (sqlite3_prepare_v2(game->database, sql, -1, &res, 0) != SQLITE_OK) {
-    zlog_error(dc, "Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_validate(): Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_validate(): Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 2, password_hash, (int)strlen(password_hash), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind password hash to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_validate(): Failed to bind password hash to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_step(res) != SQLITE_ROW) {
-    zlog_error(dc, "Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_validate(): Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
@@ -116,21 +116,21 @@ int account_exists(game_t* game, const char* username) {
   const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=?)";
 
   if (sqlite3_prepare_v2(game->database, sql, -1, &res, 0) != SQLITE_OK) {
-    zlog_error(dc, "Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_exists(): Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_exists(): Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_step(res) != SQLITE_ROW) {
-    zlog_error(dc, "Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "account_exists(): Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;

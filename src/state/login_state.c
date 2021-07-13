@@ -7,20 +7,12 @@
 #include "mud/state/play_state.h"
 #include "mud/util/mudhash.h"
 
-void get_account_name(player_t* player, game_t* game, char* input);
 void get_account_password(player_t* player, game_t* game, char* input);
 void get_new_account_name(player_t* player, game_t* game, char* input);
 void get_new_account_password(player_t* player, game_t* game, char* input);
 void validate_new_account_password(player_t* player, game_t* game, char* input);
 
 void login_state(player_t* player, game_t* game, char* input) {
-  assert(player);
-  assert(game);
-
-  player_change_state(player, game, get_account_name);
-}
-
-void get_account_name(player_t* player, game_t* game, char* input) {
   assert(player);
   assert(game);
 
@@ -52,7 +44,7 @@ void get_account_password(player_t* player, game_t* game, char* input) {
 
   if (account_validate(game, player->account->username, password_hash) == -1) {
     send_to_player(player, "No match for that [bgreen]username[reset] and [bgreen]password[reset] combination.\n\r");
-    player_change_state(player, game, get_account_name);
+    player_change_state(player, game, login_state);
     return;
   }
 
