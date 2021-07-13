@@ -49,13 +49,11 @@ void deallocate_command(void* value) {
 **/
 void load_commands(game_t* game) {
   static command_function_t commands[] = {
-    { "entity", entity_command },
-    { "shutdown", shutdown_command },
-    { "inventory", inventory_command },
-    { "i", inventory_command },
-    { "look", look_command },
-    { "l", look_command },
-    { "quit", quit_command },
+    { "function_entity", entity_command },
+    { "function_shutdown", shutdown_command },
+    { "function_inventory", inventory_command },
+    { "function_look", look_command },
+    { "function_quit", quit_command },
     { "function_say", say_command },
     { "\0", NULL }
   };

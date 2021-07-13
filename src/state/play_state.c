@@ -40,6 +40,8 @@ void play_state(player_t* player, game_t* game, char* input) {
 
   if ((count = get_commands_by_name(game, trim(command), commands)) == -1) {
     zlog_error(gc, "Error retrieving commands");
+    
+    return;
   }
 
   if (count == 0) {
