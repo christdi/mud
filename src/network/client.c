@@ -24,6 +24,7 @@ client_t* create_client_t() {
 
   client->fd = 0;
   client->hungup = 0;
+  client->last_active = time(NULL);
 
   generate_uuid(client->uuid, UUID_SIZE);
 
@@ -104,6 +105,8 @@ int receive_from_client(client_t* client) {
     if (append_data_to_input_buffer(client, bytes, len) != 0) {
       zlog_error(nc, "receive_from_client(): Failed to append received data to input buffer");
     }
+
+    client->last_active = time(NULL);
   }
 
   return 0;
@@ -151,6 +154,18 @@ int close_client(client_t* client) {
   }
 
   return 0;
+}
+
+/**
+ * Calculates how many seconds have passed since the client last sent data.
+ * 
+ * Parameters
+ *  - client - client_t structure whose data will be used to determine idle time; 
+**/
+int client_get_idle_seconds(const client_t* const client) {
+  assert(client);
+
+  return time(NULL) - client->last_active;
 }
 
 /**

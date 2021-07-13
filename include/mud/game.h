@@ -29,6 +29,7 @@ typedef struct game {
   hash_table_t* players;
   hash_table_t* entities;
 
+  linked_list_t* tasks;
   linked_list_t* events;
 
   network_t* network;

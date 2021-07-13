@@ -31,7 +31,6 @@ void free_command_t(command_t* command);
 void deallocate_command(void* value);
 
 void load_commands(game_t* game);
-const command_t * get_command(game_t* game, const char *name);
-
+const command_t* get_command(game_t* game, const char* name);
 
 #endif

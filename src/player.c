@@ -5,6 +5,7 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/state/login_state.h"
+#include "mud/state/state.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -24,6 +25,7 @@ player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
   player->account = create_account_t();
+  player->state = NULL;
   player->client = NULL;
 
   return player;
@@ -37,6 +39,10 @@ void free_player_t(player_t* player) {
 
   if (player->account != NULL) {
     free_account_t(player->account);
+  }
+
+  if (player->state != NULL) {
+    free_state_t(player->state);
   }
 
   free(player);
@@ -62,11 +68,10 @@ void player_connected(client_t* client, void* context) {
 
   player_t* player = create_player_t();
   player->client = client;
-  player->state = login_state;
 
   hash_table_insert(game->players, client->uuid, player);
 
-  player->state(player, game, NULL);
+  player_change_state(player, game, login_state());
 }
 
 /**
@@ -90,7 +95,9 @@ void player_input(client_t* client, void* context) {
 
   if (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1) {
     if (strnlen(command, COMMAND_SIZE) > 0) {
-      player->state(player, game, command);
+      if (player->state != NULL && player->state->on_input != NULL) {
+        player->state->on_input(player, game, command);
+      }
     }
   }
 }
@@ -100,10 +107,34 @@ void player_input(client_t* client, void* context) {
  * and then call it with NULL input which indicates the state is being entered
  * for the first time.
 **/
-void player_change_state(player_t* player, game_t* game, state_func_t state) {
+void player_change_state(player_t* player, game_t* game, state_t* state) {
+  if (player->state != NULL) {
+    if (player->state->on_exit != NULL) {
+      player->state->on_exit(player, game);
+    }
+
+    free_state_t(player->state);
+  }
+
   player->state = state;
 
-  player->state(player, game, NULL);
+  if (player->state != NULL && player->state->on_enter != NULL) {
+    player->state->on_enter(player, game);
+  }
+}
+
+/**
+ * Called on each tick of the game engine, delegates to the state on_tick
+ * method if one is defined to allow any time based updates to occur.
+ * 
+ * Parameters
+ *  player - the player who is being ticked
+ *  game - game object containing all necessary game data
+**/
+void player_on_tick(player_t* player, game_t* game) {
+  if (player->state != NULL && player->state->on_tick != NULL) {
+    player->state->on_tick(player, game);
+  }
 }
 
 /**

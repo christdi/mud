@@ -1,14 +1,14 @@
-#include <stdlib.h>
 #include <assert.h>
 #include <sqlite3.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bsd/string.h"
 
+#include "mud/data/linked_list.h"
+#include "mud/dbo/command_dbo.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/dbo/command_dbo.h"
-#include "mud/data/linked_list.h"
 
 /**
  * Allocates and returns a pointer to a new command_dbo.
@@ -17,7 +17,6 @@ command_dbo_t* create_command_dbo_t() {
   command_dbo_t* command_dbo = calloc(1, sizeof *command_dbo);
 
   return command_dbo;
-
 }
 
 /**
@@ -86,15 +85,15 @@ int select_commands_by_name(game_t* game, const char* name, linked_list_t* comma
 
     command_dbo_t* command_dbo = create_command_dbo_t();
 
-    if (strlcpy(command_dbo->name, (char *) sqlite3_column_text(res, 0), COMMAND_NAME_LENGTH) > COMMAND_NAME_LENGTH) {
+    if (strlcpy(command_dbo->name, (char*)sqlite3_column_text(res, 0), COMMAND_NAME_LENGTH) > COMMAND_NAME_LENGTH) {
       zlog_warn(nc, "select_commands_by_name(): Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
     }
 
-    if (strlcpy(command_dbo->function, (char *)sqlite3_column_text(res, 1), COMMAND_FUNCTION_LENGTH) > COMMAND_FUNCTION_LENGTH) {
+    if (strlcpy(command_dbo->function, (char*)sqlite3_column_text(res, 1), COMMAND_FUNCTION_LENGTH) > COMMAND_FUNCTION_LENGTH) {
       zlog_warn(nc, "select_commands_by_name(): Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
     }
 
-    list_add(commands, (void *)command_dbo);
+    list_add(commands, (void*)command_dbo);
 
     count++;
   }

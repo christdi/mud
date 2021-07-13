@@ -1,20 +1,23 @@
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
-#include "mud/data/hash_table/hash_table.h"
-#include "mud/data/linked_list/linked_list.h"
+#include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
 #include "mud/player.h"
+#include "mud/task/task.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <zlog.h>
 
 int connect_to_database(game_t* game, const char* filename);
-void game_tick(game_t* game, unsigned int ticks_per_second);
+void game_execute_tasks(game_t* game);
+int game_pulse_players(game_t* game);
+void game_sleep_until_tick(game_t* game, unsigned int ticks_per_second);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -34,6 +37,9 @@ game_t* create_game_t(void) {
 
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
+
+  game->tasks = create_linked_list_t();
+  game->tasks->deallocator = deallocate_task_t;
 
   game->events = create_linked_list_t();
 
@@ -57,6 +63,7 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
 
+  free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
   free_network_t(game->network);
@@ -95,11 +102,14 @@ int start_game(config_t* config) {
     return -1;
   }
 
+  task_schedule(game->tasks, 10, game_pulse_players);
+
   while (!game->shutdown) {
     poll_network(game->network);
     update_systems(game);
+    task_execute(game->tasks, game);
     narrate_events(game);
-    game_tick(game, config->ticks_per_second);
+    game_sleep_until_tick(game, config->ticks_per_second);
   }
 
   if (stop_game_server(game->network, config->game_port) == -1) {
@@ -138,11 +148,38 @@ int connect_to_database(game_t* game, const char* filename) {
 }
 
 /**
+ * Pulses all currently connected players.
+ * 
+ * Parameters
+ *  game - contains all necessary game data
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+int game_pulse_players(game_t* game) {
+  assert(game);
+  assert(game->players);
+
+  h_it_t it = hash_table_iterator(game->players);
+
+  player_t* player = NULL;
+
+  while ((player = (player_t*)h_it_get(it)) != NULL) {
+    player_on_tick(player, game);
+
+    it = h_it_next(it);
+  }
+
+  task_schedule(game->tasks, 10, game_pulse_players);
+
+  return 0;
+}
+
+/**
  * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time
  * time since the last time the method was called and makes the thread sleep if it's less than
  * the amount of time calculated per tick.
 **/
-void game_tick(game_t* game, const unsigned int ticks_per_second) {
+void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
 

@@ -7,9 +7,9 @@
 #include "mud/command/communication.h"
 #include "mud/command/explore.h"
 #include "mud/command/general.h"
-#include "mud/dbo/command_dbo.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
+#include "mud/dbo/command_dbo.h"
 #include "mud/game.h"
 #include "mud/log.h"
 
@@ -64,7 +64,7 @@ const command_t* command_lookup(const char* name) {
   const command_t* command = commands;
 
   while (command->func != NULL) {
-    if (strncmp(command->name, name, COMMAND_NAME_MAX_LENGTH-1) == 0) {
+    if (strncmp(command->name, name, COMMAND_NAME_MAX_LENGTH - 1) == 0) {
       return command;
     }
 
@@ -83,7 +83,7 @@ const command_t* command_lookup(const char* name) {
  *
  * Returns a pointer to a valid command_t structure on success or NULL on failure.
 **/
-const command_t * get_command(game_t* game, const char *name) {
+const command_t* get_command(game_t* game, const char* name) {
   linked_list_t* commands = create_linked_list_t();
   commands->deallocator = deallocate_command_dbo_t;
 
