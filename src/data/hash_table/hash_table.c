@@ -46,7 +46,7 @@ unsigned int get_hash_index(char* key) {
 
   unsigned long hash = HASH_BASE_VALUE;
   unsigned char c = 0;
-  int i = 0;
+  size_t i = 0;
 
   while ((c = (unsigned char)*key++)) {
     if (i++ == len) {

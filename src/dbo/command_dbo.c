@@ -53,7 +53,7 @@ void deallocate_command_dbo_t(void* value) {
  *
  * Returns the amount of commands found or -1 on error
 **/
-int get_commands_by_name(game_t* game, const char* name, linked_list_t* commands) {
+int select_commands_by_name(game_t* game, const char* name, linked_list_t* commands) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT name, function FROM command WHERE name = ?";

@@ -31,7 +31,7 @@ void deallocate_linked_list_t(void* value);
 
 void list_add(linked_list_t* list, void* value);
 it_t list_remove(linked_list_t* list, void* value);
-int list_at(linked_list_t* list, unsigned int index, void** value);
+size_t list_at(linked_list_t* list, size_t index, void** value);
 it_t list_begin(linked_list_t* list);
 it_t list_end(linked_list_t* list);
 

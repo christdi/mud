@@ -21,7 +21,7 @@ typedef struct linked_list linked_list_t;
 **/
 typedef struct network {
   fd_set master_set;
-  unsigned int max_fd;
+  int max_fd;
 
   callback_t* connection_callback;
   callback_t* disconnection_callback;

@@ -25,6 +25,6 @@ command_dbo_t* create_command_dbo_t();
 void free_command_dbo_t(command_dbo_t* command_dbo);
 void deallocate_command_dbo_t(void* value);
 
-int get_commands_by_name(game_t* game, const char* name, linked_list_t* commands);
+int select_commands_by_name(game_t* game, const char* name, linked_list_t* commands);
 
 #endif

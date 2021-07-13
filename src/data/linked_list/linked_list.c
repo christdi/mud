@@ -142,9 +142,8 @@ it_t list_remove(linked_list_t* list, void* value) {
  *
  * Returns 0 on success or -1 if not found.
 **/
-int list_at(linked_list_t* list, unsigned int index, void** value) {
+size_t list_at(linked_list_t* list, size_t index, void** value) {
   assert(list);
-  assert(index >= 0);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
     zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
@@ -152,7 +151,7 @@ int list_at(linked_list_t* list, unsigned int index, void** value) {
     return -1;
   }
 
-  unsigned int count = 0;
+  size_t count = 0;
   node_t* node = list->first;
 
   while (node != NULL) {
