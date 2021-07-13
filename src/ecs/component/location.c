@@ -1,6 +1,6 @@
 #include <assert.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "mud/data/hash_table.h"
 #include "mud/ecs/component/location.h"

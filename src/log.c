@@ -1,6 +1,6 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <time.h>
 
 #include "mud/log.h"
@@ -19,7 +19,7 @@ static const char* log_get_level(log_level_t level);
  *  format - formatted spring for use with vsprintf to build log line
  *  ... - varargs for vsprintf to build log line
 **/
-void mlog(log_level_t level, const char *origin, const char* format, ...) {
+void mlog(log_level_t level, const char* origin, const char* format, ...) {
   if (level < min_log_level) {
     return;
   }
@@ -61,17 +61,17 @@ void log_set_level(const log_level_t level) {
  *  level - the log level to return a string of
 **/
 static const char* log_get_level(log_level_t level) {
-  switch(level) {
-    case ERROR:
-      return "ERROR";
-    case WARN:
-      return "WARN";
-    case INFO:
-      return "INFO";
-    case DEBUG:
-      return "DEBUG";
-    case TRACE:
-      return "TRACE";
+  switch (level) {
+  case ERROR:
+    return "ERROR";
+  case WARN:
+    return "WARN";
+  case INFO:
+    return "INFO";
+  case DEBUG:
+    return "DEBUG";
+  case TRACE:
+    return "TRACE";
   }
 
   return "APOCALYPTIC";

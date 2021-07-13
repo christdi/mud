@@ -21,6 +21,6 @@ typedef enum log_level {
 /**
  * Function prototypes
 **/
-void mlog(log_level_t level, const char *origin, const char* format, ...);
+void mlog(log_level_t level, const char* origin, const char* format, ...);
 
 #endif
