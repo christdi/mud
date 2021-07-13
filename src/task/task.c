@@ -63,7 +63,7 @@ int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t funct
   task->function = function;
 
   if (list_add(tasks, (void*)task) != 0) {
-    zlog_error(gc, "task_schedule(): Unable to add task to linked list");
+    mlog(ERROR, "task_schedule", "Unable to add task to linked list");
 
     return -1;
   }
@@ -87,7 +87,7 @@ int task_execute(linked_list_t* tasks, game_t* game) {
   ready_tasks->deallocator = deallocate_task_t;
 
   if (list_extract(tasks, ready_tasks, task_is_ready_to_execute) != 0) {
-    zlog_error(gc, "task_execute(): Unable to extract ready tasks from linked list");
+    mlog(ERROR, "task_execute", "Unable to extract ready tasks from linked list");
 
     free_linked_list_t(ready_tasks);
 
@@ -99,7 +99,7 @@ int task_execute(linked_list_t* tasks, game_t* game) {
 
   while ((task = (task_t*)it_get(it)) != NULL) {
     if (task->function == NULL || task->function(game) != 0) {
-      zlog_warn(gc, "task_execute(): task returned failure");
+      mlog(WARN, "task_execute", "task returned failure");
     }
 
     it = it_next(it);

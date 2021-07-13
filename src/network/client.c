@@ -10,7 +10,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <zlog.h>
 
 int append_data_to_input_buffer(client_t* client, char* data, size_t len);
 
@@ -60,7 +59,7 @@ int send_to_client(client_t* client, char* data) {
     bytes_sent = send(client->fd, data, len, 0);
 
     if (bytes_sent == -1L) {
-      zlog_error(nc, "send_to_client(): %s", strerror(errno));
+      mlog(ERROR, "send_to_client", "%s", strerror(errno));
 
       return -1;
     }
@@ -92,7 +91,7 @@ int receive_from_client(client_t* client) {
       return 0;
     }
 
-    zlog_error(nc, "receive_from_client(): %s", strerror(errno));
+    mlog(ERROR, "receive_from_client", "%s", strerror(errno));
 
     return -1;
   }
@@ -103,7 +102,7 @@ int receive_from_client(client_t* client) {
     bytes[len] = '\0';
 
     if (append_data_to_input_buffer(client, bytes, len) != 0) {
-      zlog_error(nc, "receive_from_client(): Failed to append received data to input buffer");
+      mlog(ERROR, "receive_from_client", "Failed to append received data to input buffer");
     }
 
     client->last_active = time(NULL);
@@ -124,7 +123,7 @@ int append_data_to_input_buffer(client_t* client, char* data, size_t len) {
   size_t total = existing + len + 1;
 
   if (total > INPUT_BUFFER_SIZE) {
-    zlog_error(nc, "append_data_to_input_buffer(): Client FD [%d] has filled their input buffer, disconnecting", client->fd);
+    mlog(ERROR, "append_data_to_input_buffer", "Client FD [%d] has filled their input buffer, disconnecting", client->fd);
     send_to_client(client, "Maximum input buffer was exceeded.  Disconnecting.\n\r");
 
     client->hungup = 1;
@@ -147,7 +146,7 @@ int close_client(client_t* client) {
 
   if (client->fd) {
     if (close(client->fd) != 0) {
-      zlog_error(nc, "%s", strerror(errno));
+      mlog(ERROR, "close_client", "%s", strerror(errno));
 
       return -1;
     }
@@ -191,7 +190,7 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
 
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
-        zlog_error(nc, "extract_from_input(): Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
+        mlog(ERROR, "extract_from_input", "Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
         send_to_client(client, "Your input was discarded as it was too long.\n\r");
       } else {
         strncpy(dest, client->input, i);

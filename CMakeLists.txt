@@ -24,4 +24,4 @@ target_compile_options(${LIB_NAME} PRIVATE -Wall -Wextra -pedantic)
 # Executable configuration
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} src/main.c)
-target_link_libraries(${PROJECT_NAME} ${LIB_NAME} zlog uuid sqlite3 ssl crypto)
+target_link_libraries(${PROJECT_NAME} ${LIB_NAME} uuid sqlite3 ssl crypto)

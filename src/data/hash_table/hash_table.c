@@ -72,7 +72,7 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
   size_t len = strnlen(key, MAX_KEY_LENGTH - 1);
 
   if (len > MAX_KEY_LENGTH) {
-    zlog_error(dc, "hash_table_insert(): Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
+    mlog(ERROR, "hash_table_insert", "Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
 
     key[MAX_KEY_LENGTH] = '\0';
   }

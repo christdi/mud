@@ -44,7 +44,7 @@ int add_player_to_narration(narrator_t* narrator, entity_t* entity, player_t* pl
     players = create_linked_list_t();
 
     if (hash_table_insert(narrator->entities, entity->id.uuid, players) != 0) {
-      zlog_error(gc, "add_player_to_narration(): Failed to add player to entity [%s] narration", entity->id.uuid);
+      mlog(ERROR, "add_player_to_narration", "Failed to add player to entity [%s] narration", entity->id.uuid);
 
       return -1;
     };
@@ -61,7 +61,7 @@ int remove_player_from_narration(narrator_t* narrator, entity_t* entity, player_
   assert(player);
 
   if (!hash_table_has(narrator->entities, entity->id.uuid)) {
-    zlog_error(gc, "remove_player_from_narration(): Failed to remove player from entity narration as entity [%s] has no listeners", entity->id.uuid);
+    mlog(ERROR, "remove_player_from_narration", "Failed to remove player from entity narration as entity [%s] has no listeners", entity->id.uuid);
 
     return -1;
   }
@@ -95,7 +95,7 @@ void narrate_events(game_t* game) {
   while ((event = (event_t*)queue_dequeue(game->events)) != NULL) {
     switch (event->type) {
     case UNDEFINED:
-      zlog_error(gc, "narrate_events(): Event with UNDEFINED type was received.  Discarding.");
+      mlog(ERROR, "narrate_events", "Event with UNDEFINED type was received.  Discarding.");
       break;
     case COMMUNICATION:
       narrate_communicate_event(game, event);
