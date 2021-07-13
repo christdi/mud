@@ -9,16 +9,16 @@
  * Returns the allocated state_t. 
 **/
 state_t* create_state_t() {
-	state_t* state = calloc(1, sizeof *state);
+  state_t* state = calloc(1, sizeof *state);
 
-	return state;
+  return state;
 }
 
 /**
  * Frees an alllocated state_t.
 **/
 void free_state_t(state_t* const state) {
-	assert(state);
+  assert(state);
 
-	free(state);
+  free(state);
 }

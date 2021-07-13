@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "mud/data/linked_list.h"
-#include "mud/task/task.h"
 #include "mud/log.h"
+#include "mud/task/task.h"
 
 int task_is_ready_to_execute(void* value);
 
@@ -13,21 +13,21 @@ int task_is_ready_to_execute(void* value);
  * Returns the newly allocated task_t
 **/
 task_t* create_task_t() {
-	task_t* task = calloc(1, sizeof *task);
+  task_t* task = calloc(1, sizeof *task);
 
-	task->execute_at = 0;
-	task->function = NULL;
+  task->execute_at = 0;
+  task->function = NULL;
 
-	return task;
+  return task;
 }
 
 /**
  * Frees an allocated task_t
 **/
 void free_task_t(task_t* task) {
-	assert(task);
+  assert(task);
 
-	free(task);
+  free(task);
 }
 
 /**
@@ -37,9 +37,9 @@ void free_task_t(task_t* task) {
  *  value - a void* that should be safe to cast to task_t*. Behaviour is undefined if not.
 **/
 void deallocate_task_t(void* value) {
-	if (value != NULL) {
-		free_task_t((task_t*)value);
-	}
+  if (value != NULL) {
+    free_task_t((task_t*)value);
+  }
 }
 
 /**
@@ -53,22 +53,22 @@ void deallocate_task_t(void* value) {
  * Returns a 0 on success or -1 on failure 
 **/
 int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t function) {
-	assert(tasks);
-	assert(seconds_in_future > 0);
-	assert(function);
+  assert(tasks);
+  assert(seconds_in_future > 0);
+  assert(function);
 
-	task_t* task = create_task_t();
+  task_t* task = create_task_t();
 
-	task->execute_at = time(NULL) + seconds_in_future;
-	task->function = function;
+  task->execute_at = time(NULL) + seconds_in_future;
+  task->function = function;
 
-	if (list_add(tasks, (void *)task) != 0) {
-		zlog_error(gc, "task_schedule(): Unable to add task to linked list");
+  if (list_add(tasks, (void*)task) != 0) {
+    zlog_error(gc, "task_schedule(): Unable to add task to linked list");
 
-		return -1;
-	}
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -81,33 +81,33 @@ int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t funct
  * Returns 0 on success or -1 on error.
 **/
 int task_execute(linked_list_t* tasks, game_t* game) {
-	assert(tasks);
+  assert(tasks);
 
-	linked_list_t* ready_tasks = create_linked_list_t();
-	ready_tasks->deallocator = deallocate_task_t;
+  linked_list_t* ready_tasks = create_linked_list_t();
+  ready_tasks->deallocator = deallocate_task_t;
 
-	if (list_extract(tasks, ready_tasks, task_is_ready_to_execute) != 0) {
-		zlog_error(gc, "task_execute(): Unable to extract ready tasks from linked list");
+  if (list_extract(tasks, ready_tasks, task_is_ready_to_execute) != 0) {
+    zlog_error(gc, "task_execute(): Unable to extract ready tasks from linked list");
 
-		free_linked_list_t(ready_tasks);
+    free_linked_list_t(ready_tasks);
 
-		return -1;
-	}
+    return -1;
+  }
 
-	it_t it = list_begin(ready_tasks);
-	task_t* task = NULL;
+  it_t it = list_begin(ready_tasks);
+  task_t* task = NULL;
 
-	while ((task = (task_t*)it_get(it)) != NULL) {
-		if (task->function == NULL || task->function(game) != 0) {
-			zlog_warn(gc, "task_execute(): task returned failure");
-		}
+  while ((task = (task_t*)it_get(it)) != NULL) {
+    if (task->function == NULL || task->function(game) != 0) {
+      zlog_warn(gc, "task_execute(): task returned failure");
+    }
 
-		it = it_next(it);
-	}
+    it = it_next(it);
+  }
 
-	free_linked_list_t(ready_tasks); 
+  free_linked_list_t(ready_tasks);
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -119,11 +119,11 @@ int task_execute(linked_list_t* tasks, game_t* game) {
  * Returns 1 if this task is ready to execute or 0 otherwise. 
 **/
 int task_is_ready_to_execute(void* value) {
-	task_t* task = (task_t*)value;
+  task_t* task = (task_t*)value;
 
-	if (time(NULL) > task->execute_at) {
-		return 1;
-	}
+  if (time(NULL) > task->execute_at) {
+    return 1;
+  }
 
-	return 0;
+  return 0;
 }

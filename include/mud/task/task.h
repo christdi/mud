@@ -14,18 +14,18 @@ typedef int (*task_func_t)(game_t* game);
  * Structs
 **/
 typedef struct task {
-	time_t execute_at;
-	task_func_t function;
+  time_t execute_at;
+  task_func_t function;
 } task_t;
 
 /**
  * Function prototypes
 **/
 task_t* create_task_t();
-void free_task_t(task_t *task);
+void free_task_t(task_t* task);
 void deallocate_task_t(void* value);
 
 int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t function);
-int task_execute(linked_list_t* tasks, game_t *game);
+int task_execute(linked_list_t* tasks, game_t* game);
 
 #endif

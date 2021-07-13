@@ -72,7 +72,7 @@ int list_add(linked_list_t* list, void* value) {
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
     zlog_error(gc, "list_add(): Failed to obtain mutex [%s]", strerror(errno));
-    
+
     return -1;
   }
 
@@ -92,7 +92,7 @@ int list_add(linked_list_t* list, void* value) {
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
     zlog_error(gc, "list_add(): Failed to unlock mutex [%s]", strerror(errno));
-    
+
     return -1;
   }
 
@@ -152,15 +152,15 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
 
   if (pthread_mutex_lock(&src->mutex) != 0) {
     zlog_error(gc, "list_extract(): Failed to obtain mutex [%s]", strerror(errno));
-    
+
     return -1;
-  }  
+  }
 
   node_t* node = src->first;
 
   while (node != NULL) {
     node_t* next_node = node->next;
-    void * value = node->data;
+    void* value = node->data;
 
     if (predicate(value) > 0) {
       list_add(dst, value);
@@ -177,7 +177,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
     zlog_error(gc, "list_extract(): Failed to unlock mutex [%s]", strerror(errno));
 
     return -1;
-  }  
+  }
 
   return 0;
 }
@@ -213,7 +213,6 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
 
     count++;
   }
-
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
     zlog_error(gc, "list_at(): Failed to unlock mutex [%s]", strerror(errno));

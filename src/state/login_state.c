@@ -3,9 +3,9 @@
 
 #include "mud/dbo/account.h"
 #include "mud/player.h"
-#include "mud/state/state.h"
 #include "mud/state/login_state.h"
 #include "mud/state/play_state.h"
+#include "mud/state/state.h"
 #include "mud/util/mudhash.h"
 
 void enter_login_state(player_t* player, game_t* game);
@@ -27,7 +27,7 @@ state_t* login_state() {
 }
 
 void enter_login_state(player_t* player, game_t* game) {
-    send_to_player(player, "Enter your [bgreen]username[reset] or type [bgreen]new[reset] to create one: ");
+  send_to_player(player, "Enter your [bgreen]username[reset] or type [bgreen]new[reset] to create one: ");
 }
 
 void get_account_name(player_t* player, game_t* game, char* input) {
@@ -41,7 +41,7 @@ void get_account_name(player_t* player, game_t* game, char* input) {
   }
 
   strncpy(player->account->username, input, USERNAME_SIZE);
-  
+
   send_to_player(player, "What is the [bgreen]password[reset] for this account? ");
   player->state->on_input = get_account_password;
 }
@@ -95,7 +95,7 @@ void get_new_account_password(player_t* player, game_t* game, char* input) {
   string_to_sha256(input, player->account->password_hash);
 
   send_to_player(player, "Please re-enter your [bgreen]password[reset]: ");
-  player->state->on_input = validate_new_account_password;  
+  player->state->on_input = validate_new_account_password;
 }
 
 void validate_new_account_password(player_t* player, game_t* game, char* input) {

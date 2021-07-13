@@ -7,8 +7,8 @@
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
-#include "mud/task/task.h"
 #include "mud/player.h"
+#include "mud/task/task.h"
 
 #include <assert.h>
 #include <stdlib.h>

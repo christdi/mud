@@ -4,8 +4,8 @@
 #include "mud/dbo/account.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/state/state.h"
 #include "mud/state/login_state.h"
+#include "mud/state/state.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -27,7 +27,7 @@ player_t* create_player_t() {
   player->account = create_account_t();
   player->state = NULL;
   player->client = NULL;
-  
+
   return player;
 }
 
@@ -131,7 +131,7 @@ void player_change_state(player_t* player, game_t* game, state_t* state) {
  *  player - the player who is being ticked
  *  game - game object containing all necessary game data
 **/
-void player_on_tick(player_t *player, game_t* game) {
+void player_on_tick(player_t* player, game_t* game) {
   if (player->state != NULL && player->state->on_tick != NULL) {
     player->state->on_tick(player, game);
   }

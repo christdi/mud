@@ -7,14 +7,14 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
-#include "mud/state/state.h"
 #include "mud/state/play_state.h"
+#include "mud/state/state.h"
 #include "mud/util/mudstring.h"
 
 void send_prompt(player_t* player, game_t* game);
 void play_state_enter(player_t* player, game_t* game);
-void play_state_input(player_t* player, game_t *game, char* input);
-void play_state_tick(player_t* player, game_t *game);
+void play_state_input(player_t* player, game_t* game, char* input);
+void play_state_tick(player_t* player, game_t* game);
 
 /**
  * Creates a state_t configured for the play state
@@ -42,7 +42,7 @@ void play_state_enter(player_t* player, game_t* game) {
   assert(player);
   assert(game);
 
-  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->account->username);  
+  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world.\n\r", player->account->username);
   send_prompt(player, game);
 }
 
@@ -83,7 +83,7 @@ void play_state_input(player_t* player, game_t* game, char* input) {
  *  player - the player being ticked
  *  game - game_t struct containing game data
 **/
-void play_state_tick(player_t* player, game_t *game) {
+void play_state_tick(player_t* player, game_t* game) {
   assert(player);
   assert(game);
   assert(player->client);

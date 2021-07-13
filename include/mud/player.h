@@ -43,7 +43,7 @@ void player_disconnected(client_t* client, void* context);
 void player_input(client_t* client, void* context);
 
 void player_change_state(player_t* player, game_t* game, state_t* state);
-void player_on_tick(player_t *player, game_t* game);
+void player_on_tick(player_t* player, game_t* game);
 
 void send_to_player(player_t* player, const char* fmt, ...);
 void send_to_players(linked_list_t* players, const char* fmt, ...);
