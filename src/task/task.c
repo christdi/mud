@@ -37,9 +37,9 @@ void free_task_t(task_t* task) {
  *  value - a void* that should be safe to cast to task_t*. Behaviour is undefined if not.
 **/
 void deallocate_task_t(void* value) {
-  if (value != NULL) {
-    free_task_t((task_t*)value);
-  }
+  assert(value);
+
+  free_task_t((task_t*)value);
 }
 
 /**

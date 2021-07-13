@@ -138,7 +138,8 @@ it_t list_remove(linked_list_t* list, void* value) {
 
 /**
  * Searches linked list src and removes values which return true for predicate and adds them
- * to dst.
+ * to dst.  Note that if a deallocator has been configured for the list that it will be explicitly
+ * removed as the new linked list (or it's owner) is now responsible for management of the object.
  * 
  * Parameters
  *  src - the source linked list
@@ -165,6 +166,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
     if (predicate(value) > 0) {
       list_add(dst, value);
 
+      node->deallocator = NULL;
       node->data = NULL;
 
       remove_node(src, node);
