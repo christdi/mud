@@ -1,19 +1,26 @@
-#ifndef _LOG_H_
-#define _LOG_H_
-
-#include <zlog.h>
+#ifndef MUD_LOG_H
+#define MUD_LOG_H
 
 /**
- * Globals >.<
+ * Defines
 **/
-zlog_category_t* gc;
-zlog_category_t* nc;
-zlog_category_t* dc;
+#define MAX_LOG_LINE_LENGTH 1024
+#define MAX_LOG_DATE_TIME_LENGTH 30
+
+/**
+ * Enumes
+**/
+typedef enum log_level {
+  TRACE,
+  DEBUG,
+  INFO,
+  WARN,
+  ERROR
+} log_level_t;
 
 /**
  * Function prototypes
 **/
-int log_initialise(const char* configFilePath);
-void log_shutdown(void);
+void mlog(log_level_t level, const char* origin, const char* format, ...);
 
 #endif

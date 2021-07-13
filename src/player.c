@@ -10,6 +10,7 @@
 
 #include <assert.h>
 #include <sqlite3.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -153,7 +154,7 @@ void send_to_player(player_t* player, const char* fmt, ...) {
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    zlog_error(nc, "send_to_player(): Formatted output was too long and was truncated");
+    mlog(ERROR, "send_to_player", "Formatted output was too long and was truncated");
   }
 
   va_end(args);
@@ -171,7 +172,7 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    zlog_error(nc, "send_to_player(): Formatted output was too long and was truncated");
+    mlog(ERROR, "send_to_player", "Formatted output was too long and was truncated");
   }
 
   va_end(args);
@@ -204,7 +205,7 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    zlog_error(nc, "send_to_all_players(): Formatted output was too long and was truncated");
+    mlog(ERROR, "send_to_all_players", "Formatted output was too long and was truncated");
   }
 
   while ((target = h_it_get(it)) != NULL) {
@@ -233,7 +234,7 @@ void write_to_player(player_t* player, char* output) {
     char username[USERNAME_SIZE];
     get_player_username(player, username);
 
-    zlog_warn(gc, "write_to_player(): Send to player with username [%s] failed as they have no client", username);
+    mlog(WARN, "write_to_player", "Send to player with username [%s] failed as they have no client", username);
 
     return;
   }
@@ -246,7 +247,7 @@ void write_to_player(player_t* player, char* output) {
   }
 
   if (send_to_client(player->client, chosen_output) != 0) {
-    zlog_warn(gc, "write_to_player(): Send to player failed, unable to write to client [%s]", player->client->uuid);
+    mlog(WARN, "write_to_player", "Send to player failed, unable to write to client [%s]", player->client->uuid);
 
     return;
   }

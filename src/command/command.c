@@ -91,7 +91,7 @@ const command_t* get_command(game_t* game, const char* name) {
 
   if ((count = select_commands_by_name(game, name, commands)) <= 0) {
     if (count == -1) {
-      zlog_error(gc, "get_command(): Unable to retreive commands from database matching [%s]", name);
+      mlog(ERROR, "get_command", "Unable to retreive commands from database matching [%s]", name);
     }
 
     free_linked_list_t(commands);
@@ -105,7 +105,7 @@ const command_t* get_command(game_t* game, const char* name) {
   list_at(commands, 0, (void*)&command_dbo);
 
   if (command_dbo == NULL) {
-    zlog_error(gc, "get_command(): Unable to retreive first command from linked list");
+    mlog(ERROR, "get_command", "Unable to retreive first command from linked list");
 
     free_linked_list_t(commands);
 

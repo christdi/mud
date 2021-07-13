@@ -13,7 +13,7 @@ void generate_uuid(char* dest, size_t size) {
   assert(dest);
 
   if (size < UUID_SIZE) {
-    zlog_error(gc, "generate_uuid(): Error when generating uuid, destination buffer supplied was not big enough.");
+    mlog(ERROR, "generate_uuid", "Error when generating uuid, destination buffer supplied was not big enough.");
 
     return;
   }

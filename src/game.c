@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <zlog.h>
 
 int connect_to_database(game_t* game, const char* filename);
 void game_execute_tasks(game_t* game);
@@ -82,14 +81,14 @@ int start_game(config_t* config) {
 
   game_t* game = create_game_t();
 
-  zlog_info(gc, "start_game(): Starting MUD engine");
+  mlog(INFO, "start_game", "Starting MUD engine");
 
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
   if (connect_to_database(game, config->database_file) != 0) {
-    zlog_error(gc, "start_game(): Failed to start game server");
+    mlog(ERROR, "start_game", "Failed to start game server");
 
     return -1;
   }
@@ -97,12 +96,12 @@ int start_game(config_t* config) {
   load_entities(game);
 
   if (start_game_server(game->network, config->game_port) == -1) {
-    zlog_error(gc, "start_game(): Failed to start game server");
+    mlog(ERROR, "start_game", "Failed to start game server");
 
     return -1;
   }
 
-  task_schedule(game->tasks, 10, game_pulse_players);
+  task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
 
   while (!game->shutdown) {
     poll_network(game->network);
@@ -113,7 +112,7 @@ int start_game(config_t* config) {
   }
 
   if (stop_game_server(game->network, config->game_port) == -1) {
-    zlog_error(gc, "start_game(): Failed to shutdown server");
+    mlog(ERROR, "start_game", "Failed to shutdown server");
 
     return -1;
   }
@@ -122,7 +121,7 @@ int start_game(config_t* config) {
 
   sqlite3_close(game->database);
 
-  zlog_info(gc, "start_game(): Stopping MUD engine");
+  mlog(INFO, "start_game", "Stopping MUD engine");
 
   free_game_t(game);
 
@@ -134,10 +133,10 @@ int start_game(config_t* config) {
  * or 0 on success.
 **/
 int connect_to_database(game_t* game, const char* filename) {
-  zlog_info(gc, "connect_to_database(): Connecting to database [%s]", filename);
+  mlog(INFO, "connect_to_database", "Connecting to database [%s]", filename);
 
   if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
-    zlog_error(gc, "connect_to_database(): Failed to open game database [%s]", sqlite3_errmsg(game->database));
+    mlog(ERROR, "connect_to_database", "Failed to open game database [%s]", sqlite3_errmsg(game->database));
 
     sqlite3_close(game->database);
 
@@ -169,7 +168,7 @@ int game_pulse_players(game_t* game) {
     it = h_it_next(it);
   }
 
-  task_schedule(game->tasks, 10, game_pulse_players);
+  task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
 
   return 0;
 }

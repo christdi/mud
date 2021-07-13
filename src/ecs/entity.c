@@ -56,7 +56,7 @@ void deallocate_entity(void* value) {
 void load_entities(game_t* game) {
   assert(game);
 
-  zlog_info(gc, "load_entities(): Loading entities");
+  mlog(INFO, "load_entities", "Loading entities");
 
   // TODO(Chris I): Actually load entities
 
