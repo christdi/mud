@@ -71,7 +71,7 @@ void list_add(linked_list_t* list, void* value) {
   assert(value);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_add(): Failed to obtain mutex [%s]", strerror(errno));
     return;
   }
 
@@ -90,7 +90,7 @@ void list_add(linked_list_t* list, void* value) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_add(): Failed to unlock mutex [%s]", strerror(errno));
     return;
   }
 }
@@ -108,7 +108,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   it.node = NULL;
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_add(): Failed to obtain mutex [%s]", strerror(errno));
 
     return it;
   }
@@ -124,7 +124,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_add(): Failed to unlock mutex [%s]", strerror(errno));
 
     return it;
   }
@@ -146,7 +146,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
   assert(list);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_at(): Failed to obtain mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -166,7 +166,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
 
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_at(): Failed to unlock mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -228,7 +228,7 @@ int list_size(linked_list_t* list) {
   assert(list);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to obtain mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_size(): Failed to obtain mutex [%s]", strerror(errno));
 
     return 0;
   }
@@ -242,7 +242,7 @@ int list_size(linked_list_t* list) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    zlog_error(gc, "Failed to unlock mutex [%s]", strerror(errno));
+    zlog_error(gc, "list_size(): Failed to unlock mutex [%s]", strerror(errno));
 
     return 0;
   }

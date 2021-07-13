@@ -67,7 +67,7 @@ void register_description(components_t* components, description_t* description) 
   assert(description);
 
   if (hash_table_insert(components->description, description->entity_id.uuid, description) != 0) {
-    zlog_error(gc, "Failed to register description component for entity uuid [%s]", description->entity_id.uuid);
+    zlog_error(gc, "register_description(): Failed to register description component for entity uuid [%s]", description->entity_id.uuid);
   }
 }
 

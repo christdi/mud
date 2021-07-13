@@ -59,14 +59,14 @@ int select_commands_by_name(game_t* game, const char* name, linked_list_t* comma
   const char* sql = "SELECT name, function FROM command WHERE name = ?";
 
   if (sqlite3_prepare_v2(game->database, sql, -1, &res, 0) != SQLITE_OK) {
-    zlog_error(dc, "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "select_commands_by_name(): Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, name, (int)strlen(name), NULL) != SQLITE_OK) {
-    zlog_error(dc, "Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(game->database));
+    zlog_error(dc, "select_commands_by_name(): Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(game->database));
     sqlite3_finalize(res);
 
     return -1;
@@ -77,7 +77,7 @@ int select_commands_by_name(game_t* game, const char* name, linked_list_t* comma
 
   while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
     if (rc != SQLITE_ROW) {
-      zlog_error(dc, "Failed to retreive commands from database: [%s]", sqlite3_errmsg(game->database));
+      zlog_error(dc, "select_commands_by_name(): Failed to retreive commands from database: [%s]", sqlite3_errmsg(game->database));
 
       sqlite3_finalize(res);
 
@@ -87,11 +87,11 @@ int select_commands_by_name(game_t* game, const char* name, linked_list_t* comma
     command_dbo_t* command_dbo = create_command_dbo_t();
 
     if (strlcpy(command_dbo->name, (char *) sqlite3_column_text(res, 0), COMMAND_NAME_LENGTH) > COMMAND_NAME_LENGTH) {
-      zlog_error(nc, "Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
+      zlog_warn(nc, "select_commands_by_name(): Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
     }
 
     if (strlcpy(command_dbo->function, (char *)sqlite3_column_text(res, 1), COMMAND_FUNCTION_LENGTH) > COMMAND_FUNCTION_LENGTH) {
-      zlog_error(nc, "Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
+      zlog_warn(nc, "select_commands_by_name(): Error retrieving commands from database. Command name length for command [%s] was longer than max length [%d] and was truncated", name, COMMAND_NAME_LENGTH);
     }
 
     list_add(commands, (void *)command_dbo);

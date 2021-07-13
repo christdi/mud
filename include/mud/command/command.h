@@ -5,7 +5,7 @@
  * Defines
 **/
 #define ARGUMENT_SIZE 256
-#define COMMAND_NAME_MAX_LENGTH 20
+#define COMMAND_NAME_MAX_LENGTH 64
 
 /**
  * Typedefs
@@ -31,7 +31,7 @@ void free_command_t(command_t* command);
 void deallocate_command(void* value);
 
 void load_commands(game_t* game);
-command_t * get_command(game_t* game, const char *name);
+const command_t * get_command(game_t* game, const char *name);
 
 
 #endif

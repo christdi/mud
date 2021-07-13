@@ -13,6 +13,8 @@
 #include "mud/game.h"
 #include "mud/log.h"
 
+const command_t* command_lookup(const char* name);
+
 /**
  * Allocate memory for and initialize a command_t.
  *
@@ -48,7 +50,7 @@ void deallocate_command(void* value) {
 /**
  * Populates the commands hash table from a static array of commands.
 **/
-void load_commands(game_t* game) {
+const command_t* command_lookup(const char* name) {
   static const command_t commands[] = {
     { "function_entity", entity_command },
     { "function_shutdown", shutdown_command },
@@ -59,13 +61,17 @@ void load_commands(game_t* game) {
     { "\0", NULL }
   };
 
-  zlog_info(gc, "Loading commands");
+  const command_t* command = commands;
 
-  command_t* command = NULL;
+  while (command->func != NULL) {
+    if (strncmp(command->name, name, COMMAND_NAME_MAX_LENGTH-1) == 0) {
+      return command;
+    }
 
-  for (command = commands; command->func != NULL; command++) {
-    hash_table_insert(game->commands, command->name, command);
+    command++;
   }
+
+  return NULL;
 }
 
 /**
@@ -77,7 +83,7 @@ void load_commands(game_t* game) {
  *
  * Returns a pointer to a valid command_t structure on success or NULL on failure.
 **/
-command_t * get_command(game_t* game, const char *name) {
+const command_t * get_command(game_t* game, const char *name) {
   linked_list_t* commands = create_linked_list_t();
   commands->deallocator = deallocate_command_dbo_t;
 
@@ -106,7 +112,7 @@ command_t * get_command(game_t* game, const char *name) {
     return NULL;
   }
 
-  command_t* cmd = (command_t*)hash_table_get(game->commands, command_dbo->function);
+  const command_t* cmd = command_lookup(command_dbo->function);
 
   free_linked_list_t(commands);
 

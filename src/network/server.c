@@ -57,7 +57,7 @@ int listen_on_server(server_t* server) {
   char port_string[PORT_SIZE];
 
   if (int_to_string(server->port, port_string) != 0) {
-    zlog_error(nc, "Failed to convert port from integer to string.");
+    zlog_error(nc, "listen_on_server(): Failed to convert port from integer to string.");
 
     return -1;
   }
@@ -65,7 +65,7 @@ int listen_on_server(server_t* server) {
   int status = 0;
 
   if ((status = getaddrinfo(0, port_string, &hints, &server_info)) != 0) {
-    zlog_error(nc, "%s", gai_strerror(status));
+    zlog_error(nc, "listen_on_server(): %s", gai_strerror(status));
 
     return -1;
   }
@@ -73,7 +73,7 @@ int listen_on_server(server_t* server) {
   server->fd = socket(server_info->ai_family, server_info->ai_socktype, server_info->ai_protocol);
 
   if (!server->fd) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "listen_on_server(): %s", strerror(errno));
 
     return -1;
   }
@@ -81,32 +81,32 @@ int listen_on_server(server_t* server) {
   int yes = 1;
 
   if (setsockopt(server->fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "listen_on_server(): %s", strerror(errno));
 
     return -1;
   }
 
   if (fcntl(server->fd, F_SETFL, O_NONBLOCK) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "listen_on_server(): %s", strerror(errno));
 
     return -1;
   }
 
   if (bind(server->fd, server_info->ai_addr, server_info->ai_addrlen) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "listen_on_server(): %s", strerror(errno));
 
     return -1;
   }
 
   if (listen(server->fd, server->backlog) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "listen_on_server(): %s", strerror(errno));
 
     return -1;
   }
 
   freeaddrinfo(server_info);
 
-  zlog_info(nc, "Successfully bound to port [%d]", server->port);
+  zlog_info(nc, "listen_on_server(): Successfully bound to port [%d]", server->port);
 
   return 0;
 }
@@ -125,13 +125,13 @@ int accept_on_server(server_t* server, client_t* client) {
   client->fd = accept(server->fd, (struct sockaddr*)&remote_address, &remote_address_size);
 
   if (!client->fd) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "accept_on_server(): %s", strerror(errno));
 
     return -1;
   }
 
   if (fcntl(client->fd, F_SETFL, O_NONBLOCK) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "accept_on_server(): %s", strerror(errno));
 
     return -1;
   }
@@ -147,10 +147,10 @@ int accept_on_server(server_t* server, client_t* client) {
 int close_server(server_t* server) {
   assert(server);
 
-  zlog_info(nc, "Closing server on port [%d] with descriptor [%d]", server->port, server->fd);
+  zlog_info(nc, "close_server(): Closing server on port [%d] with descriptor [%d]", server->port, server->fd);
 
   if (close(server->fd) != 0) {
-    zlog_error(nc, "%s", strerror(errno));
+    zlog_error(nc, "close_server(): %s", strerror(errno));
 
     return -1;
   }
