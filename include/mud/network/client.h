@@ -4,6 +4,7 @@
 #include "mud/util/muduuid.h"
 
 #include <pthread.h>
+#include <time.h>
 
 /**
  * Definitions
@@ -18,6 +19,7 @@
 typedef struct client {
   int fd;
   unsigned int hungup;
+  time_t last_active;
 
   char uuid[UUID_SIZE];
   char input[INPUT_BUFFER_SIZE];
@@ -32,6 +34,7 @@ void free_client_t(client_t* client);
 int send_to_client(client_t* client, char* data);
 int receive_from_client(client_t* client);
 int close_client(client_t* client);
+int client_get_idle_seconds(const client_t* const client);
 int extract_from_input(client_t* client, char* dest, size_t dest_len, const char* delim);
 
 #endif

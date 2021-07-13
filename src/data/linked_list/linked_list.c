@@ -66,13 +66,14 @@ void deallocate_linked_list_t(void* value) {
 /**
  * Add a node to the end of the linked list.  
 **/
-void list_add(linked_list_t* list, void* value) {
+int list_add(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
     zlog_error(gc, "list_add(): Failed to obtain mutex [%s]", strerror(errno));
-    return;
+    
+    return -1;
   }
 
   node_t* node = node_new();
@@ -91,8 +92,11 @@ void list_add(linked_list_t* list, void* value) {
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
     zlog_error(gc, "list_add(): Failed to unlock mutex [%s]", strerror(errno));
-    return;
+    
+    return -1;
   }
+
+  return 0;
 }
 
 /**
@@ -130,6 +134,52 @@ it_t list_remove(linked_list_t* list, void* value) {
   }
 
   return it;
+}
+
+/**
+ * Searches linked list src and removes values which return true for predicate and adds them
+ * to dst.
+ * 
+ * Parameters
+ *  src - the source linked list
+ *  dst - the destination linked list
+ *  predicate - the predicate which assesses the values 
+**/
+int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_func_t predicate) {
+  assert(src);
+  assert(dst);
+  assert(predicate);
+
+  if (pthread_mutex_lock(&src->mutex) != 0) {
+    zlog_error(gc, "list_extract(): Failed to obtain mutex [%s]", strerror(errno));
+    
+    return -1;
+  }  
+
+  node_t* node = src->first;
+
+  while (node != NULL) {
+    node_t* next_node = node->next;
+    void * value = node->data;
+
+    if (predicate(value) > 0) {
+      list_add(dst, value);
+
+      node->data = NULL;
+
+      remove_node(src, node);
+    }
+
+    node = next_node;
+  }
+
+  if (pthread_mutex_unlock(&src->mutex) != 0) {
+    zlog_error(gc, "list_extract(): Failed to unlock mutex [%s]", strerror(errno));
+
+    return -1;
+  }  
+
+  return 0;
 }
 
 /**
