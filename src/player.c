@@ -94,7 +94,7 @@ void player_input(client_t* client, void* context) {
 
   char command[COMMAND_SIZE];
 
-  if (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1) {
+  while (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1) {
     if (strnlen(command, COMMAND_SIZE) > 0) {
       if (player->state != NULL && player->state->on_input != NULL) {
         player->state->on_input(player, game, command);
