@@ -115,13 +115,13 @@ void validate_new_account_password(player_t* player, game_t* game, char* input) 
   }
 
 
-  account_dbo_t* account_dbo = create_account_dbo_t();
+  account_dbo_t* account_dbo = account_dbo_t_new();
   account_dbo->username = strndup(player->username, USERNAME_SIZE);
   strlcpy(account_dbo->password_hash, player->password_hash, SHA256_HEX_SIZE);
   
   account_dbo_save(game, account_dbo);
 
-  free_account_dbo_t(account_dbo);
+  account_dbo_t_free(account_dbo);
 
   player_change_state(player, game, play_state());
 }
