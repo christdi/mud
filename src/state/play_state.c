@@ -1,7 +1,6 @@
 #include <assert.h>
 
 #include "mud/command/command.h"
-#include "mud/dbo/account_dbo.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -42,7 +41,7 @@ void play_state_enter(player_t* player, game_t* game) {
   assert(player);
   assert(game);
 
-  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->account->username);
+  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->username);
 }
 
 /**
@@ -103,5 +102,5 @@ void send_prompt(player_t* player, game_t* game) {
     }
   }
 
-  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->account->username);
+  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->username);
 }

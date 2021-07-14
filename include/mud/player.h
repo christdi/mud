@@ -1,7 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include <openssl/sha.h>
+#include "mud/util/mudhash.h"
 
 /**
  * Defines
@@ -10,7 +10,6 @@
 #define PASSWORD_SIZE 30
 #define SEND_SIZE 1024
 #define COMMAND_SIZE 256
-
 /**
  * Typedefs
 **/
@@ -24,8 +23,8 @@ typedef struct linked_list linked_list_t;
  * Structs
 **/
 typedef struct player {
-  char username[USERNAME_SIZE];
-  char password_hash[SHA256_DIGEST_LENGTH * 2];
+  char* username;
+  char password_hash[SHA256_HEX_SIZE];
 
   client_t* client;
   entity_t* entity;

@@ -4,8 +4,9 @@
 /**
  * Definitions
 **/
-#define SHA256_SIZE 64
-#define MAX_SHA256_STRING_LENGTH 128
+#define SHA256_HEX_LENGTH 64 /* 64 characters */
+#define SHA256_HEX_SIZE 65 /* 64 characters + null terminator */
+#define MAX_SHA256_INPUT_LENGTH 128
 
 /**
  * Function prototypes

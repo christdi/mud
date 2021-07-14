@@ -112,7 +112,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   it.node = NULL;
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    mlog(ERROR, "list_add", "Failed to obtain mutex [%s]", strerror(errno));
+    mlog(ERROR, "list_remove", "Failed to obtain mutex [%s]", strerror(errno));
 
     return it;
   }
@@ -125,10 +125,12 @@ it_t list_remove(linked_list_t* list, void* value) {
       remove_node(list, node);
       break;
     }
+
+    node = node->next;
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    mlog(ERROR, "list_add", "Failed to unlock mutex [%s]", strerror(errno));
+    mlog(ERROR, "list_remove", "Failed to unlock mutex [%s]", strerror(errno));
 
     return it;
   }

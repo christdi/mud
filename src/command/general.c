@@ -1,5 +1,5 @@
 #include "mud/command/general.h"
-#include "mud/dbo/account.h"
+#include "mud/network/client.h"
 #include "mud/player.h"
 
 #include <assert.h>
@@ -14,7 +14,7 @@ void quit_command(player_t* player, game_t* game, char* input) {
 
   send_to_player(player, "Goodbye! Thanks for playing\n\r");
 
-  send_to_all_players(game, player, "[bcyan]%s[reset] has left the world.\n\r", player->account->username);
+  send_to_all_players(game, player, "[bcyan]%s[reset] has left the world.\n\r", player->username);
 
   if (player && player->client) {
     player->client->hungup = 1;

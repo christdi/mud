@@ -57,7 +57,7 @@ int send_to_client(client_t* client, char* data) {
     data = data + bytes_sent;
 
     bytes_sent = send(client->fd, data, len, 0);
-
+    
     if (bytes_sent == -1L) {
       mlog(ERROR, "send_to_client", "%s", strerror(errno));
 

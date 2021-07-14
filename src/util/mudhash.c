@@ -10,7 +10,7 @@ void string_to_sha256(char* input, char* output) {
   assert(output);
 
   unsigned char hash[SHA256_DIGEST_LENGTH];
-  size_t len = strnlen(input, MAX_SHA256_STRING_LENGTH);
+  size_t len = strnlen(input, MAX_SHA256_INPUT_LENGTH);
 
   SHA256_CTX context;
   SHA256_Init(&context);
@@ -23,5 +23,5 @@ void string_to_sha256(char* input, char* output) {
     sprintf(output + (i * 2), "%02x", hash[i]);
   }
 
-  output[SHA256_SIZE] = 0;
+  output[SHA256_HEX_SIZE-1] = '\0';
 }

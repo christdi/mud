@@ -10,10 +10,10 @@
 /**
  * Creates and returns an initialised account_t struct.
 **/
-account_t* create_account_dbo_t() {
+account_dbo_t* create_account_dbo_t() {
   account_dbo_t* account = calloc(1, sizeof *account);
 
-  account->username[0] = '\0';
+  account->username = NULL;
   account->password_hash[0] = '\0';
 
   return account;
@@ -22,8 +22,12 @@ account_t* create_account_dbo_t() {
 /**
  * Frees an initialised account_t struct and members.
 **/
-void free_account_dbo_t(account_t* account) {
+void free_account_dbo_t(account_dbo_t* account) {
   assert(account);
+
+  if (account->username != NULL) {
+    free(account->username);
+  }
 
   free(account);
 }
