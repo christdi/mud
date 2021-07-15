@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mud/account.h"
 #include "mud/dbo/account_dbo.h"
@@ -10,7 +11,7 @@
  * Returns the allocated instance.
 **/
 account_t* account_t_new() {
-  account_t* account = calloc(1, sizeof account_t);
+  account_t* account = calloc(1, sizeof *account);
 
   return account;
 }
@@ -36,18 +37,28 @@ void account_t_free(account_t* account) {
 }
 
 /**
- * Creates a new account instance from a populated account_dbo instance.
- * 
+ * Populates an account_t with the values from an account_dbo_t.  If any of the fields
+ * have already been allocated they will be freed and replaced with the value from the
+ * account_dbo_t.
+ *
  * Parameters
- *  account_dbo - the account_dbo to create an account_t from.
- * 
- * Returns an allocated instance of an account_t populated with the details from
- * the account_dbo.  It's the callers responsibility to free the account..  
+ *  account - the account that will be populated with the values
+ *  account_dbo - the account_dbo that will be used to populate the account
 **/
-account_t* account_t_from_account_dbo_t(account_dbo_t* account_dbo) {
-  account_t* account = account_t_new();
+void account_from_account_dbo(account_t* account, account_dbo_t* account_dbo) {
+  if (account->username == NULL) {
+    free(account->username);
+  }
 
-  
+  if (account->password_hash == NULL) {
+    free(account->password_hash);
+  }
 
-  return account;
+  if (account_dbo->username != NULL) {
+    account->username = strdup(account_dbo->username);
+  }
+
+  if (account_dbo->password_hash != NULL) {
+    account->password_hash = strdup(account_dbo->password_hash);
+  }
 }

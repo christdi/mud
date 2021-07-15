@@ -1,7 +1,9 @@
+#include "mud/account.h"
 #include "mud/player.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/game.h"
+#include "mud/account.h"
 #include "mud/log.h"
 #include "mud/network/client.h"
 #include "mud/state/login_state.h"
@@ -25,7 +27,7 @@ void write_to_player(player_t* player, char* output);
 player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
-  player->username = NULL;
+  player->account = account_t_new();
   player->state = NULL;
   player->client = NULL;
 
@@ -38,8 +40,8 @@ player_t* create_player_t() {
 void free_player_t(player_t* player) {
   assert(player);
 
-  if (player->username != NULL) {
-    free(player->username);
+  if (player->account != NULL) {
+    account_t_free(player->account);
   }
 
   if (player->state != NULL) {
@@ -261,5 +263,5 @@ void get_player_username(player_t* player, char* username) {
   assert(player);
   assert(username);
 
-  strncpy(username, player->username != NULL ? player->username : "anonymous", USERNAME_SIZE);
+  strncpy(username, player->account->username != NULL ? player->account->username : "anonymous", USERNAME_SIZE);
 }

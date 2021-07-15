@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "mud/account.h"
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
@@ -94,7 +95,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     if (player->entity != NULL) {
       if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
-        mlog(ERROR, "entity_command", "Unable to remove player [%s] from narration of entity [%s]", player->username, entity->id.uuid);
+        mlog(ERROR, "entity_command", "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
         send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->id.uuid);
       }
     }
@@ -102,7 +103,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     player->entity = entity;
 
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
-      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->username, entity->id.uuid);
+      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->id.uuid);
     };
   }

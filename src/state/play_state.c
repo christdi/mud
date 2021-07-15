@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/command.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
@@ -16,7 +17,8 @@ void play_state_input(player_t* player, game_t* game, char* input);
 void play_state_tick(player_t* player, game_t* game);
 
 /**
- * Creates a state_t configured for the play state
+ * Creates a state_t configured for the play state.  It is the responsibility of the
+ * caller to free the allocated state.
  * 
  * Returns the configured state_t
 **/
@@ -41,7 +43,7 @@ void play_state_enter(player_t* player, game_t* game) {
   assert(player);
   assert(game);
 
-  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->username);
+  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->account->username);
 }
 
 /**
@@ -102,5 +104,5 @@ void send_prompt(player_t* player, game_t* game) {
     }
   }
 
-  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->username);
+  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->account->username);
 }

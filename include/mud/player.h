@@ -14,6 +14,7 @@
  * Typedefs
 **/
 typedef struct client client_t;
+typedef struct account account_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct state state_t;
@@ -23,10 +24,8 @@ typedef struct linked_list linked_list_t;
  * Structs
 **/
 typedef struct player {
-  char* username;
-  char password_hash[SHA256_HEX_SIZE];
-
   client_t* client;
+  account_t *account;
   entity_t* entity;
   state_t* state;
 } player_t;

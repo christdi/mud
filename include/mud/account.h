@@ -20,6 +20,6 @@ typedef struct account {
 account_t* account_t_new();
 void account_t_free(account_t* account);
 
-account_t* account_t_from_account_dbo_t(account_dbo_t* account_dbo);
+void account_from_account_dbo(account_t* account, account_dbo_t* account_dbo);
 
 #endif

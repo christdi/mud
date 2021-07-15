@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/communication.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
@@ -18,7 +19,7 @@ void say_command(player_t* player, game_t* game, char* input) {
   assert(input);
 
   if (!player->entity) {
-    mlog(ERROR, "say_command", "Player [%s] did not have an assigned entity when using the say command", player->username);
+    mlog(ERROR, "say_command", "Player [%s] did not have an assigned entity when using the say command", player->account->username);
 
     return;
   }

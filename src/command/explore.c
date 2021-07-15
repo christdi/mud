@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
 #include "mud/ecs/component/description.h"
@@ -20,7 +21,7 @@ void inventory_command(player_t* player, game_t* game, char* input) {
   entity_t* entity = player->entity;
 
   if (!entity) {
-    mlog(ERROR, "inventory_command", "Inventory command failed for player [%s] as they do not have an associated entity", player->username);
+    mlog(ERROR, "inventory_command", "Inventory command failed for player [%s] as they do not have an associated entity", player->account->username);
 
     return;
   }
@@ -37,7 +38,7 @@ void look_command(player_t* player, game_t* game, char* input) {
   entity_t* entity = player->entity;
 
   if (!entity) {
-    mlog(ERROR, "look_command", "Look command failed for player [%s] as they do not have an associated entity", player->username);
+    mlog(ERROR, "look_command", "Look command failed for player [%s] as they do not have an associated entity", player->account->username);
 
     return;
   }

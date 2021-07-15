@@ -1,5 +1,5 @@
-#ifndef _PLAY_STATE_H_
-#define _PLAY_STATE_H_
+#ifndef MUD_STATE_PLAY_STATE_H
+#define MUD_STATE_PLAY_STATE_H
 
 /**
  * Defines
@@ -9,8 +9,6 @@
 /**
  * Typedefs
 **/
-typedef struct player player_t; /* player.h */
-typedef struct game game_t; /* game.h */
 typedef struct state state_t; /* state.h */
 
 /**

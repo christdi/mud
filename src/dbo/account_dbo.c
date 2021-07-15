@@ -30,6 +30,10 @@ void account_dbo_t_free(account_dbo_t* account) {
     free(account->username);
   }
 
+  if (account->password_hash != NULL) {
+    free(account->password_hash);
+  }
+
   free(account);
 }
 
@@ -192,9 +196,7 @@ int account_dbo_exists(game_t* game, const char* username) {
  * 
  * Parameters
  *  account_dbo - the account_dbo that will be populated with the values
- *  account_t - the account that will be used to populate the account_dbo_t
- * 
- * Returns 0 on success or -1 on failure
+ *  account - the account that will be used to populate the account_dbo_t
 **/
 void account_dbo_from_account(account_dbo_t* account_dbo, account_t* account) {
   if (account_dbo->username == NULL) {
