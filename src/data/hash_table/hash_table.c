@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned int get_hash_index(char* key);
+unsigned int get_hash_index(const char* key);
 
 /**
  * Allocates and initialises a new hash_table struct.
@@ -39,7 +39,7 @@ void free_hash_table_t(hash_table_t* hash_table) {
 /**
  * Gets a table index by generating a hash value and modulating it by MAX_TABLE_SIZE;
 **/
-unsigned int get_hash_index(char* key) {
+unsigned int get_hash_index(const char* key) {
   assert(key);
 
   size_t len = strnlen(key, MAX_KEY_LENGTH);
@@ -64,22 +64,24 @@ unsigned int get_hash_index(char* key) {
  *
  * Returns 0 for success or -1 on failure.
 **/
-int hash_table_insert(hash_table_t* table, char* key, void* value) {
+int hash_table_insert(hash_table_t* table, const char* key, void* value) {
   assert(table);
   assert(key);
   assert(value);
 
-  size_t len = strnlen(key, MAX_KEY_LENGTH - 1);
+  char* hash_key = strdup(key);
+  size_t len = strnlen(hash_key, MAX_KEY_LENGTH - 1);
+
 
   if (len > MAX_KEY_LENGTH) {
     mlog(ERROR, "hash_table_insert", "Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
 
-    key[MAX_KEY_LENGTH] = '\0';
+    hash_key[MAX_KEY_LENGTH] = '\0';
   }
 
   int index = get_hash_index(key);
   hash_node_t* hash_node = create_hash_node_t();
-  hash_node->key = strdup(key);
+  hash_node->key = hash_key;
   hash_node->value = value;
   hash_node->deallocator = table->deallocator;
 
@@ -103,7 +105,7 @@ int hash_table_insert(hash_table_t* table, char* key, void* value) {
  * the caller to configure a deallocator or arrange for the value to be
  * freed first if relevant.
 **/
-void hash_table_delete(hash_table_t* table, char* key) {
+void hash_table_delete(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
 
@@ -139,7 +141,7 @@ void hash_table_delete(hash_table_t* table, char* key) {
  *
  * Returns 1 if the key exists, or 0 if not.
 **/
-int hash_table_has(hash_table_t* table, char* key) {
+int hash_table_has(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
 
@@ -168,7 +170,7 @@ int hash_table_has(hash_table_t* table, char* key) {
 /**
  * Searches a hash table for a node with a given key and returns the value if found.
 **/
-void* hash_table_get(hash_table_t* table, char* key) {
+void* hash_table_get(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
 

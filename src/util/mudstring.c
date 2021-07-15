@@ -4,30 +4,33 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bsd/string.h"
+
 #include "mud/log.h"
 #include "mud/util/mudstring.h"
 
 /**
  * Mapping of markup to ANSI control codes.
 **/
-char* const ansi_codes[ANSI_SIZE][2] = {
-  { "[black]", "\033[0;30m]" },
-  { "[red]", "\033[0;31m]" },
-  { "[green]", "\033[0;32m]" },
-  { "[yellow]", "\033[0;33m]" },
-  { "[blue]", "\033[0;34m]" },
-  { "[magenta]", "\033[0;35m]" },
-  { "[cyan]", "\033[0;36m]" },
-  { "[white]", "\033[0;37m]" },
-  { "[gray]", "\033[0;90m]" },
-  { "[bred]", "\033[0;91m]" },
-  { "[bgreen]", "\033[0;92m]" },
-  { "[byellow]", "\033[0;93m]" },
-  { "[bblue]", "\033[0;94m]" },
-  { "[bmagenta]", "\033[0;95m]" },
-  { "[bcyan]", "\033[0;96m]" },
-  { "[bwhite]", "\033[0;97m]" },
-  { "[reset]", "\033[0m]" }
+static const char* ansi_codes[][2] = {
+  { "[black]", "\033[0;30m" },
+  { "[red]", "\033[0;31m" },
+  { "[green]", "\033[0;32m" },
+  { "[yellow]", "\033[0;33m" },
+  { "[blue]", "\033[0;34m" },
+  { "[magenta]", "\033[0;35m" },
+  { "[cyan]", "\033[0;36m" },
+  { "[white]", "\033[0;37m" },
+  { "[gray]", "\033[0;90m" },
+  { "[bred]", "\033[0;91m" },
+  { "[bgreen]", "\033[0;92m" },
+  { "[byellow]", "\033[0;93m" },
+  { "[bblue]", "\033[0;94m" },
+  { "[bmagenta]", "\033[0;95m" },
+  { "[bcyan]", "\033[0;96m" },
+  { "[bwhite]", "\033[0;97m" },
+  { "[reset]", "\033[0m" },
+  { NULL }
 };
 
 /**
@@ -143,6 +146,65 @@ void string_to_hex(char* input, char* destination, size_t len) {
 }
 
 /**
+ * Replace occurrences of "find" with "rplc" in a given string src. The src string must
+ * be null terminated or behaviour is undefined.  This method calculates how big the new
+ * string must be to accomodate replacements and allocates a buffer big enough to hold it.
+ * It's the caller's responsibility to free the replacement string when done.
+ *
+ * Parameters
+ *  src - the source string to be replaced
+ *  find - what to search for
+ *  rplc - what to replace it with
+**/
+char* replace(const char* src, const char* find, const char* rplc) {
+  size_t find_len = strlen(find);
+  size_t rplc_len = strlen(rplc);
+  size_t new_len = strlen(src);
+
+  const char* c = src;
+  int found = 0;
+
+  while (*c != '\0') {
+    if (strncmp(c, find, find_len) == 0) {
+      if (find_len > rplc_len) {
+        new_len = new_len - (find_len - rplc_len);
+      } else {
+        new_len = new_len + (rplc_len - find_len);
+      }
+
+      found = 1;
+    }
+
+    c++;
+  }
+
+  if (found == 0) {
+    return strdup(src);
+  }
+
+  size_t new_size = (new_len + 1) * sizeof(char);
+  char* replacement = malloc(new_size);
+  memset(replacement, '\0', new_size);
+
+  c = src;
+  char *w = replacement;
+
+  while (*c != '\0') {
+    if (strncmp(c, find, find_len) == 0) {
+      strncpy(w, rplc, rplc_len);
+      c += find_len;
+      w += rplc_len;
+    } else {
+      *w++ = *c++;
+    }
+  }
+
+  *w = '\0';
+
+  return replacement;
+}
+
+/**
  * Given an input string, search for our custom markup and replace instances with
  * the equivalent ANSI control codes.  A valid destination character buffer must be
  * provided and it must be large enough to hold the converted string.
@@ -159,62 +221,20 @@ int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len) {
     return -1;
   }
 
-  char* current = input;
-  char* write = destination;
-  char* markup_start = NULL;
-  size_t markup_count = 0;
-  size_t copied = 0;
+  int i = 0;
+  char *tmp = strdup(input);
+  char *swp = NULL;
 
-  while (*current) {
-    if (*current == SYMBOL_START && !markup_start) {
-      markup_start = current;
-    }
+  while (ansi_codes[i][0] != NULL) {
+    swp = tmp;
+    tmp = replace(swp, ansi_codes[i][0], ansi_codes[i][1]);
+    free(swp);
 
-    if (markup_start) {
-      markup_count++;
-
-      if (*current == SYMBOL_END) {
-        char* markup = strndup(markup_start, markup_count);
-
-        int i = 0;
-
-        for (i = 0; i < ANSI_SIZE; i++) {
-          if (strcmp(markup, ansi_codes[i][0]) == 0) {
-            size_t ansi_length = strlen(ansi_codes[i][1]) - 1;
-
-            if (copied + ansi_length > len) {
-              free(markup);
-
-              return -1;
-            }
-
-            memcpy(write, ansi_codes[i][1], ansi_length);
-            write += ansi_length;
-            copied += ansi_length;
-            break;
-          }
-        }
-
-        free(markup);
-
-        markup_start = NULL;
-        markup_count = 0;
-        current++;
-
-        continue;
-      }
-    }
-
-    if (!markup_start) {
-      *write = *current;
-      write++;
-      copied++;
-    }
-
-    current++;
+    i++;
   }
 
-  *write = '\0';
+  strlcpy(destination, tmp, len);
+  free(tmp);
 
   return 0;
 }
