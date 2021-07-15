@@ -25,7 +25,7 @@ typedef struct linked_list linked_list_t;
 **/
 typedef struct player {
   client_t* client;
-  account_t *account;
+  account_t* account;
   entity_t* entity;
   state_t* state;
 } player_t;

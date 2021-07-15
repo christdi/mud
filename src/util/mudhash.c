@@ -23,5 +23,5 @@ void string_to_sha256(char* input, char* output) {
     sprintf(output + (i * 2), "%02x", hash[i]);
   }
 
-  output[SHA256_HEX_SIZE-1] = '\0';
+  output[SHA256_HEX_SIZE - 1] = '\0';
 }

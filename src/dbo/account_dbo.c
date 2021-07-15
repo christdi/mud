@@ -88,7 +88,7 @@ account_dbo_t* account_dbo_get_by_name(game_t* game, const char* username) {
     sqlite3_finalize(res);
 
     return NULL;
-  } 
+  }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
     mlog(ERROR, "account_dbo_load", "Failed to bind username to retrieve account from database: [%s]", sqlite3_errmsg(game->database));
@@ -98,11 +98,11 @@ account_dbo_t* account_dbo_get_by_name(game_t* game, const char* username) {
   }
 
   if (sqlite3_step(res) != SQLITE_ROW) {
-      mlog(ERROR, "account_dbo_load", "Failed to retreive account from database: [%s]", sqlite3_errmsg(game->database));
+    mlog(ERROR, "account_dbo_load", "Failed to retreive account from database: [%s]", sqlite3_errmsg(game->database));
 
-      sqlite3_finalize(res);
+    sqlite3_finalize(res);
 
-      return NULL;
+    return NULL;
   }
 
   account_dbo_t* account_dbo = account_dbo_t_new();

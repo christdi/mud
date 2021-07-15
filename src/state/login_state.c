@@ -140,11 +140,10 @@ void get_new_account_password(player_t* player, game_t* game, char* input) {
   char password_hash[SHA256_HEX_SIZE];
   string_to_sha256(input, password_hash);
   player->account->password_hash = strdup(password_hash);
-  
+
   send_to_player(player, "Please re-enter your [bgreen]password[reset]: ");
   player->state->on_input = validate_new_account_password;
 }
-
 
 /**
  * State expecting the same password previously provided to create a new account

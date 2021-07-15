@@ -55,7 +55,7 @@ int send_to_client(client_t* client, char* data) {
     data = data + bytes_sent;
 
     bytes_sent = send(client->fd, data, len, 0);
-    
+
     if (bytes_sent == -1L) {
       mlog(ERROR, "send_to_client", "%s", strerror(errno));
 
@@ -91,7 +91,7 @@ int receive_from_client(client_t* client) {
     return -1;
   }
 
-  size_t remaining = (INPUT_BUFFER_SIZE) - existing;
+  size_t remaining = (INPUT_BUFFER_SIZE)-existing;
 
   if ((len = recv(client->fd, client->input + existing, remaining - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {

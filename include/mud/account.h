@@ -10,8 +10,8 @@ typedef struct account_dbo account_dbo_t;
  * Structs
 **/
 typedef struct account {
-	char* username;
-	char* password_hash;
+  char* username;
+  char* password_hash;
 } account_t;
 
 /**
