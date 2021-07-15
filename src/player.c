@@ -1,9 +1,10 @@
 #include "mud/player.h"
+#include "mud/account.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/dbo/account.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/network/client.h"
 #include "mud/state/login_state.h"
 #include "mud/state/state.h"
 #include "mud/util/mudstring.h"
@@ -25,7 +26,7 @@ void write_to_player(player_t* player, char* output);
 player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
-  player->account = create_account_t();
+  player->account = account_t_new();
   player->state = NULL;
   player->client = NULL;
 
@@ -39,7 +40,7 @@ void free_player_t(player_t* player) {
   assert(player);
 
   if (player->account != NULL) {
-    free_account_t(player->account);
+    account_t_free(player->account);
   }
 
   if (player->state != NULL) {
@@ -94,7 +95,7 @@ void player_input(client_t* client, void* context) {
 
   char command[COMMAND_SIZE];
 
-  if (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1) {
+  while (extract_from_input(client, command, COMMAND_SIZE, "\r\n") != -1) {
     if (strnlen(command, COMMAND_SIZE) > 0) {
       if (player->state != NULL && player->state->on_input != NULL) {
         player->state->on_input(player, game, command);
@@ -261,5 +262,5 @@ void get_player_username(player_t* player, char* username) {
   assert(player);
   assert(username);
 
-  strncpy(username, player->account->username[0] != '\0' ? player->account->username : "anonymous", USERNAME_SIZE);
+  strncpy(username, player->account->username != NULL ? player->account->username : "anonymous", USERNAME_SIZE);
 }

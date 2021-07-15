@@ -1,7 +1,7 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/command.h"
-#include "mud/dbo/account.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -17,7 +17,8 @@ void play_state_input(player_t* player, game_t* game, char* input);
 void play_state_tick(player_t* player, game_t* game);
 
 /**
- * Creates a state_t configured for the play state
+ * Creates a state_t configured for the play state.  It is the responsibility of the
+ * caller to free the allocated state.
  * 
  * Returns the configured state_t
 **/

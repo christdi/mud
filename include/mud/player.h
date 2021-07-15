@@ -1,8 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "mud/network/client.h"
-#include "mud/util/muduuid.h"
+#include "mud/util/mudhash.h"
 
 /**
  * Defines
@@ -11,13 +10,13 @@
 #define PASSWORD_SIZE 30
 #define SEND_SIZE 1024
 #define COMMAND_SIZE 256
-
 /**
  * Typedefs
 **/
+typedef struct client client_t;
+typedef struct account account_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
-typedef struct account account_t;
 typedef struct state state_t;
 typedef struct linked_list linked_list_t;
 
@@ -26,8 +25,8 @@ typedef struct linked_list linked_list_t;
 **/
 typedef struct player {
   client_t* client;
-  entity_t* entity;
   account_t* account;
+  entity_t* entity;
   state_t* state;
 } player_t;
 

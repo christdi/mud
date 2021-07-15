@@ -1,5 +1,6 @@
 #include "mud/command/general.h"
-#include "mud/dbo/account.h"
+#include "mud/account.h"
+#include "mud/network/client.h"
 #include "mud/player.h"
 
 #include <assert.h>

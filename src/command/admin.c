@@ -1,10 +1,10 @@
 #include <assert.h>
 #include <string.h>
 
+#include "mud/account.h"
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/dbo/account.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/component/location.h"
 #include "mud/game.h"

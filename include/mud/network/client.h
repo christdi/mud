@@ -9,8 +9,8 @@
 /**
  * Definitions
 **/
-#define INPUT_BUFFER_SIZE 1024
-#define RECV_SIZE 128
+#define INPUT_BUFFER_SIZE 1025 // 1 KB + null terminator
+#define INPUT_BUFFER_LENGTH INPUT_BUFFER_SIZE - 1 // 1 KB
 #define DELIM_SIZE 2
 
 /**

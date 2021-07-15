@@ -1,8 +1,8 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
-#include "mud/dbo/account.h"
 #include "mud/ecs/component/description.h"
 #include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"

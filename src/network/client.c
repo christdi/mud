@@ -11,8 +11,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-int append_data_to_input_buffer(client_t* client, char* data, size_t len);
-
 /**
  * Allocates memory for and initialises a new client_t struct.
  *
@@ -83,10 +81,19 @@ int receive_from_client(client_t* client) {
   assert(client);
 
   ssize_t len = 0;
+  size_t existing = strnlen(client->input, INPUT_BUFFER_LENGTH);
 
-  char bytes[RECV_SIZE] = { '\0' };
+  if (existing == INPUT_BUFFER_LENGTH) {
+    mlog(ERROR, "receive_from_client", "Disconnecting client fd [%d] as their input buffer is full.", client->fd);
+    send_to_client(client, "Your input buffer is full.  Disconnecting.\n\r");
+    client->hungup = 1;
 
-  if ((len = recv(client->fd, bytes, RECV_SIZE - 1, 0)) == -1) {
+    return -1;
+  }
+
+  size_t remaining = (INPUT_BUFFER_SIZE)-existing;
+
+  if ((len = recv(client->fd, client->input + existing, remaining - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
       return 0;
     }
@@ -99,39 +106,9 @@ int receive_from_client(client_t* client) {
   if (len <= 0) {
     client->hungup = 1;
   } else {
-    bytes[len] = '\0';
-
-    if (append_data_to_input_buffer(client, bytes, len) != 0) {
-      mlog(ERROR, "receive_from_client", "Failed to append received data to input buffer");
-    }
-
+    client->input[existing + len] = '\0';
     client->last_active = time(NULL);
   }
-
-  return 0;
-}
-
-/**
- * Appends data to the client input buffer.  First calculates if the received data
- * will fit in the input buffer.  If it does not, the client is marked as hungup so
- * it will be closed when next polled.
- *
- * Returns 0 on success or -1 on failure.
-**/
-int append_data_to_input_buffer(client_t* client, char* data, size_t len) {
-  size_t existing = strnlen(client->input, INPUT_BUFFER_SIZE);
-  size_t total = existing + len + 1;
-
-  if (total > INPUT_BUFFER_SIZE) {
-    mlog(ERROR, "append_data_to_input_buffer", "Client FD [%d] has filled their input buffer, disconnecting", client->fd);
-    send_to_client(client, "Maximum input buffer was exceeded.  Disconnecting.\n\r");
-
-    client->hungup = 1;
-
-    return -1;
-  }
-
-  strlcpy(client->input + existing, data, INPUT_BUFFER_SIZE - existing);
 
   return 0;
 }

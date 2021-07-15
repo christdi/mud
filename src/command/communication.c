@@ -1,8 +1,8 @@
 #include <assert.h>
 
+#include "mud/account.h"
 #include "mud/command/communication.h"
 #include "mud/data/linked_list.h"
-#include "mud/dbo/account.h"
 #include "mud/ecs/entity.h"
 #include "mud/event/communicate.h"
 #include "mud/game.h"
