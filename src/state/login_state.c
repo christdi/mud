@@ -5,12 +5,14 @@
 
 #include "mud/account.h"
 #include "mud/dbo/account_dbo.h"
+#include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
 #include "mud/state/account_state.h"
 #include "mud/state/login_state.h"
 #include "mud/state/state.h"
 #include "mud/util/mudhash.h"
+#include "mud/template.h"
 
 void enter_login_state(player_t* player, game_t* game);
 void exit_login_state(player_t* player, game_t* game);
@@ -44,7 +46,7 @@ state_t* login_state() {
  *  game - game object containing game dependencies
 **/
 void enter_login_state(player_t* player, game_t* game) {
-  send_to_player(player, "Enter your [bgreen]username[reset] or type [bgreen]new[reset] to create one: ");
+  send_to_player(player, tpl(game->templates, "login.welcome"));
 }
 
 /**

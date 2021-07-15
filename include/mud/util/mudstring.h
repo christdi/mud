@@ -21,5 +21,7 @@ char* trim_right(char* source);
 int int_to_string(int input, char* destination);
 void string_to_hex(char* input, char* destination, size_t len);
 int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len);
+char* replace(const char* src, const char* find, const char* rplc);
+char* replace_r(char* src, const char* find, const char* rplc);
 
 #endif

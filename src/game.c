@@ -9,6 +9,7 @@
 #include "mud/network/network.h"
 #include "mud/player.h"
 #include "mud/task/task.h"
+#include "mud/template.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -30,6 +31,9 @@ game_t* create_game_t(void) {
   gettimeofday(&game->last_tick, NULL);
 
   game->database = NULL;
+
+  game->templates = create_hash_table_t();
+  game->templates->deallocator = template_t_deallocate;
 
   game->players = create_hash_table_t();
   game->players->deallocator = deallocate_player;
@@ -59,6 +63,7 @@ void free_game_t(game_t* game) {
   assert(game->components);
   assert(game->narrator);
 
+  free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
 
@@ -86,6 +91,12 @@ int start_game(config_t* config) {
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
+
+  if (template_load_from_file(game->templates, "template.properties") != 0) {
+    mlog(ERROR, "start_game", "Failed to load templates");
+
+    return -1;
+  }
 
   if (connect_to_database(game, config->database_file) != 0) {
     mlog(ERROR, "start_game", "Failed to start game server");
