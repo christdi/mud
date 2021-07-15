@@ -9,7 +9,7 @@
 #include "mud/template.h"
 #include "mud/util/mudstring.h"
 
-int template_parse_line(char* line, hash_table_t* templates);
+int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* position);
 
 /**
  * Allocates a new instance of template_t.
@@ -75,10 +75,17 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
     return -1;
   }
 
-  char buffer[TEMPLATE_FILE_MAX_LINE_LENGTH];
+  char buffer[TEMPLATE_FILE_BUFFER_SIZE];
+  size_t position = 0;
 
-  while (fgets(buffer, TEMPLATE_FILE_MAX_LINE_LENGTH, fp)) {
-    if (template_parse_line(buffer, templates) != 0) {
+  while (fgets(buffer + position, TEMPLATE_FILE_BUFFER_SIZE - position, fp) != NULL) {
+    if (buffer[TEMPLATE_FILE_MAX_LINE_LENGTH] == '\0' && buffer[TEMPLATE_FILE_MAX_LINE_LENGTH-1] != '\n') {
+      mlog(ERROR, "template_load_from_file", "Template line was too long [%s]", buffer);
+
+      return -1;
+    }
+
+    if (template_parse_buffer(buffer, templates, &position) != 0) {
       mlog(ERROR, "template_load_from_file", "Unable to parse template file line: [%s]", buffer);
 
       continue;
@@ -91,31 +98,39 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
 }
 
 /**
- * Parses a line of a template configuration file which has a simple key=value structure.
+ * Parses a buffer of a template configuration file which has a simple key=value structure.
  *
  * Parameters
- *  line - the line currently being parsed
+ *  buffer - the line currently being parsed
  *  templates - the hash table templates should be stored in
 **/
-int template_parse_line(char* line, hash_table_t* templates) {
-  assert(line);
+int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* position) {
+  assert(buffer);
   assert(templates);
+  assert(position);
 
-  char* key = strtok(line, "=");
-  char* value = strtok(NULL, "\n");
+  size_t len = strnlen(buffer, TEMPLATE_FILE_MAX_LINE_LENGTH);
 
-  if (!key || !value) {
-    return -1;
+  if (buffer[len-1] == ';') {
+    char* key = strtok(buffer, "=");
+    char* value = strtok(NULL, ";");
+
+    if (!key || !value) {
+      return -1;
+    }
+
+    template_t* template = template_t_new();
+    template->key = strdup(key);
+    template->value = replace_r(replace(value, "\\r", "\r"), "\\n", "\n");
+
+    hash_table_insert(templates, template->key, template);
+
+    *position = 0;
+
+    return 0;
   }
 
-  template_t* template = template_t_new();
-  template->key = strdup(key);
-
-  char * tmp = replace(value, "\\r", "\r");
-  template->value = replace(tmp, "\\n", "\n");
-  free(tmp);
-
-  hash_table_insert(templates, template->key, template);
+  *position = len;
 
   return 0;
 }

@@ -155,6 +155,8 @@ void string_to_hex(char* input, char* destination, size_t len) {
  *  src - the source string to be replaced
  *  find - what to search for
  *  rplc - what to replace it with
+ *
+ * Returns a newly allocated string that must be freed by the caller when done.
 **/
 char* replace(const char* src, const char* find, const char* rplc) {
   size_t find_len = strlen(find);
@@ -184,7 +186,6 @@ char* replace(const char* src, const char* find, const char* rplc) {
 
   size_t new_size = (new_len + 1) * sizeof(char);
   char* replacement = malloc(new_size);
-  memset(replacement, '\0', new_size);
 
   c = src;
   char *w = replacement;
@@ -202,6 +203,25 @@ char* replace(const char* src, const char* find, const char* rplc) {
   *w = '\0';
 
   return replacement;
+}
+
+/**
+ * Variant of replace that will automatically free the src after it has been used
+ * by replace.  This is to allow chainging of replace calls.
+ *
+ * Parameters
+ *  src - the source string to be replaced
+ *  find - what to search for
+ *  rplc - what to replace it with
+ *
+ * Returns a newly allocated string that must be freed by the caller when done.
+**/
+char* replace_r(char *src, const char* find, const char *rplc) {
+  char* new = replace(src, find, rplc);
+
+  free(src);
+
+  return new;
 }
 
 /**
