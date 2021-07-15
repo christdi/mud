@@ -75,14 +75,16 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
     return -1;
   }
 
-  char buffer[TEMPLATE_FILE_BUFFER_SIZE];
+  char buffer[TEMPLATE_FILE_BUFFER_SIZE]; 
   size_t position = 0;
 
   while (fgets(buffer + position, TEMPLATE_FILE_BUFFER_SIZE - position, fp) != NULL) {
-    if (buffer[TEMPLATE_FILE_MAX_LINE_LENGTH] == '\0' && buffer[TEMPLATE_FILE_MAX_LINE_LENGTH-1] != '\n') {
-      mlog(ERROR, "template_load_from_file", "Template line was too long [%s]", buffer);
+    if (strnlen(buffer, TEMPLATE_FILE_MAX_LINE_LENGTH) == TEMPLATE_FILE_MAX_LINE_LENGTH) {
+      if (buffer[TEMPLATE_FILE_MAX_LINE_LENGTH-1] != '\n') {
+        mlog(ERROR, "template_load_from_file", "Template line was too long [%s]", buffer);
 
-      return -1;
+        return -1;
+      }      
     }
 
     if (template_parse_buffer(buffer, templates, &position) != 0) {
@@ -110,24 +112,29 @@ int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* positio
   assert(position);
 
   size_t len = strnlen(buffer, TEMPLATE_FILE_MAX_LINE_LENGTH);
+  char *c = strrchr(buffer, '"'); 
 
-  if (buffer[len-1] == ';') {
-    char* key = strtok(buffer, "=");
-    char* value = strtok(NULL, ";");
+  if (c != NULL && c != buffer) {
+    c--;
 
-    if (!key || !value) {
-      return -1;
+    if (*c != '=' && *c != '\\') {
+      char* key = strtok(buffer, "=");
+      char* value = strtok(NULL, "\"");
+
+      if (!key || !value) {
+        return -1;
+      }
+
+      template_t* template = template_t_new();
+      template->key = strdup(key);
+      template->value = replace_r(replace(value, "\\r", "\r"), "\\n", "\n");
+      
+      hash_table_insert(templates, template->key, template);
+
+      *position = 0;
+
+      return 0;
     }
-
-    template_t* template = template_t_new();
-    template->key = strdup(key);
-    template->value = replace_r(replace(value, "\\r", "\r"), "\\n", "\n");
-
-    hash_table_insert(templates, template->key, template);
-
-    *position = 0;
-
-    return 0;
   }
 
   *position = len;

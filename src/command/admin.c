@@ -11,6 +11,7 @@
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/player.h"
+#include "mud/template.h"
 #include "mud/util/mudstring.h"
 
 void shutdown_command(player_t* player, game_t* game, char* input) {
@@ -37,7 +38,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
   assert(input);
 
   if (*input == '\0') {
-    send_to_player(player, "\n\rSyntax: entity <list|assign>\n\r");
+    send_to_player(player, tpl(game->templates, "command.entity.usage"));
 
     return;
   }
@@ -50,21 +51,21 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     entity_t* entity = NULL;
 
-    send_to_player(player, "\n\r[cyan]Entities in game[reset]\n\n\r");
+    send_to_player(player, tpl(game->templates, "command.entity.list.header"));
 
     while ((entity = (entity_t*)h_it_get(it)) != NULL) {
-      send_to_player(player, "[yellow]%s[reset]\n\r", entity->id.uuid);
+      send_to_player(player, tpl(game->templates, "command.entity.id"), entity->id.uuid);
 
       description_t* description = get_description(game->components, entity);
       if (description) {
-        send_to_player(player, "- [green]description[reset], name => %s\n\r", description->name);
+        send_to_player(player, tpl(game->templates, "command.entity.list.description"), description->name);
       }
 
       location_t* location = get_location(game->components, entity);
       if (location) {
         char buffer[BUFFER_SIZE];
         describe_location(location, buffer, BUFFER_SIZE);
-        send_to_player(player, "- [green]location[reset], %s\n\r", buffer);
+        send_to_player(player, tpl(game->templates, "command.entity.list.location"), buffer);
       }
 
       send_to_player(player, "\n\r");
@@ -78,7 +79,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     extract_argument(input, entity_uuid);
 
     if (*entity_uuid == '\0') {
-      send_to_player(player, "\n\rSyntax: entity assign <uuid>\n\r");
+      send_to_player(player, tpl(game->templates, "command.entity.assign.usage"));
 
       return;
     }
@@ -86,17 +87,17 @@ void entity_command(player_t* player, game_t* game, char* input) {
     entity_t* entity = NULL;
 
     if ((entity = get_entity(game, entity_uuid)) == NULL) {
-      send_to_player(player, "\nNo entity with uuid [cyan]%s[reset] found.\n\r", entity_uuid);
+      send_to_player(player, tpl(game->templates, "command.entity.assign.no.entity"), entity_uuid);
 
       return;
     }
 
-    send_to_player(player, "\n\rAssigning entity uuid [cyan]%s[reset] to you.\n\r", entity->id.uuid);
+    send_to_player(player, tpl(game->templates, "command.entity.assign.success"), entity->id.uuid);
 
     if (player->entity != NULL) {
       if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
         mlog(ERROR, "entity_command", "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
-        send_to_player(player, "\n\rUnable to remove you from narration of entity [%s].\n\r", entity->id.uuid);
+        send_to_player(player, tpl(game->templates, "command.entity.assign.narration.remove.failure"), entity->id.uuid);
       }
     }
 
@@ -104,7 +105,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
       mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
-      send_to_player(player, "\n\rUnable to add you to narration for entity [%s].\n\r", entity->id.uuid);
+      send_to_player(player, tpl(game->templates, "command.entity.assign.narration.remove.success"), entity->id.uuid);
     };
   }
 }
