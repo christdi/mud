@@ -3,7 +3,6 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/data/queue.h"
-#include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/event/communicate.h"
 #include "mud/event/event.h"

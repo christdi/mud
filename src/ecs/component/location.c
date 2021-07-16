@@ -113,12 +113,3 @@ location_t* get_location(components_t* components, entity_t* entity) {
 void describe_location(location_t* location, char* dest, size_t len) {
   snprintf(dest, len, "at = %s", location->at.uuid);
 }
-
-/**
- * Update all location components.
- *
- * ccepts the following parameters:
- *  game - A pointer to a game struct containing the components structure to be updated
-**/
-void update_location(game_t* game) {
-}

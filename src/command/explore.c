@@ -3,7 +3,6 @@
 #include "mud/account.h"
 #include "mud/command/explore.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/component/description.h"
 #include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -59,13 +58,5 @@ void look_command(player_t* player, game_t* game, char* input) {
     return;
   }
 
-  description_t* description = get_description(game->components, location);
-
-  if (!description) {
-    mlog(ERROR, "look_command", "Look command failed for entity [%s] as entity referenced by location component does not have description component", entity->id.uuid);
-
-    return;
-  }
-
-  send_to_player(player, "[cyan]%s[reset]\n\n\r%s\n\r", description->name, description->description);
+  send_to_player(player, "[cyan]%s[reset]\n\n\r%s\n\r", location->name, location->description);
 }

@@ -5,7 +5,8 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/ecs/component/description.h"
+#include "mud/dbo/entity_dbo.h"
+#include "mud/ecs/entity.h"
 #include "mud/ecs/component/location.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -44,7 +45,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
   }
 
   char subcommand[ARGUMENT_SIZE];
-  input = extract_argument(input, subcommand);
+  input = extract_argument(input, subcommand, sizeof(subcommand));
 
   if (strncmp("list", subcommand, ARGUMENT_SIZE) == 0) {
     h_it_t it = hash_table_iterator(game->entities);
@@ -54,14 +55,10 @@ void entity_command(player_t* player, game_t* game, char* input) {
     send_to_player(player, tpl(game->templates, "command.entity.list.header"));
 
     while ((entity = (entity_t*)h_it_get(it)) != NULL) {
-      send_to_player(player, tpl(game->templates, "command.entity.id"), entity->id.uuid);
-
-      description_t* description = get_description(game->components, entity);
-      if (description) {
-        send_to_player(player, tpl(game->templates, "command.entity.list.description"), description->name);
-      }
+      send_to_player(player, tpl(game->templates, "command.entity.description"), entity->id.uuid, entity->name, entity->description);
 
       location_t* location = get_location(game->components, entity);
+
       if (location) {
         char buffer[BUFFER_SIZE];
         describe_location(location, buffer, BUFFER_SIZE);
@@ -76,7 +73,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
   if (strncmp("assign", subcommand, ARGUMENT_SIZE) == 0) {
     char entity_uuid[UUID_SIZE];
-    extract_argument(input, entity_uuid);
+    extract_argument(input, entity_uuid, sizeof(entity_uuid));
 
     if (*entity_uuid == '\0') {
       send_to_player(player, tpl(game->templates, "command.entity.assign.usage"));
@@ -87,7 +84,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     entity_t* entity = NULL;
 
     if ((entity = get_entity(game, entity_uuid)) == NULL) {
-      send_to_player(player, tpl(game->templates, "command.entity.assign.no.entity"), entity_uuid);
+      send_to_player(player, tpl(game->templates, "command.no.entity"), entity_uuid);
 
       return;
     }
@@ -107,5 +104,56 @@ void entity_command(player_t* player, game_t* game, char* input) {
       mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, tpl(game->templates, "command.entity.assign.narration.remove.success"), entity->id.uuid);
     };
+  }
+
+  if (strncmp("create", subcommand, ARGUMENT_SIZE) == 0) {
+    char name[ARGUMENT_SIZE];
+    input = extract_argument(input, name, sizeof(name));
+    char description[ARGUMENT_SIZE];
+    input = extract_argument(input, description, sizeof(description));
+
+    if (name[0] == '\0' || description[0] == '\0') {
+      send_to_player(player, tpl(game->templates, "command.entity.create.usage"));
+      return;
+    }
+
+    entity_t* create_entity = new_entity(game, name, description);
+    send_to_player(player, tpl(game->templates, "command.entity.create.success"), create_entity->id.uuid, create_entity->name, create_entity->description);
+  }
+
+  if (strncmp("save", subcommand, ARGUMENT_SIZE) == 0) {
+    char entity_id[UUID_SIZE];
+
+    extract_argument(input, entity_id, sizeof(entity_id));
+
+    if (*entity_id == '\0') {
+      send_to_player(player, tpl(game->templates, "command.entity.save.usage"));
+
+      return;
+    }
+
+    entity_t* entity = NULL;
+
+    if ((entity = get_entity(game, entity_id)) == NULL) {
+      send_to_player(player, tpl(game->templates, "command.no.entity"), entity_id);
+
+      return;
+    }
+
+    entity_dbo_t *entity_dbo = entity_dbo_t_new();
+    entity_dbo_from_entity(entity_dbo, entity);
+
+    if (entity_dbo_save(game, entity_dbo) != 0) {
+      send_to_player(player, tpl(game->templates, "command.entity.save.failure"), entity->id.uuid, entity->name, entity->description);
+      free(entity_dbo);
+
+      return;
+    }
+
+    send_to_player(player, tpl(game->templates, "command.entity.save.success"), entity->id.uuid, entity->name, entity->description);
+
+    free(entity_dbo);
+
+
   }
 }

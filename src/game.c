@@ -104,7 +104,11 @@ int start_game(config_t* config) {
     return -1;
   }
 
-  load_entities(game);
+  if (load_entities(game) == -1) {
+    mlog(ERROR, "start_game", "Failed to load entities");
+
+    return -1;
+  }
 
   if (start_game_server(game->network, config->game_port) == -1) {
     mlog(ERROR, "start_game", "Failed to start game server");

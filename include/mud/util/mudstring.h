@@ -14,7 +14,7 @@
 /**
  * Function prototypes
 **/
-char* extract_argument(char* source, char* destination);
+char* extract_argument(char* source, char* destination, size_t size);
 char* trim(char* source);
 char* trim_left(char* source);
 char* trim_right(char* source);
