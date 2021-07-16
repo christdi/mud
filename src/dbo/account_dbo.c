@@ -39,6 +39,9 @@ void account_dbo_t_free(account_dbo_t* account) {
 }
 
 /**
+ * Allocates a new instance of account_entity_dbo_t.
+ * 
+ * Returns the newly allocated instance.
 **/
 account_entity_dbo_t* account_entity_dbo_t_new() {
   account_entity_dbo_t* account_entity_dbo = calloc(1, sizeof *account_entity_dbo);
@@ -47,6 +50,10 @@ account_entity_dbo_t* account_entity_dbo_t_new() {
 }
 
 /**
+ * Frees an allocated account_enttiy_dbo_t.
+ * 
+ * Parameters
+ *  account_entity_dbo - the account_entity_dbo_t to be freed
 **/
 void account_entity_dbo_t_free(account_entity_dbo_t* account_entity_dbo) {
   assert(account_entity_dbo);
@@ -60,6 +67,18 @@ void account_entity_dbo_t_free(account_entity_dbo_t* account_entity_dbo) {
   }
 
   free(account_entity_dbo);
+}
+
+/**
+ * Deallocator for account_entity_dbo_t for use in data structures.
+ * 
+ * Parameters
+ *  value - a void* that must be an entity_account_dbo_t* or behaviour is undefined
+**/
+void account_entity_dbo_t_deallocate(void* value) {
+  assert(value);
+
+  account_entity_dbo_t_free((account_entity_dbo_t*)value);
 }
 
 /**
@@ -225,14 +244,6 @@ int account_entity_dbo_get_by_username(game_t* game, const char* username, linke
     return -1;
   }
 
-  if (sqlite3_step(res) != SQLITE_ROW) {
-    mlog(ERROR, "account_entity_dbo_get_by_username", "Failed to retreive account entities from database: [%s]", sqlite3_errmsg(game->database));
-
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
   int rc = 0;
   int count = 0;
 
@@ -247,7 +258,7 @@ int account_entity_dbo_get_by_username(game_t* game, const char* username, linke
 
     account_entity_dbo_t* account_entity_dbo = account_entity_dbo_t_new();
     account_entity_dbo->account_username = strdup((char*)sqlite3_column_text(res, 0));
-    account_entity_dbo->entity_uuid = strdup((char*)sqlite3_column_text(res, 0));
+    account_entity_dbo->entity_uuid = strdup((char*)sqlite3_column_text(res, 1));
 
     list_add(results, (account_entity_dbo_t*) account_entity_dbo);
 

@@ -4,6 +4,7 @@
 #include "bsd/string.h"
 
 #include "mud/account.h"
+#include "mud/data/linked_list.h"
 #include "mud/dbo/account_dbo.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -103,6 +104,13 @@ void get_account_password(player_t* player, game_t* game, char* input) {
     player->state->on_input = get_account_name;
     return;
   }
+
+  linked_list_t* entities = create_linked_list_t();
+  entities->deallocator = account_entity_dbo_t_deallocate;
+
+  account_entity_dbo_get_by_username(game, player->account->username, entities);
+  account_populate_from_account_entity_dbo(player->account, entities);
+  free_linked_list_t(entities);
 
   player_change_state(player, game, account_state());
 }

@@ -2,7 +2,6 @@
 #define _CONFIG_H_
 
 #define MAX_KEY_LENGTH 128
-#define MAX_ARGUMENT_SIZE 128
 #define MINIMUM_PORT 1024
 #define DEFAULT_PORT 5000
 #define DEFAULT_TICKS_PER_SECOND 20
@@ -13,8 +12,8 @@
  * Structs
 **/
 typedef struct config {
-  char log_config_file[MAX_ARGUMENT_SIZE];
-  char database_file[MAX_ARGUMENT_SIZE];
+  char* log_config_file;
+  char* database_file;
   unsigned int game_port;
   unsigned int ticks_per_second;
 } config_t;

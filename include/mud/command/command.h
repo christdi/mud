@@ -2,12 +2,6 @@
 #define _COMMAND_H_
 
 /**
- * Defines
-**/
-#define ARGUMENT_SIZE 256
-#define COMMAND_NAME_MAX_LENGTH 64
-
-/**
  * Typedefs
 **/
 typedef struct player player_t;
@@ -19,7 +13,7 @@ typedef void (*command_func_t)(player_t* player, game_t* game, char* input);
  * Structs
 **/
 typedef struct command {
-  char name[COMMAND_NAME_MAX_LENGTH];
+  char* name;
   command_func_t func;
 } command_t;
 

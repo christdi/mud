@@ -3,8 +3,10 @@
 #include <string.h>
 
 #include "mud/account.h"
+#include "mud/data/deallocate.h"
 #include "mud/data/linked_list.h"
 #include "mud/dbo/account_dbo.h"
+#include "mud/log.h"
 
 /**
  * ALlocates a new instance of an account_t.
@@ -15,6 +17,7 @@ account_t* account_t_new() {
   account_t* account = calloc(1, sizeof *account);
 
   account->entities = create_linked_list_t();
+  account->entities->deallocator = deallocate;
 
   return account;
 }
@@ -83,4 +86,15 @@ void account_populate_from_account_dbo(account_t* account, account_dbo_t* accoun
 void account_populate_from_account_entity_dbo(account_t* account, linked_list_t* account_entities) {
   assert(account);
   assert(account_entities);
+
+  it_t it = list_begin(account_entities);
+
+  account_entity_dbo_t* account_entity_dbo = NULL;
+
+  while ((account_entity_dbo = (account_entity_dbo_t*)it_get(it)) != NULL) {
+    char* entity_id = strdup(account_entity_dbo->entity_uuid);
+    list_add(account->entities, entity_id);
+
+    it = it_next(it);
+  }
 }

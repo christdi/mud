@@ -50,8 +50,6 @@ char* extract_argument(char* source, char* destination, size_t size) {
   assert(source);
   assert(destination);
 
-  mlog(INFO, "extract_argument", "size: [%ld]", size);
-
   char* current = source;
   char* write = destination;
 
@@ -131,6 +129,47 @@ char* trim_right(char* source) {
   }
 
   return source;
+}
+
+/**
+ * Modifies a string inline to all lowercase.  The string must be null terminated
+ * or a buffer overflow will likely occur.
+ * 
+ * Parameters
+ *  input - the string to be lowercased
+ * 
+ * Returns input
+**/
+char* lowercase(char* input) {
+  char *w = input;
+
+  while (*w != '\0') {
+    *w = tolower(*w);
+    w++;
+  }
+
+  return input;
+}
+
+/**
+ * Case insensitive comparison of two strings.
+ * 
+ * Parameters
+ *  s1 - first string to compare
+ *  s2 - second string to compare
+ * 
+ * Returns the results of strncmp of s1 and s2
+**/
+int strncmpi(const char *s1, const char *s2, size_t n) {
+  char *s1_lower = lowercase(strndup(s1, sizeof(*s1)));
+  char *s2_lower = lowercase(strndup(s2, sizeof(*s2)));
+
+  int result = strncmp(s1_lower, s2_lower, n);
+
+  free(s1_lower);
+  free(s2_lower);
+
+  return result;
 }
 
 /**

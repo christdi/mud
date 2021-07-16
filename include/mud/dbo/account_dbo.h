@@ -36,6 +36,7 @@ void account_dbo_t_free(account_dbo_t* account);
 
 account_entity_dbo_t* account_entity_dbo_t_new();
 void account_entity_dbo_t_free(account_entity_dbo_t* account_entity_dbo);
+void account_entity_dbo_t_deallocate(void* value);
 
 int account_dbo_save(game_t* game, account_dbo_t* account);
 int account_dbo_get_by_name(game_t* game, const char* username, account_dbo_t* result);
