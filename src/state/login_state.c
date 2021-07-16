@@ -66,7 +66,18 @@ void get_account_name(player_t* player, game_t* game, char* input) {
     return;
   }
 
-  player->account->username = strdup(input);
+  account_dbo_t* account_dbo = account_dbo_t_new();
+  account_dbo_get_by_name(game, input, account_dbo);
+
+  if (account_dbo_get_by_name(game, input, account_dbo)< 0) {
+    mlog(ERROR, "get_account_name", "Error retrieving account from database");
+    account_dbo_t_free(account_dbo);
+
+    return;
+  }
+
+  account_populate_from_account_dbo(player->account, account_dbo);
+  account_dbo_t_free(account_dbo);
 
   send_to_player(player, "What is the [bgreen]password[reset] for this account? ");
   player->state->on_input = get_account_password;
@@ -86,7 +97,7 @@ void get_account_password(player_t* player, game_t* game, char* input) {
   char password_hash[SHA256_HEX_SIZE];
   string_to_sha256(input, password_hash);
 
-  if (account_dbo_validate(game, player->account->username, password_hash) == -1) {
+  if (player->account->password_hash == NULL || strncmp(player->account->password_hash, password_hash, sizeof(password_hash)) != 0) {
     send_to_player(player, "No match for that [bgreen]username[reset] and [bgreen]password[reset] combination.\n\r");
     send_to_player(player, "Enter your [bgreen]username[reset] or type [bgreen]new[reset] to create one: ");
     player->state->on_input = get_account_name;
@@ -169,7 +180,7 @@ void validate_new_account_password(player_t* player, game_t* game, char* input) 
   }
 
   account_dbo_t* account_dbo = account_dbo_t_new();
-  account_dbo_from_account(account_dbo, player->account);
+  account_dbo_populate_from_account(account_dbo, player->account);
   account_dbo_save(game, account_dbo);
   account_dbo_t_free(account_dbo);
 
