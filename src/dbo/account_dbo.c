@@ -155,6 +155,14 @@ int account_dbo_get_by_name(game_t* game, const char* username, account_dbo_t* r
     return -1;
   }
 
+  if (result->username != NULL) {
+    free(result->username);
+  }
+
+  if (result->password_hash != NULL) {
+    free(result->password_hash);
+  }
+
   result->username = strdup((char*)sqlite3_column_text(res, 0));
   result->password_hash = strdup((char*)sqlite3_column_text(res, 1));
 

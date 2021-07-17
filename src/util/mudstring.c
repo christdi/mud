@@ -53,8 +53,14 @@ char* extract_argument(char* source, char* destination, size_t size) {
   char* current = source;
   char* write = destination;
 
-  while(isblank(*current) && *current != '\0') {
+  while(*current != '\0' && isblank(*current)) {
     current++;
+  }
+
+  if (*current == '\0') {
+    *write = '\0';
+
+    return source;
   }
 
   char terminator = ' ';
@@ -79,8 +85,6 @@ char* extract_argument(char* source, char* destination, size_t size) {
 
     *write++ = *current++;
   }
-
-  current++;
 
   *write = '\0';
 

@@ -32,6 +32,14 @@ entity_t* create_entity_t() {
 void free_entity_t(entity_t* entity) {
   assert(entity);
 
+  if (entity->name != NULL) {
+    free(entity->name);
+  }
+
+  if (entity->description != NULL) {
+    free(entity->description);
+  }
+
   free(entity);
 }
 
@@ -99,10 +107,18 @@ void entity_from_entity_dbo(entity_t* entity, entity_dbo_t* entity_dbo) {
   }
 
   if (entity_dbo->name != NULL) {
+    if (entity->name != NULL) {
+      free(entity->name);
+    }
+
     entity->name = strdup(entity_dbo->name);
   }
 
   if (entity_dbo->description != NULL) {
+    if (entity->description != NULL) {
+      free(entity->description);
+    }
+
     entity->description = strdup(entity_dbo->description);
   }
 }
