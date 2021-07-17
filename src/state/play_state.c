@@ -2,7 +2,6 @@
 
 #include "mud/account.h"
 #include "mud/command/command.h"
-#include "mud/ecs/component/description.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -59,7 +58,7 @@ void play_state_input(player_t* player, game_t* game, char* input) {
   assert(game);
 
   char command[COMMAND_SIZE];
-  input = extract_argument(input, command);
+  input = extract_argument(input, command, sizeof(command));
 
   const command_t* cmd = get_command(game, trim(command));
 
@@ -96,13 +95,7 @@ void send_prompt(player_t* player, game_t* game) {
   assert(game);
 
   if (player->entity) {
-    description_t* description = get_description(game->components, player->entity);
-
-    if (description) {
-      send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", description->name);
-      return;
-    }
+    send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->entity->name);
+    return;
   }
-
-  send_to_player(player, "\n\r<[bgreen]%s[reset]>\n\r", player->account->username);
 }

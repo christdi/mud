@@ -32,6 +32,10 @@ command_t* create_command_t() {
 void free_command_t(command_t* command) {
   assert(command);
 
+  if (command->name != NULL) {
+    free(command->name);
+  }
+
   free(command);
 }
 
@@ -64,7 +68,7 @@ const command_t* command_lookup(const char* name) {
   const command_t* command = commands;
 
   while (command->func != NULL) {
-    if (strncmp(command->name, name, COMMAND_NAME_MAX_LENGTH - 1) == 0) {
+    if (strncmp(command->name, name, strlen(command->name)) == 0) {
       return command;
     }
 

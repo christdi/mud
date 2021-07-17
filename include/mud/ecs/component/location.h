@@ -31,6 +31,4 @@ void unregister_location(components_t* components, entity_t* entity);
 location_t* get_location(components_t* components, entity_t* entity);
 void describe_location(location_t* location, char* dest, size_t len);
 
-void update_location(game_t* game);
-
 #endif

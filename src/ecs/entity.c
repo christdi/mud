@@ -7,7 +7,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/ecs/component/description.h"
+#include "mud/dbo/entity_dbo.h"
 #include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -32,6 +32,14 @@ entity_t* create_entity_t() {
 void free_entity_t(entity_t* entity) {
   assert(entity);
 
+  if (entity->name != NULL) {
+    free(entity->name);
+  }
+
+  if (entity->description != NULL) {
+    free(entity->description);
+  }
+
   free(entity);
 }
 
@@ -52,23 +60,67 @@ void deallocate_entity(void* value) {
  *
  * Takes the following parameters:
  *   game - the game_t struct where the entities should be loaded to
+ *
+ * Returns 0 on success or -1 on failure
 **/
-void load_entities(game_t* game) {
+int load_entities(game_t* game) {
   assert(game);
 
   mlog(INFO, "load_entities", "Loading entities");
 
-  // TODO(Chris I): Actually load entities
+  linked_list_t* entities = create_linked_list_t();
+  entities->deallocator = entity_dbo_t_deallocate;
 
-  entity_t* location = new_location(game, "Relaxing woodlands", "A beautiful expanse of woodland.");
-  entity_t* character = new_character(game, "Test character", "A proud test character.");
-  entity_t* item = new_item(game, "Excalibur", "A sword that grants ultimate authority.");
+  if (entity_dbo_load_all(game, entities) == -1) {
+    mlog(ERROR, "load_entities", "Entities could not be retrieved from the database");
+    return -1;
+  };
 
-  location_t* character_location = get_location(game->components, character);
-  character_location->at = location->id;
+  it_t it = list_begin(entities);
 
-  location_t* item_location = get_location(game->components, item);
-  item_location->at = location->id;
+  entity_dbo_t* entity_dbo = NULL;
+
+  while ((entity_dbo = (entity_dbo_t*)it_get(it)) != NULL) {
+    entity_t* entity = create_entity_t();
+    entity_from_entity_dbo(entity, entity_dbo);
+
+    hash_table_insert(game->entities, entity->id.uuid, entity);
+
+    it = it_next(it);
+  }
+
+  free_linked_list_t(entities);
+
+  return 0;
+}
+
+/**
+ * Populates an entity_t with the data from an entity_dbo_t.
+ *
+ * Parameters
+ *  entity - the entity_t to tbe populated
+ *  entity_dbo - the entity_dbo to be populated from
+**/
+void entity_from_entity_dbo(entity_t* entity, entity_dbo_t* entity_dbo) {
+  if (entity_dbo->uuid != NULL) {
+    strlcpy(entity->id.uuid, entity_dbo->uuid, UUID_SIZE);
+  }
+
+  if (entity_dbo->name != NULL) {
+    if (entity->name != NULL) {
+      free(entity->name);
+    }
+
+    entity->name = strdup(entity_dbo->name);
+  }
+
+  if (entity_dbo->description != NULL) {
+    if (entity->description != NULL) {
+      free(entity->description);
+    }
+
+    entity->description = strdup(entity_dbo->description);
+  }
 }
 
 /**
@@ -84,85 +136,21 @@ entity_t* get_entity(game_t* game, char* uuid) {
 }
 
 /**
- * Creates and registers the components necessary to represent a character.
+ * Creates and registers a new entity.
  *
  * This function takes the following parameters:
  *   game - a pointer to a game struct containing components
- *   name - the name to use for the new character
- *   description - the description to use for the new character
+ *   name - the name to use for the new entity
+ *   description - the description to use for the new entity
  *
- * Returns a pointer to an entity struct representing the new character
+ * Returns a pointer to an entity struct representing the new entity
 **/
-entity_t* new_character(game_t* game, char* name, char* description) {
+entity_t* new_entity(game_t* game, char* name, char* description) {
   entity_t* entity = create_entity_t();
   entity->id = entity_id();
+  entity->name = strdup(name);
+  entity->description = strdup(description);
   hash_table_insert(game->entities, entity->id.uuid, entity);
-
-  description_t* description_component = create_description_t();
-  description_component->entity_id = entity->id;
-  description_component->name = strdup(name);
-  description_component->description = strdup(description);
-  register_description(game->components, description_component);
-
-  location_t* location_component = create_location_t();
-  location_component->entity_id = entity->id;
-  register_location(game->components, location_component);
-
-  return entity;
-}
-
-/**
- * Creates and registers the components necessary to represent a item.
- *
- * This function takes the following parameters:
- *   game - a pointer to a game struct containing components
- *   name - the name to use for the new location
- *   description - the description to use for the new item
- *
- * Returns a pointer to an entity struct representing the new item
-**/
-entity_t* new_item(game_t* game, char* name, char* description) {
-  entity_t* entity = create_entity_t();
-  entity->id = entity_id();
-  hash_table_insert(game->entities, entity->id.uuid, entity);
-
-  description_t* description_component = create_description_t();
-  description_component->entity_id = entity->id;
-  description_component->name = strdup(name);
-  description_component->description = strdup(description);
-  register_description(game->components, description_component);
-
-  location_t* location_component = create_location_t();
-  location_component->entity_id = entity->id;
-  register_location(game->components, location_component);
-
-  return entity;
-}
-
-/**
- * Creates and registers the components necessary to represent a location.
- *
- * This function takes the following parameters:
- *   game - a pointer to a game struct containing components
- *   name - the name to use for the new location
- *   description - the description to use for the new location
- *
- * Returns a pointer to an entity struct representing the new location
-**/
-entity_t* new_location(game_t* game, char* name, char* description) {
-  entity_t* entity = create_entity_t();
-  entity->id = entity_id();
-  hash_table_insert(game->entities, entity->id.uuid, entity);
-
-  description_t* description_component = create_description_t();
-  description_component->entity_id = entity->id;
-  description_component->name = strdup(name);
-  description_component->description = strdup(description);
-  register_description(game->components, description_component);
-
-  location_t* location_component = create_location_t();
-  location_component->entity_id = entity->id;
-  register_location(game->components, location_component);
 
   return entity;
 }

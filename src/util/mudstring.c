@@ -34,28 +34,56 @@ static const char* ansi_codes[][2] = {
 };
 
 /**
- * Attempts to extract a single space deliminated argument from a source string.
- * The extracted word is copied into the destination character buffer which must
- * be a valid character buffer.
+ * Extracts an argument from a string, an argument defined as either a single
+ * word or a sequence of words contained within quotes.  Preceeding whitespace
+ * will be ignored.  If the argument does not fit within the destination buffer
+ * then it will be truncated.
+ *
+ * Parameters
+ *  source - the string from which arguments should be extracted
+ *  destination - an allocated string with sufficient space for the argument
+ *  size - the size of the argument buffer
  *
  * Returns a character pointer to after the extracted word in the source
 **/
-char* extract_argument(char* source, char* destination) {
+char* extract_argument(char* source, char* destination, size_t size) {
   assert(source);
   assert(destination);
 
   char* current = source;
   char* write = destination;
 
-  while (*current != ' ' && *current != '\0') {
-    *write = *current;
-
+  while(*current != '\0' && isblank(*current)) {
     current++;
-    write++;
   }
 
-  if (*current == ' ') {
+  if (*current == '\0') {
+    *write = '\0';
+
+    return source;
+  }
+
+  char terminator = ' ';
+
+  if (*current == '"') {
+    terminator = '"';
     current++;
+  }
+
+  size_t count = 0;
+
+  while (*current != terminator && *current != '\0') {
+    if (count++ == size) {
+      *write = '\0';
+
+      while (*current != terminator && *current != '\0') {
+        current++;
+      }
+
+      return current;
+    }
+
+    *write++ = *current++;
   }
 
   *write = '\0';
@@ -105,6 +133,47 @@ char* trim_right(char* source) {
   }
 
   return source;
+}
+
+/**
+ * Modifies a string inline to all lowercase.  The string must be null terminated
+ * or a buffer overflow will likely occur.
+ * 
+ * Parameters
+ *  input - the string to be lowercased
+ * 
+ * Returns input
+**/
+char* lowercase(char* input) {
+  char *w = input;
+
+  while (*w != '\0') {
+    *w = tolower(*w);
+    w++;
+  }
+
+  return input;
+}
+
+/**
+ * Case insensitive comparison of two strings.
+ * 
+ * Parameters
+ *  s1 - first string to compare
+ *  s2 - second string to compare
+ * 
+ * Returns the results of strncmp of s1 and s2
+**/
+int strncmpi(const char *s1, const char *s2, size_t n) {
+  char *s1_lower = lowercase(strndup(s1, sizeof(*s1)));
+  char *s2_lower = lowercase(strndup(s2, sizeof(*s2)));
+
+  int result = strncmp(s1_lower, s2_lower, n);
+
+  free(s1_lower);
+  free(s2_lower);
+
+  return result;
 }
 
 /**

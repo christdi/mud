@@ -1,5 +1,4 @@
 #include "mud/ecs/system.h"
-#include "mud/ecs/component/description.h"
 #include "mud/game.h"
 
 /**
@@ -7,5 +6,4 @@
  * This method should be called once per engine update.  
 **/
 void update_systems(game_t* game) {
-  update_description(game);
 }

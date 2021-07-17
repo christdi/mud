@@ -23,8 +23,8 @@ int set_ticks_per_second(const char* value, config_t* config);
 **/
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
-  strlcpy(config->log_config_file, "log.ini", MAX_ARGUMENT_SIZE);
-  strlcpy(config->database_file, "mud.db", MAX_ARGUMENT_SIZE);
+  config->log_config_file = strdup("log.ini");
+  config->database_file = strdup("mud.db");
   config->game_port = DEFAULT_PORT;
   config->ticks_per_second = DEFAULT_TICKS_PER_SECOND;
 
@@ -36,6 +36,14 @@ config_t* config_new(void) {
 **/
 void config_free(config_t* config) {
   assert(config);
+
+  if (config->log_config_file != NULL) {
+    free(config->log_config_file);
+  }
+
+  if (config->database_file != NULL) {
+    free(config->database_file);
+  }
 
   free(config);
 }
@@ -162,15 +170,13 @@ int config_parse_line(char* line, config_t* config) {
  * Sets the filename of the log configuration file in the configuration.
  *
  * Returns 0 on success.
- *
- * Returns -1 if the length of the file path exceeds MAX_ARGUMENT_SIZE.
 **/
 int set_log_config_file(const char* value, config_t* config) {
-  if (strlcpy(config->log_config_file, value, MAX_ARGUMENT_SIZE) > MAX_ARGUMENT_SIZE) {
-    printf("Invalid value for log config file [%s], longer than max argument size [%d]", value, MAX_ARGUMENT_SIZE);
-
-    return -1;
+  if (config->log_config_file != NULL) {
+    free(config->log_config_file);
   }
+
+  config->log_config_file = strdup(value);
 
   return 0;
 }
@@ -179,15 +185,13 @@ int set_log_config_file(const char* value, config_t* config) {
  * Sets the filename of the SQLite database in the configuration.
  *
  * Returns 0 on success.
- *
- * Returns -1 if the length of the file path exceeds MAX_ARGUMENT_SIZE.
 **/
 int set_database_file(const char* value, config_t* config) {
-  if (strlcpy(config->database_file, value, MAX_ARGUMENT_SIZE) > MAX_ARGUMENT_SIZE) {
-    printf("Invalid value for database file [%s], longer than max argument size [%d]", value, MAX_ARGUMENT_SIZE);
-
-    return -1;
+  if (config->database_file != NULL) {
+    free(config->database_file);
   }
+  
+  config->database_file = strdup(value);
 
   return 0;
 }
