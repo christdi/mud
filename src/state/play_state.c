@@ -42,7 +42,7 @@ void play_state_enter(player_t* player, game_t* game) {
   assert(player);
   assert(game);
 
-  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->account->username);
+  send_to_all_players(game, NULL, "\n\r[bcyan]%s[reset] has entered the world!\n\r", player->entity->name);
 }
 
 /**
