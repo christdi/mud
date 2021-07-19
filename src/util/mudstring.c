@@ -170,15 +170,11 @@ int strcmpi(const char *s1, const char *s2) {
 
   int result = 0;
 
-  mlog(INFO, "strmcpi", "sizeof *s1: [%ld], sizeof *s2: [%ld]", sizeof(*s1), sizeof(*s2));
-  mlog(INFO, "strmcpi", "s1: [%s], s1_lower: [%s], s2: [%s], s2_lower: [%s]", s1, s1_lower, s2, s2_lower);
   const char *c1 = s1_lower;
   const char *c2 = s2_lower;
 
   while (*c1 != '\0' || *c2 != '\0') {
-    mlog(INFO, "strcmpi", "Comparing %c and %c", c1, c2);
     if (*c1++ != *c2++) {
-      mlog(INFO, "strmcpi", "Didn't match, setting result to -1");
       result = -1;
       break;
     }

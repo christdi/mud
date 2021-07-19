@@ -148,9 +148,7 @@ entity_t* account_state_get_entity_by_name(game_t* game, linked_list_t* entities
     entity_t* entity = get_entity(game, entity_uuid);
 
     if (entity != NULL) {
-      mlog(INFO, "account_state_get_entity_by_name", "Comparing %s and %s", entity->name, name);
       if (strcmpi(entity->name, name) == 0) {
-        mlog(INFO, "account_state_get_entity_by_name", "Match!");
         return entity;
       }
       
