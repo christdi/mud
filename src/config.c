@@ -190,7 +190,7 @@ int set_database_file(const char* value, config_t* config) {
   if (config->database_file != NULL) {
     free(config->database_file);
   }
-  
+
   config->database_file = strdup(value);
 
   return 0;

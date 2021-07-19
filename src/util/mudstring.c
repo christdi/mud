@@ -53,7 +53,7 @@ char* extract_argument(char* source, char* destination, size_t size) {
   char* current = source;
   char* write = destination;
 
-  while(*current != '\0' && isblank(*current)) {
+  while (*current != '\0' && isblank(*current)) {
     current++;
   }
 
@@ -145,7 +145,7 @@ char* trim_right(char* source) {
  * Returns input
 **/
 char* lowercase(char* input) {
-  char *w = input;
+  char* w = input;
 
   while (*w != '\0') {
     *w = tolower(*w);
@@ -159,16 +159,26 @@ char* lowercase(char* input) {
  * Case insensitive comparison of two strings.
  * 
  * Parameters
- *  s1 - first string to compare
- *  s2 - second string to compare
+ *  s1 - first string to compare, must be null terminated
+ *  s2 - second string to compare, must be null terminated
  * 
  * Returns the results of strncmp of s1 and s2
 **/
-int strncmpi(const char *s1, const char *s2, size_t n) {
-  char *s1_lower = lowercase(strndup(s1, sizeof(*s1)));
-  char *s2_lower = lowercase(strndup(s2, sizeof(*s2)));
+int strcmpi(const char* s1, const char* s2) {
+  char* s1_lower = lowercase(strndup(s1, strlen(s1) + 1));
+  char* s2_lower = lowercase(strndup(s2, strlen(s2) + 1));
 
-  int result = strncmp(s1_lower, s2_lower, n);
+  int result = 0;
+
+  const char* c1 = s1_lower;
+  const char* c2 = s2_lower;
+
+  while (*c1 != '\0' || *c2 != '\0') {
+    if (*c1++ != *c2++) {
+      result = -1;
+      break;
+    }
+  }
 
   free(s1_lower);
   free(s2_lower);
@@ -257,7 +267,7 @@ char* replace(const char* src, const char* find, const char* rplc) {
   char* replacement = malloc(new_size);
 
   c = src;
-  char *w = replacement;
+  char* w = replacement;
 
   while (*c != '\0') {
     if (strncmp(c, find, find_len) == 0) {
@@ -285,7 +295,7 @@ char* replace(const char* src, const char* find, const char* rplc) {
  *
  * Returns a newly allocated string that must be freed by the caller when done.
 **/
-char* replace_r(char *src, const char* find, const char *rplc) {
+char* replace_r(char* src, const char* find, const char* rplc) {
   char* new = replace(src, find, rplc);
 
   free(src);
@@ -311,8 +321,8 @@ int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len) {
   }
 
   int i = 0;
-  char *tmp = strdup(input);
-  char *swp = NULL;
+  char* tmp = strdup(input);
+  char* swp = NULL;
 
   while (ansi_codes[i][0] != NULL) {
     swp = tmp;

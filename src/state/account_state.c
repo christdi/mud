@@ -7,6 +7,7 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
+#include "mud/network/client.h"
 #include "mud/player.h"
 #include "mud/state/account_state.h"
 #include "mud/state/play_state.h"
@@ -61,8 +62,8 @@ void account_state_enter(player_t* player, game_t* game) {
 
     it = it_next(it);
   }
-  
-  send_to_player(player, "\n\rEnter [bgreen]play <name>[reset] to select a character or [bgreen]new[reset] to create a new character.\n\r");
+
+  send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
 }
 
 /**
@@ -76,22 +77,16 @@ void account_state_input(player_t* player, game_t* game, char* input) {
   char command[ARGUMENT_SIZE];
   input = extract_argument(input, command, sizeof(command));
 
-  if (strncmpi(command, "play", strlen("play")) == 0) {
+  if (strcmpi(command, "new") == 0) {
     char name[ARGUMENT_SIZE];
     extract_argument(input, name, sizeof(name));
 
     if (name[0] == '\0') {
-      send_to_player(player, "Play as who?\n\r");
+      send_to_player(player, "Syntax: new <name>\n\r");
       return;
     }
 
-    entity_t* entity = account_state_get_entity_by_name(game, player->account->entities, name);
-
-    if (entity == NULL) {
-      send_to_player(player, "You can't play as %s.\n\r", name);
-      return;
-    }
-
+    entity_t* entity = new_entity(game, name, "Player created character entity");
     player->entity = entity;
 
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
@@ -99,17 +94,39 @@ void account_state_input(player_t* player, game_t* game, char* input) {
 
       mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, "We couldn't assign you to %s, please inform an administrator\n\r", name);
-      send_to_player(player, "\n\rEnter [bgreen]play <name>[reset] to select a character or [bgreen]new[reset] to create a new character.\n\r");
-      
+      send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
       return;
     };
 
     player_change_state(player, game, play_state());
+    return;
+  }
+
+  if (strcmpi(command, "quit") == 0) {
+    player->client->hungup = 1;
 
     return;
   }
 
-  send_to_player(player, "Enter [bgreen]play <name>[reset] to select a character or [bgreen]new[reset] to create a new character.\n\r");
+  entity_t* entity = account_state_get_entity_by_name(game, player->account->entities, command);
+
+  if (entity != NULL) {
+    player->entity = entity;
+
+    if (add_player_to_narration(game->narrator, entity, player) != 0) {
+      player->entity = NULL;
+
+      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      send_to_player(player, "We couldn't assign you to %s, please inform an administrator\n\r", entity->name);
+      send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
+      return;
+    };
+
+    player_change_state(player, game, play_state());
+    return;
+  }
+
+  send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
 }
 
 /**
@@ -130,10 +147,9 @@ entity_t* account_state_get_entity_by_name(game_t* game, linked_list_t* entities
     entity_t* entity = get_entity(game, entity_uuid);
 
     if (entity != NULL) {
-      if (strncmpi(entity->name, name, strlen(name)) == 0) {
+      if (strcmpi(entity->name, name) == 0) {
         return entity;
       }
-      
     }
 
     it = it_next(it);
