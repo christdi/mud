@@ -12,8 +12,8 @@
 #include "mud/state/account_state.h"
 #include "mud/state/login_state.h"
 #include "mud/state/state.h"
-#include "mud/util/mudhash.h"
 #include "mud/template.h"
+#include "mud/util/mudhash.h"
 
 void enter_login_state(player_t* player, game_t* game);
 void exit_login_state(player_t* player, game_t* game);
@@ -70,7 +70,7 @@ void get_account_name(player_t* player, game_t* game, char* input) {
   account_dbo_t* account_dbo = account_dbo_t_new();
   account_dbo_get_by_name(game, input, account_dbo);
 
-  if (account_dbo_get_by_name(game, input, account_dbo)< 0) {
+  if (account_dbo_get_by_name(game, input, account_dbo) < 0) {
     mlog(ERROR, "get_account_name", "Error retrieving account from database");
     account_dbo_t_free(account_dbo);
 

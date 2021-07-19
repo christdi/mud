@@ -268,7 +268,7 @@ int account_entity_dbo_get_by_username(game_t* game, const char* username, linke
     account_entity_dbo->account_username = strdup((char*)sqlite3_column_text(res, 0));
     account_entity_dbo->entity_uuid = strdup((char*)sqlite3_column_text(res, 1));
 
-    list_add(results, (account_entity_dbo_t*) account_entity_dbo);
+    list_add(results, (account_entity_dbo_t*)account_entity_dbo);
 
     count++;
   }

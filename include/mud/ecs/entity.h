@@ -32,6 +32,6 @@ entity_t* get_entity(game_t* game, char* uuid);
 
 void entity_from_entity_dbo(entity_t* entity, entity_dbo_t* entity_dbo);
 
-entity_t* new_entity(game_t* game, char *name, char* description);
+entity_t* new_entity(game_t* game, char* name, char* description);
 
 #endif

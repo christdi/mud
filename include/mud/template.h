@@ -7,7 +7,6 @@
 #define TEMPLATE_FILE_BUFFER_SIZE 1025
 #define TEMPLATE_FILE_MAX_LINE_LENGTH TEMPLATE_FILE_BUFFER_SIZE - 1
 
-
 /**
  * Typedefs
 **/
@@ -19,7 +18,8 @@ typedef struct hash_table hash_table_t;
 typedef struct template {
   char* key;
   char* value;
-} template_t;
+}
+template_t;
 
 /**
  * Function prototypes

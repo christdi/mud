@@ -1,7 +1,7 @@
 #include <assert.h>
+#include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sqlite3.h>
 
 #include "mud/data/linked_list.h"
 #include "mud/dbo/entity_dbo.h"
@@ -53,7 +53,7 @@ void entity_dbo_t_free(entity_dbo_t* entity_dbo) {
 void entity_dbo_t_deallocate(void* value) {
   assert(value);
 
-  entity_dbo_t_free((entity_dbo_t*) value);
+  entity_dbo_t_free((entity_dbo_t*)value);
 }
 
 /**
