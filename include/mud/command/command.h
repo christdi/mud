@@ -12,8 +12,14 @@ typedef void (*command_func_t)(player_t* player, game_t* game, char* input);
 /**
  * Structs
 **/
+typedef struct cmd_func {
+  char* function;
+  command_func_t func;
+} cmd_func_t;
+
 typedef struct command {
   char* name;
+  char* function;
   command_func_t func;
 } command_t;
 
@@ -25,6 +31,6 @@ void free_command_t(command_t* command);
 void deallocate_command(void* value);
 
 void load_commands(game_t* game);
-const command_t* get_command(game_t* game, const char* name);
+command_t* get_command(game_t* game, const char* name);
 
 #endif

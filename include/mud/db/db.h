@@ -6,11 +6,15 @@
 **/
 typedef struct account account_t;
 typedef struct sqlite3 sqlite3;
+typedef struct linked_list linked_list_t;
+
 /**
  * Function prototypes
 **/
 int db_account_save(sqlite3* db, account_t* account);
 int db_account_load(sqlite3* db, const char* username, account_t* account);
 int db_account_exists(sqlite3* db, const char* username);
+
+int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results);
 
 #endif

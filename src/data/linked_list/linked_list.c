@@ -120,7 +120,9 @@ it_t list_remove(linked_list_t* list, void* value) {
   node_t* node = list->first;
 
   while (node != NULL) {
+    mlog(INFO, "list_remove", "Checking node [%p]", node);
     if (node->data == value) {
+      mlog(INFO, "list_remove", "Match! Removing [%p] from list", node);
       it.node = node->next;
       remove_node(list, node);
       break;
@@ -206,16 +208,21 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
   }
 
   size_t count = 0;
+  size_t status = 0;
   node_t* node = list->first;
 
   while (node != NULL) {
     if (count == index) {
       *value = node->data;
 
-      return 0;
+      break;
     }
 
     count++;
+  }
+
+  if (node == NULL) {
+    status = -1;
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
@@ -224,7 +231,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
     return -1;
   }
 
-  return -1;
+  return status;
 }
 
 /**

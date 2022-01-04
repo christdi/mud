@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mud/command/command.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
 #include "mud/account.h"
@@ -200,4 +201,53 @@ int db_account_exists(sqlite3* db, const char* username) {
   sqlite3_finalize(res);
 
   return exists == 1 ? 0 : -1;
+}
+
+/**
+ * TODO: Populate
+**/
+int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT name, function FROM command WHERE name = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    mlog(ERROR, "db_command_find_by_name", "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, name, (int)strlen(name), NULL) != SQLITE_OK) {
+    mlog(ERROR, "db_command_find_by_name", "Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+  int count = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      mlog(ERROR, "db_command_find_by_name", "Failed to retreive commands from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return 0;
+    }
+
+    command_t* command = create_command_t();
+
+    command->name = strdup((char*)sqlite3_column_text(res, 0));
+    command->function = strdup((char*)sqlite3_column_text(res, 1));
+
+    list_add(results, (void*)command);
+
+    count++;
+  }
+
+  sqlite3_finalize(res);
+
+  return count;  
 }
