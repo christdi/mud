@@ -60,7 +60,7 @@ void play_state_input(player_t* player, game_t* game, char* input) {
   char command[COMMAND_SIZE];
   input = extract_argument(input, command, sizeof(command));
 
-  const command_t* cmd = get_command(game, trim(command));
+  command_t* cmd = get_command(game, trim(command));
 
   if (cmd == NULL) {
     send_to_player(player, "Sorry, [bcyan]%s[reset] command was not found.\n\r", command);
@@ -69,6 +69,7 @@ void play_state_input(player_t* player, game_t* game, char* input) {
   }
 
   cmd->func(player, game, trim(input));
+  free_command_t(cmd);
 }
 
 /**

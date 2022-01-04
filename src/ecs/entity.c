@@ -7,7 +7,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/dbo/entity_dbo.h"
+#include "mud/db/db.h"
 #include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -69,21 +69,20 @@ int load_entities(game_t* game) {
   mlog(INFO, "load_entities", "Loading entities");
 
   linked_list_t* entities = create_linked_list_t();
-  entities->deallocator = entity_dbo_t_deallocate;
 
-  if (entity_dbo_load_all(game, entities) == -1) {
+  if (db_entity_load_all(game->database, entities) == -1) {
     mlog(ERROR, "load_entities", "Entities could not be retrieved from the database");
+
+    free_linked_list_t(entities);
+
     return -1;
   };
 
   it_t it = list_begin(entities);
 
-  entity_dbo_t* entity_dbo = NULL;
+  entity_t* entity = NULL;
 
-  while ((entity_dbo = (entity_dbo_t*)it_get(it)) != NULL) {
-    entity_t* entity = create_entity_t();
-    entity_from_entity_dbo(entity, entity_dbo);
-
+  while ((entity = (entity_t*)it_get(it)) != NULL) {
     hash_table_insert(game->entities, entity->id.uuid, entity);
 
     it = it_next(it);
@@ -92,35 +91,6 @@ int load_entities(game_t* game) {
   free_linked_list_t(entities);
 
   return 0;
-}
-
-/**
- * Populates an entity_t with the data from an entity_dbo_t.
- *
- * Parameters
- *  entity - the entity_t to tbe populated
- *  entity_dbo - the entity_dbo to be populated from
-**/
-void entity_from_entity_dbo(entity_t* entity, entity_dbo_t* entity_dbo) {
-  if (entity_dbo->uuid != NULL) {
-    strlcpy(entity->id.uuid, entity_dbo->uuid, UUID_SIZE);
-  }
-
-  if (entity_dbo->name != NULL) {
-    if (entity->name != NULL) {
-      free(entity->name);
-    }
-
-    entity->name = strdup(entity_dbo->name);
-  }
-
-  if (entity_dbo->description != NULL) {
-    if (entity->description != NULL) {
-      free(entity->description);
-    }
-
-    entity->description = strdup(entity_dbo->description);
-  }
 }
 
 /**

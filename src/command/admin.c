@@ -5,7 +5,7 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
-#include "mud/dbo/entity_dbo.h"
+#include "mud/db/db.h"
 #include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
@@ -140,18 +140,12 @@ void entity_command(player_t* player, game_t* game, char* input) {
       return;
     }
 
-    entity_dbo_t* entity_dbo = entity_dbo_t_new();
-    entity_dbo_from_entity(entity_dbo, entity);
-
-    if (entity_dbo_save(game, entity_dbo) != 0) {
+    if (db_entity_save(game->database, entity) != 0) {
       send_to_player(player, tpl(game->templates, "command.entity.save.failure"), entity->id.uuid, entity->name, entity->description);
-      free(entity_dbo);
 
       return;
     }
 
     send_to_player(player, tpl(game->templates, "command.entity.save.success"), entity->id.uuid, entity->name, entity->description);
-
-    free(entity_dbo);
   }
 }
