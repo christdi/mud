@@ -16,7 +16,13 @@ int db_account_load_data(sqlite3* db, const char* username, account_t* account);
 int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
 
 /**
- * TODO: Populate
+ * Persists an account to the database.  If the account already exists it will be updated.
+ *
+ * Parameters
+ *   db - Handle to sqlite database
+ *   account - The account to be persisted
+ *
+ * This function returns 0 on success or -1 on failure.
 **/
 int db_account_save(sqlite3* db, account_t* account) {
   sqlite3_stmt* res = NULL;
@@ -58,7 +64,14 @@ int db_account_save(sqlite3* db, account_t* account) {
 }
 
 /**
- * TODO: Populate
+ * Loads the base data of an account from persistence.
+ *
+ * Parameters
+ *   db - Handle to sqlite database
+ *   username - Username of the account to load
+ *   account - Account to be populated with loaded data
+ *
+ * Returns 0 on success or -1 on failure
 **/
 int db_account_load_data(sqlite3* db, const char* username, account_t* account) {
   sqlite3_stmt* res = NULL;
@@ -110,7 +123,14 @@ int db_account_load_data(sqlite3* db, const char* username, account_t* account) 
 }
 
 /**
- * TODO: Populate}
+ * Loads the entities assigned to an account.
+ *
+ * Parameters:
+ *   db - Handle to the sqlite database
+ *   username - Username of the account to load
+ *   account - Account to be populated with data
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int db_account_load_entities(sqlite3* db, const char* username, account_t* account) {
   sqlite3_stmt* res = NULL;
@@ -154,7 +174,14 @@ int db_account_load_entities(sqlite3* db, const char* username, account_t* accou
 }
 
 /**
- * TODO: Populate
+ * Loads an account from persistence.
+ *
+ * Parameters:
+ *   db - Handle to sqlite database
+ *   username - Username of the account to be loaded
+ *   account - Account to be populated with data
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int db_account_load(sqlite3* db, const char* username, account_t* account) {
   if (db_account_load_data(db, username, account) != 0) {
@@ -171,7 +198,13 @@ int db_account_load(sqlite3* db, const char* username, account_t* account) {
 }
 
 /**
- * TODO: Populate
+ * Determines if an account exists in persistence.
+ *
+ * Parameters:
+ *   db - Handle to sqlite database
+ *   username - Username to find account whose existence is to be confirmed
+ *
+ * Returns 0 if account exists or -1 otherwise
 **/
 int db_account_exists(sqlite3* db, const char* username) {
   sqlite3_stmt* res = NULL;
@@ -207,7 +240,14 @@ int db_account_exists(sqlite3* db, const char* username) {
 }
 
 /**
- * TODO: Populate
+ * Retrieves a command via it's name
+ *
+ * Parameters:
+ *   db - Handle to sqlite database
+ *   name - Name of the command to be retrieced
+ *   results - Linked list to be populated with matching commands
+ *
+ * Returns number of results on success or -1 on failure.
 **/
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
@@ -256,7 +296,13 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
 }
 
 /**
- * TODO: Populate
+ * Loads all entiites from persistence.
+ *
+ * Parameters
+ *   db - Handle to sqlite database
+ *   entities - Linked list to be populated with entities
+ *
+ * Returns number of results on success or -1 on failure.
 **/
 int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
   assert(db);
@@ -302,7 +348,13 @@ int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
 }
 
 /**
- * TODO: Populate
+ * Persists an entity to the database.  If the entity exists already it will be updated.
+ *
+ * Parameters
+ *   db - Handle to sqlite database
+ *   entity - Entity to be saved
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int db_entity_save(sqlite3* db, entity_t* entity) {
   assert(db);
