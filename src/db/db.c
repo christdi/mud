@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bsd/string.h"
+
 #include "mud/command/command.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
+#include "mud/ecs/entity.h"
 #include "mud/account.h"
 #include "mud/log.h"
 
@@ -250,4 +253,102 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
   sqlite3_finalize(res);
 
   return count;  
+}
+
+/**
+ * TODO: Populate
+**/
+int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
+  assert(db);
+  assert(entities);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, name, description FROM entity";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    mlog(ERROR, "db_entity_load_all", "Failed to prepare statement to retrieve entities from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+  int count = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      mlog(ERROR, "db_entity_load_all", "Failed to retreive entities from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return 0;
+    }
+
+    entity_t* entity = create_entity_t();
+
+    strlcpy(entity->id.uuid, (char*)sqlite3_column_text(res, 0), UUID_SIZE);
+    entity->name = strdup((char*)sqlite3_column_text(res, 1));
+    entity->description = strdup((char*)sqlite3_column_text(res, 2));
+
+    list_add(entities, (void*)entity);
+
+    count++;
+  }
+
+  sqlite3_finalize(res);
+
+  return count;
+}
+
+/**
+ * TODO: Populate
+**/
+int db_entity_save(sqlite3* db, entity_t* entity) {
+  assert(db);
+  assert(entity);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "INSERT INTO entity(uuid, name, description) VALUES(?, ?, ?) "
+                    "ON CONFLICT(uuid) DO UPDATE SET name = excluded.name, description = excluded.description";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    mlog(ERROR, "db_entity_save", "Failed to prepare statement to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, entity->id.uuid, (int)strlen(entity->id.uuid), NULL) != SQLITE_OK) {
+    mlog(ERROR, "db_entity_save", "Failed to bind uuid to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 2, entity->name, (int)strlen(entity->name), NULL) != SQLITE_OK) {
+    mlog(ERROR, "db_entity_save", "Failed to bind name to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  };
+
+  if (sqlite3_bind_text(res, 3, entity->description, (int)strlen(entity->description), NULL) != SQLITE_OK) {
+    mlog(ERROR, "db_entity_save", "Failed to bind description to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  };
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    mlog(ERROR, "db_entity_save", "Failed to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
 }
