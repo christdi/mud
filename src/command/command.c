@@ -10,7 +10,6 @@
 #include "mud/db/db.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/dbo/command_dbo.h"
 #include "mud/game.h"
 #include "mud/log.h"
 
@@ -50,8 +49,6 @@ void free_command_t(command_t* command) {
 **/
 void deallocate_command(void* value) {
   assert(value);
-
-  mlog(INFO, "deallocate_command", "Deallocating");
 
   command_t* command = (command_t*)value;
 
@@ -105,8 +102,6 @@ command_t* get_command(game_t* game, const char* name) {
   int count = 0;
 
   if ((count = db_command_find_by_name(game->database, name, commands)) <= 0) {
-    mlog(INFO, "get_command", "Found [%d] matching commands", count);
-
     if (count == -1) {
       mlog(ERROR, "get_command", "Unable to retreive commands from database matching [%s]", name);
     }
@@ -116,14 +111,12 @@ command_t* get_command(game_t* game, const char* name) {
     return NULL;
   }
 
-  mlog(INFO, "get_command", "Found [%d] matching commands", count);
-
   /* TODO(Chris I): Don't just select the first command.  Filter for appropriate command */
-  command_t* cmd = NULL;
+  command_t* list_cmd = NULL;
 
-  list_at(commands, 0, (void*)&cmd);
+  list_at(commands, 0, (void*)&list_cmd);
 
-  if (cmd == NULL) {
+  if (list_cmd == NULL) {
     mlog(ERROR, "get_command", "Unable to retreive first command from linked list");
 
     free_linked_list_t(commands);
@@ -131,23 +124,22 @@ command_t* get_command(game_t* game, const char* name) {
     return NULL;
   }
 
-  mlog(INFO, "get_command", "Extracted command from linked list");
+  command_t* cmd = create_command_t();
+  cmd->name = strdup(list_cmd->name);
+  cmd->function = strdup(list_cmd->function);
 
   const cmd_func_t* func = command_lookup(cmd->function);
 
   if (func == NULL || func->func == NULL) {
     mlog(ERROR, "get_command", "Unable to retreive command function for command [%s]", name);
 
+    free_command_t(cmd);
     free_linked_list_t(commands);
 
     return NULL;
   }
 
-  mlog(INFO, "get_command", "Assigning func");
-
   cmd->func = func->func;
-
-  list_remove(commands, cmd);
 
   free_linked_list_t(commands);
 

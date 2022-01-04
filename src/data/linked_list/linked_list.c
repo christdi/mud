@@ -120,9 +120,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   node_t* node = list->first;
 
   while (node != NULL) {
-    mlog(INFO, "list_remove", "Checking node [%p]", node);
     if (node->data == value) {
-      mlog(INFO, "list_remove", "Match! Removing [%p] from list", node);
       it.node = node->next;
       remove_node(list, node);
       break;

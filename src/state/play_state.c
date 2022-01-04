@@ -63,17 +63,12 @@ void play_state_input(player_t* player, game_t* game, char* input) {
   command_t* cmd = get_command(game, trim(command));
 
   if (cmd == NULL) {
-    mlog(INFO, "play_state_input", "cmd is null?");
-
     send_to_player(player, "Sorry, [bcyan]%s[reset] command was not found.\n\r", command);
 
     return;
   }
 
-  mlog(INFO, "play_state_input", "Executing command");
-
   cmd->func(player, game, trim(input));
-
   free_command_t(cmd);
 }
 
