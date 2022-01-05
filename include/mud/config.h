@@ -1,7 +1,6 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define MAX_KEY_LENGTH 128
 #define MINIMUM_PORT 1024
 #define DEFAULT_PORT 5000
 #define DEFAULT_TICKS_PER_SECOND 20

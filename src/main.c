@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]) {
   config_t* config = config_new();
 
-  if (!config || load_configuration("config.ini", config) != 0) {
+  if (!config || load_configuration("config.lua", config) != 0) {
     printf("Unable to load [config.ini].  Using default configuration\n\r");
   }
 

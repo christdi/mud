@@ -12,8 +12,12 @@ set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, m
 
 project (${PROJECT_NAME} C)
 
+find_package(Lua51 REQUIRED)
+
 # Build configuration
 add_definitions("-Wall -pedantic")
+
+include_directories(${PROJECT_SOURCE_DIR}/include ${LUA_INCLUDE_DIR})
 
 # Library configuration
 file(GLOB_RECURSE SRC_FILES RELATIVE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/src/*.c)
@@ -22,6 +26,5 @@ add_library(${LIB_NAME} ${SRC_FILES})
 target_compile_options(${LIB_NAME} PRIVATE -Wall -Wextra -pedantic)
 
 # Executable configuration
-include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} src/main.c)
-target_link_libraries(${PROJECT_NAME} ${LIB_NAME} uuid sqlite3 ssl crypto)
+target_link_libraries(${PROJECT_NAME} ${LIB_NAME} uuid sqlite3 ssl crypto ${LUA_LIBRARIES})
