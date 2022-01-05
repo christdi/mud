@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lua.h"
+#include "lauxlib.h"
+
 #include "bsd/string.h"
 
 #include "mud/config.h"
@@ -98,9 +101,11 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
 }
 
 /**
- * Attempts to read the file specified by the filename parameter and parse the 
- * contents as key value pairs to populate the config_t struct represented by
- * the config parameter.
+ * Loads configuration from a Lua script.
+ * 
+ * Parameters:
+ *   filename - The name of the Lua script to be evaluated
+ *   config - The config struct to be populated
  *
  * Returns 0 on success or -1 on error.
 **/
@@ -108,60 +113,55 @@ int load_configuration(const char* filename, config_t* config) {
   assert(filename);
   assert(config);
 
-  FILE* fp = fopen(filename, "re");
+  lua_State *l = NULL;
 
-  if (!fp) {
+  if ((l = luaL_newstate()) == NULL) {
+    printf("Failed to create new Lua state to parse configuration");
+    
     return -1;
   }
 
-  char buffer[MAX_CONFIG_LINE_LENGTH];
+  if (luaL_dofile(l, filename) != 0) {
+    printf("Error while loading Lua configuration [%s].\n\r", lua_tostring(l, -1));
 
-  while (fgets(buffer, MAX_CONFIG_LINE_LENGTH, fp)) {
-    if (config_parse_line(buffer, config) != 0) {
-      printf("Failed to parse configuration file line: '%s'.\n\r", buffer);
+    lua_close(l);
 
-      continue;
-    }
-  }
-
-  fclose(fp);
-
-  return 0;
-}
-
-/**
- * Parses a single line of configuration with the expected format of key=value.
- * If a key is recognised, the associated field is populated in the config_t
- * represented by the config parameter.
- *
- * Returns 0 on success or -1 on failure.
-**/
-int config_parse_line(char* line, config_t* config) {
-  assert(line);
-  assert(config);
-
-  char* key = strtok(line, "=");
-  char* value = strtok(NULL, "\n");
-
-  if (!key || !value) {
     return -1;
   }
 
-  if (strncmp(key, "log_config_file", MAX_KEY_LENGTH) == 0) {
-    set_log_config_file(value, config);
+  lua_getglobal(l, "game_port");
+
+  if (lua_isstring(l, -1)) {
+    set_game_port(lua_tostring(l, -1), config);
   }
 
-  if (strncmp(key, "database_file", MAX_KEY_LENGTH) == 0) {
-    set_database_file(value, config);
+  lua_pop(l, 1);
+
+  lua_getglobal(l, "database_file");
+
+  if (lua_isstring(l, -1)) {
+    set_database_file(lua_tostring(l, -1), config);
   }
 
-  if (strncmp(key, "game_port", MAX_KEY_LENGTH) == 0) {
-    set_game_port(value, config);
+  lua_pop(l, 1);
+
+  lua_getglobal(l, "log_config_file");
+
+  if (lua_isstring(l, -1)) {
+    set_log_config_file(lua_tostring(l, -1), config);
   }
 
-  if (strncmp(key, "ticks_per_second", MAX_KEY_LENGTH) == 0) {
-    set_ticks_per_second(value, config);
+  lua_pop(l, 1);
+
+  lua_getglobal(l, "ticks_per_second");
+
+  if (lua_isstring(l, -1)) {
+    set_ticks_per_second(lua_tostring(l, -1), config);
   }
+
+  lua_pop(l, 1);
+
+  lua_close(l);
 
   return 0;
 }
