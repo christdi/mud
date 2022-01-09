@@ -17,6 +17,7 @@ typedef struct linked_list linked_list_t;
 typedef struct network network_t;
 typedef struct components components_t;
 typedef struct narrator narrator_t;
+typedef struct lua_State lua_State;
 
 /**
  * Structs
@@ -37,6 +38,7 @@ typedef struct game {
   network_t* network;
   components_t* components;
   narrator_t* narrator;
+  lua_State* lua_state;
 } game_t;
 
 /**

@@ -1,9 +1,17 @@
+#include <assert.h>
+#include <stdlib.h>
+
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/lua/api.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
@@ -11,13 +19,11 @@
 #include "mud/task/task.h"
 #include "mud/template.h"
 
-#include <assert.h>
-#include <stdlib.h>
-
 int connect_to_database(game_t* game, const char* filename);
 void game_execute_tasks(game_t* game);
 int game_pulse_players(game_t* game);
 void game_sleep_until_tick(game_t* game, unsigned int ticks_per_second);
+int initialise_lua(game_t* game);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -50,6 +56,8 @@ game_t* create_game_t(void) {
   game->components = create_components_t();
   game->narrator = create_narrator_t();
 
+  game->lua_state = NULL;
+
   return game;
 }
 
@@ -73,6 +81,11 @@ void free_game_t(game_t* game) {
   free_network_t(game->network);
   free_components_t(game->components);
   free_narrator_t(game->narrator);
+
+  if (game->lua_state != NULL) {
+    lua_close(game->lua_state);
+  }
+
   free(game);
 }
 
@@ -100,6 +113,12 @@ int start_game(config_t* config) {
 
   if (connect_to_database(game, config->database_file) != 0) {
     mlog(ERROR, "start_game", "Failed to start game server");
+
+    return -1;
+  }
+
+  if (initialise_lua(game) == -1) {
+    mlog(ERROR, "start_game", "Failed to initialise Lua");
 
     return -1;
   }
@@ -211,4 +230,26 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   }
 
   game->last_tick = current_time;
+}
+
+
+int initialise_lua(game_t* game) {
+  if ((game->lua_state = luaL_newstate()) == NULL) {
+    mlog(ERROR, "initialise_lua", "Failed to initialise Lua state");
+    return -1;
+  }
+
+  luaL_openlibs(game->lua_state);
+
+  if (lua_register_api(game->lua_state, game) == -1) {
+    mlog(ERROR, "initialise_lua", "Failed to register Lua API with state");
+    return -1;
+  }
+
+  mlog(INFO, "initialise_lua", "LUA state successfully initialised");
+
+  luaL_dostring(game->lua_state, "print('Game is: ', type(game))");
+  luaL_dostring(game->lua_state, "mud.register_component()");
+
+  return 0;
 }
