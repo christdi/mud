@@ -11,6 +11,7 @@
  * Structs
 **/
 typedef struct config {
+  char* game_script_file;
   char* log_config_file;
   char* database_file;
   unsigned int game_port;

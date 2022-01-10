@@ -30,6 +30,6 @@ void deallocate_entity(void* value);
 int load_entities(game_t* game);
 entity_t* get_entity(game_t* game, char* uuid);
 
-entity_t* new_entity(game_t* game, char* name, char* description);
+entity_t* new_entity(game_t* game, const char* name, const char* description);
 
 #endif

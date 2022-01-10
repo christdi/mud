@@ -5,7 +5,6 @@
 #include "mud/command/admin.h"
 #include "mud/command/command.h"
 #include "mud/command/communication.h"
-#include "mud/command/explore.h"
 #include "mud/command/general.h"
 #include "mud/db/db.h"
 #include "mud/data/hash_table.h"
@@ -62,8 +61,6 @@ const cmd_func_t* command_lookup(const char* name) {
   static const cmd_func_t funcs[] = {
     { "function_entity", entity_command },
     { "function_shutdown", shutdown_command },
-    { "function_inventory", inventory_command },
-    { "function_look", look_command },
     { "function_quit", quit_command },
     { "function_say", say_command },
     { "\0", NULL }

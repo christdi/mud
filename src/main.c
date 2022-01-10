@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   config_t* config = config_new();
 
   if (!config || load_configuration("config.lua", config) != 0) {
-    printf("Unable to load [config.ini].  Using default configuration\n\r");
+    printf("Unable to load [config.lua].  Using default configuration\n\r");
   }
 
   if (!config || parse_configuration(argc, argv, config) != 0) {

@@ -8,7 +8,6 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
-#include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -115,12 +114,14 @@ entity_t* get_entity(game_t* game, char* uuid) {
  *
  * Returns a pointer to an entity struct representing the new entity
 **/
-entity_t* new_entity(game_t* game, char* name, char* description) {
+entity_t* new_entity(game_t* game, const char* name, const char* description) {
   entity_t* entity = create_entity_t();
   entity->id = entity_id();
   entity->name = strdup(name);
   entity->description = strdup(description);
   hash_table_insert(game->entities, entity->id.uuid, entity);
+
+  mlog(INFO, "new_entity", "New entity created [%s], [%s]", name, description);
 
   return entity;
 }

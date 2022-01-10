@@ -23,7 +23,7 @@ int connect_to_database(game_t* game, const char* filename);
 void game_execute_tasks(game_t* game);
 int game_pulse_players(game_t* game);
 void game_sleep_until_tick(game_t* game, unsigned int ticks_per_second);
-int initialise_lua(game_t* game);
+int initialise_lua(game_t* game, config_t* config);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -47,13 +47,15 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
 
+  game->components = create_linked_list_t();
+  game->components->deallocator = deallocate_component_t;
+
   game->tasks = create_linked_list_t();
   game->tasks->deallocator = deallocate_task_t;
 
   game->events = create_linked_list_t();
 
   game->network = create_network_t();
-  game->components = create_components_t();
   game->narrator = create_narrator_t();
 
   game->lua_state = NULL;
@@ -75,11 +77,11 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
 
+  free_linked_list_t(game->components);
   free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
   free_network_t(game->network);
-  free_components_t(game->components);
   free_narrator_t(game->narrator);
 
   if (game->lua_state != NULL) {
@@ -117,7 +119,7 @@ int start_game(config_t* config) {
     return -1;
   }
 
-  if (initialise_lua(game) == -1) {
+  if (initialise_lua(game, config) == -1) {
     mlog(ERROR, "start_game", "Failed to initialise Lua");
 
     return -1;
@@ -233,7 +235,7 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
 }
 
 
-int initialise_lua(game_t* game) {
+int initialise_lua(game_t* game, config_t* config) {
   if ((game->lua_state = luaL_newstate()) == NULL) {
     mlog(ERROR, "initialise_lua", "Failed to initialise Lua state");
     return -1;
@@ -246,10 +248,13 @@ int initialise_lua(game_t* game) {
     return -1;
   }
 
-  mlog(INFO, "initialise_lua", "LUA state successfully initialised");
+  if (luaL_dofile(game->lua_state, config->game_script_file) != 0) {
+    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
-  luaL_dostring(game->lua_state, "print('Game is: ', type(game))");
-  luaL_dostring(game->lua_state, "mud.register_component()");
+    return -1;
+  }  
+
+  mlog(INFO, "initialise_lua", "LUA state successfully initialised");
 
   return 0;
 }

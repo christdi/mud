@@ -6,7 +6,6 @@
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
 #include "mud/db/db.h"
-#include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -56,15 +55,6 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     while ((entity = (entity_t*)h_it_get(it)) != NULL) {
       send_to_player(player, tpl(game->templates, "command.entity.description"), entity->id.uuid, entity->name, entity->description);
-
-      location_t* location = get_location(game->components, entity);
-
-      if (location) {
-        char buffer[BUFFER_SIZE];
-        describe_location(location, buffer, BUFFER_SIZE);
-        send_to_player(player, tpl(game->templates, "command.entity.list.location"), buffer);
-      }
-
       send_to_player(player, "\n\r");
 
       it = h_it_next(it);
