@@ -35,6 +35,22 @@ function main()
 
   local component_two = mud.get_component(entity_two, mud.components.has_inventory)
   print("Entity two components", dump(component_two))
+
+  if mud.has_component(entity, mud.components.has_inventory) then
+   print("Entity one has inventory component")
+  end
+
+   if mud.has_component(entity, mud.components.location) then
+      print("Entity one has location component")
+   end
+
+   if mud.has_component(entity_two, mud.components.has_inventory) then
+      print("Entity two has inventory component")
+   end
+
+   if not mud.has_component(entity_two, mud.components.location) then
+      print("Entity two does not have location component")
+   end
 end
 
 

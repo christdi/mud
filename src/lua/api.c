@@ -19,6 +19,8 @@ static int lua_register_component(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
+static int lua_save_component(lua_State* l);
+static int lua_load_component(lua_State* l);
 
 static const struct luaL_Reg mud_lib [] = {
   {"log_info", lua_log_info},
@@ -30,6 +32,9 @@ static const struct luaL_Reg mud_lib [] = {
   {NULL, NULL}
 };
 
+/**
+ * TODO(Chris I)
+**/
 static game_t* get_game_global(lua_State *l) {
   lua_getglobal(l, "game");
 
@@ -47,6 +52,9 @@ static game_t* get_game_global(lua_State *l) {
   return game;  
 }
 
+/**
+ * TODO(Chris I)
+**/
 int lua_register_api(lua_State* l, game_t* game) {
   luaL_newlib(l, mud_lib);
   lua_setglobal(l, "mud");
@@ -57,6 +65,9 @@ int lua_register_api(lua_State* l, game_t* game) {
   return 0;
 }
 
+/**
+ * TODO(Chris I)
+**/
 static int lua_log_info(lua_State *l) {
   const char *function = luaL_checkstring(l, 1);
   const char * message = luaL_checkstring(l, 2);
@@ -67,6 +78,9 @@ static int lua_log_info(lua_State *l) {
   return 0;
 }
 
+/**
+ * TODO(Chris I)
+**/
 static int lua_new_entity(lua_State *l) {
   const char* name = luaL_checkstring(l, 1);
   const char *description = luaL_checkstring(l, 2);
@@ -75,9 +89,8 @@ static int lua_new_entity(lua_State *l) {
   game_t* game = NULL;
   
   if ((game = get_game_global(l)) == NULL) {
-    mlog(ERROR, "lua_new_entity", "Game global could not be retrieved");
-
-    return 0;
+    lua_pushliteral(l, "lua_new_entity(): Could not retrieve game pointer");
+    lua_error(l);
   }
 
   entity_t* entity = new_entity(game, name, description);
@@ -87,21 +100,24 @@ static int lua_new_entity(lua_State *l) {
   return 1;
 }
 
+/**
+ * TODO(Chris I)
+**/
 static int lua_register_component(lua_State* l) {
   game_t* game = NULL;
   
   if ((game = get_game_global(l)) == NULL) {
-    mlog(ERROR, "lua_new_entity", "Game global could not be retrieved");
+    lua_pushliteral(l, "lua_register_component(): Could not retrieve pointer to game");
+    lua_error(l);
 
-    return 0;    
+    return 0;
   }
 
   component_t* component = create_component_t();
 
   if (list_add(game->components, component) != 0) {
-    mlog(ERROR, "lua_register_component", "Unable to add new component to components");
-
-    return 0;
+    lua_pushliteral(l, "lua_register_component(): Unable to add component to entity");
+    lua_error(l);
   }
 
   lua_pushlightuserdata(l, component);
@@ -109,41 +125,58 @@ static int lua_register_component(lua_State* l) {
   return 1;
 }
 
+/**
+ * TODO(Chris I)
+**/
 static int lua_has_component(lua_State* l) {
-  return 0;
-}
-
-static int lua_add_component(lua_State* l) {
-  if (lua_gettop(l) < 3) {
-    mlog(ERROR, "lua_add_component", "Less than 3 arguments provided");
-
-    return 0;
+  if (lua_gettop(l) != 2) {
+    lua_pushliteral(l, "lua_has_component(): Expected 2 arguments");
+    lua_error(l);
   }
 
   if (lua_islightuserdata(l, 1) != 1) {
-    mlog(ERROR, "lua_add_component", "First argument was not a light userdata");
-
-    return 0;
+    lua_pushliteral(l, "lua_has_component(): First argument should be C userdata pointer to entity but was not");
+    lua_error(l);
   }
 
   if (lua_islightuserdata(l, 2) != 1) {
-    mlog(ERROR, "lua_add_component", "Second argument was not a light userdata");
+    lua_pushliteral(l, "lua_has_component(): Second argument should be C userdata pointer to component but was not");
+    lua_error(l);
+  }
 
-    return 0;
+  component_t* component = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  entity_t* entity = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  lua_pushboolean(l, hash_table_has(component->entities, entity->id.uuid));
+
+  return 1;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_add_component(lua_State* l) {
+  if (lua_gettop(l) != 3) {
+    lua_pushliteral(l, "lua_add_component(): Expected 3 arguments");
+    lua_error(l);
+  }
+
+  if (lua_islightuserdata(l, 1) != 1) {
+    lua_pushliteral(l, "lua_add_component(): First argument should be C userdata pointer to entity but was not");
+    lua_error(l);
+  }
+
+  if (lua_islightuserdata(l, 2) != 1) {
+    lua_pushliteral(l, "lua_add_component(): Second argument should be C userdata pointer to component but was not");
+    lua_error(l);
   }
 
   if (lua_istable(l, 3) != 1) {
-    mlog(ERROR, "lua_add_component", "Third argument was not a table");
-
-    return 0;
-  }
-
-  game_t* game = NULL;
-  
-  if ((game = get_game_global(l)) == NULL) {
-    mlog(ERROR, "lua_new_entity", "Game global could not be retrieved");
-
-    return 0;
+    lua_pushliteral(l, "lua_add_component(): Third argument should be table but was not");
+    lua_error(l);
   }
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
@@ -161,6 +194,9 @@ static int lua_add_component(lua_State* l) {
   return 0;
 }
 
+/**
+ * TODO(Chris I)
+**/
 static int lua_get_component(lua_State* l) {
   if (lua_gettop(l) != 2) {
     lua_pushliteral(l, "lua_get_component(): Expected 2 arguments");
@@ -192,5 +228,19 @@ static int lua_get_component(lua_State* l) {
   lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
 
   return 1;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_save_component(lua_State* l) {
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_load_component(lua_State* l) {
+  return 0;
 }
 
