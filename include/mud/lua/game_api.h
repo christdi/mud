@@ -1,5 +1,5 @@
-#ifndef MUD_LUA_API_H
-#define MUD_LUA_API_H
+#ifndef MUD_LUA_GAME_API_H
+#define MUD_LUA_GAME_API_H
 
 /**
  * Forward declations
@@ -10,6 +10,6 @@ typedef struct game game_t;
 /**
  * Function prototypes
 **/
-int lua_register_api(lua_State* l, game_t *game);
+int lua_game_register_api(lua_State* l, game_t *game);
 
 #endif

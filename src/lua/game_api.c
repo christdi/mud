@@ -6,25 +6,28 @@
 #include "mud/data/hash_table.h"
 #include "mud/ecs/component.h"
 #include "mud/ecs/entity.h"
-#include "mud/lua/api.h"
+#include "mud/lua/game_api.h"
 #include "mud/log.h"
 
-#include <stdio.h>
+#define GLOBAL_GAME_FIELD_NAME "gptr"
+#define API_TABLE_NAME "game"
 
 static game_t* get_game_global(lua_State *l);
 
 static int lua_log_info(lua_State *l);
 static int lua_new_entity(lua_State *l);
+static int lua_get_entity(lua_State *l);
+static int lua_get_entity_id(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
-static int lua_save_component(lua_State* l);
-static int lua_load_component(lua_State* l);
 
 static const struct luaL_Reg mud_lib [] = {
   {"log_info", lua_log_info},
   {"new_entity", lua_new_entity},
+  {"get_entity", lua_get_entity},
+  {"get_entity_id", lua_get_entity_id},
   {"register_component", lua_register_component},
   {"has_component", lua_has_component},
   {"add_component", lua_add_component},
@@ -36,7 +39,7 @@ static const struct luaL_Reg mud_lib [] = {
  * TODO(Chris I)
 **/
 static game_t* get_game_global(lua_State *l) {
-  lua_getglobal(l, "game");
+  lua_getglobal(l, GLOBAL_GAME_FIELD_NAME);
 
   int top = lua_gettop(l);
 
@@ -55,12 +58,12 @@ static game_t* get_game_global(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-int lua_register_api(lua_State* l, game_t* game) {
+int lua_game_register_api(lua_State* l, game_t* game) {
   luaL_newlib(l, mud_lib);
-  lua_setglobal(l, "mud");
+  lua_setglobal(l, API_TABLE_NAME);
 
   lua_pushlightuserdata(l, game);
-  lua_setglobal(l, "game");
+  lua_setglobal(l, GLOBAL_GAME_FIELD_NAME);
 
   return 0;
 }
@@ -96,6 +99,63 @@ static int lua_new_entity(lua_State *l) {
   entity_t* entity = new_entity(game, name, description);
 
   lua_pushlightuserdata(l, entity);
+
+  return 1;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_get_entity(lua_State *l) {
+  game_t* game = NULL;
+
+  if ((game = get_game_global(l)) == NULL) {
+    lua_pushliteral(l, "lua_get_entity(): Could not retrieve game pointer");
+    lua_error(l);
+  }
+
+  if (lua_gettop(l) != 1) {
+    lua_pushliteral(l, "lua_get_entity(): Expected one argument");
+    lua_error(l);
+  }
+
+  const char* uuid = luaL_checkstring(l, 1);
+
+  entity_t* entity = get_entity(game, uuid);
+
+  if (entity == NULL) {
+    lua_pushliteral(l, "No entity found");
+    lua_error(l);
+
+    return 0;
+  }
+
+  lua_pop(l, 1);
+
+  lua_pushlightuserdata(l, entity);
+
+  return 1;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_get_entity_id(lua_State* l) {
+  if (lua_gettop(l) != 1) {
+    lua_pushliteral(l, "lua_get_entity_id(): Expected one argument");
+    lua_error(l);
+  }
+
+  if (lua_islightuserdata(l, 1) != 1) {
+    lua_pushliteral(l, "lua_get_entity_id(): First argument should be C userdata pointer to entity but was not");
+    lua_error(l);
+  }
+
+  entity_t* entity = lua_touserdata(l, 1);
+
+  lua_pushstring(l, entity->id.uuid);
+
+  lua_pop(l, 1);
 
   return 1;
 }
@@ -228,19 +288,5 @@ static int lua_get_component(lua_State* l) {
   lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
 
   return 1;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_save_component(lua_State* l) {
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_load_component(lua_State* l) {
-  return 0;
 }
 

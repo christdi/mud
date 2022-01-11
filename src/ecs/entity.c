@@ -97,7 +97,7 @@ int load_entities(game_t* game) {
  *
  * Returns a pointer to the entity if found or NULL if not.
 **/
-entity_t* get_entity(game_t* game, char* uuid) {
+entity_t* get_entity(game_t* game, const char* uuid) {
   assert(game);
   assert(uuid);
 

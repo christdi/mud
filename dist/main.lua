@@ -12,58 +12,68 @@ function dump(o)
 end
 
 function main()
-  mud.components = {}
+  game.components = {}
 
-  mud.log_info("main.lua", "Demo MUD initialising")
+  game.log_info("main.lua", "Demo MUD initialising")
 
-  local ps = db.prepare("SELECT * FROM account WHERE username = ?")
-  db.bind(ps, 1, "legolas")
+  game.components.location = game.register_component();
+  game.components.has_inventory = game.register_component()
 
-  while db.step(ps) do
-   local field = db.column_text(ps, 0)
+  local entity = game.new_entity("test", "test entity")
+  local entity_two = game.new_entity("test 2", "test entity 2")
 
-   print("Row!", field)
-  end
+  game.add_component(entity, game.components.has_inventory, {capacity = 30})
+  game.add_component(entity, game.components.location, {room = "1234"})
 
-  db.finalize(ps)
+  game.add_component(entity_two, game.components.has_inventory, {capacity = 20})
 
-  mud.components.location = mud.register_component();
-  mud.components.has_inventory = mud.register_component()
-
-  local entity = mud.new_entity("test", "test entity")
-  local entity_two = mud.new_entity("test 2", "test entity 2")
-
-  mud.add_component(entity, mud.components.has_inventory, {capacity = 30})
-  mud.add_component(entity, mud.components.location, {room = "1234"})
-
-  mud.add_component(entity_two, mud.components.has_inventory, {capacity = 20})
-
-  local component_one = mud.get_component(entity, mud.components.has_inventory)
+  local component_one = game.get_component(entity, game.components.has_inventory)
   print("Entity one components", dump(component_one))
 
-  local location_component = mud.get_component(entity, mud.components.location)
+  local location_component = game.get_component(entity, game.components.location)
   print("Entity one location", dump(location_component))
 
-  local component_two = mud.get_component(entity_two, mud.components.has_inventory)
+  local component_two = game.get_component(entity_two, game.components.has_inventory)
   print("Entity two components", dump(component_two))
 
-  if mud.has_component(entity, mud.components.has_inventory) then
+  if game.has_component(entity, game.components.has_inventory) then
    print("Entity one has inventory component")
   end
 
-   if mud.has_component(entity, mud.components.location) then
+   if game.has_component(entity, game.components.location) then
       print("Entity one has location component")
    end
 
-   if mud.has_component(entity_two, mud.components.has_inventory) then
+   if game.has_component(entity_two, game.components.has_inventory) then
       print("Entity two has inventory component")
    end
 
-   if not mud.has_component(entity_two, mud.components.location) then
+   if not game.has_component(entity_two, game.components.location) then
       print("Entity two does not have location component")
    end
 end
 
+function has_inventory_component(entity)
+   local ps = db.prepare("SELECT * FROM has_inventory_component WHERE entity_id = ?")
+   ps.bind(1, game.get_entity_id(entity))
+
+   if not db.step(ps) then
+      return false
+   end
+
+
+end
+
+function load_accounts()
+   local ps = db.prepare("SELECT * FROM account")
+
+   while db.step(ps) do
+      local field = db.column_text(ps, 0)
+      print("Account", field)
+   end
+
+   db.finalize(ps)
+end
 
 main()
 
