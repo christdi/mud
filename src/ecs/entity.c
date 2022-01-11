@@ -9,6 +9,7 @@
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
 #include "mud/ecs/entity.h"
+#include "mud/lua/hooks.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -76,6 +77,14 @@ int load_entities(game_t* game) {
 
     return -1;
   };
+
+  if (lua_hook_on_entities_loaded(game->lua_state, entities) != 0) {
+    mlog(ERROR, "load_entities", "Lua on entities loaded hook could not be called");
+
+    free_linked_list_t(entities);
+
+    return -1;
+  }
 
   it_t it = list_begin(entities);
 

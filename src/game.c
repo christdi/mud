@@ -13,6 +13,7 @@
 #include "mud/ecs/ecs.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/db_api.h"
+#include "mud/lua/hooks.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
@@ -258,7 +259,9 @@ int initialise_lua(game_t* game, config_t* config) {
     printf("Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
     return -1;
-  }  
+  }
+
+  lua_hook_on_startup(game->lua_state);
 
   mlog(INFO, "initialise_lua", "LUA state successfully initialised");
 
