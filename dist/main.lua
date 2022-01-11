@@ -16,6 +16,17 @@ function main()
 
   mud.log_info("main.lua", "Demo MUD initialising")
 
+  local ps = db.prepare("SELECT * FROM account WHERE username = ?")
+  db.bind(ps, 1, "legolas")
+
+  while db.step(ps) do
+   local field = db.column_text(ps, 0)
+
+   print("Row!", field)
+  end
+
+  db.finalize(ps)
+
   mud.components.location = mud.register_component();
   mud.components.has_inventory = mud.register_component()
 

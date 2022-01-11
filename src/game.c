@@ -12,6 +12,7 @@
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
 #include "mud/lua/api.h"
+#include "mud/lua/db_api.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
@@ -245,6 +246,11 @@ int initialise_lua(game_t* game, config_t* config) {
 
   if (lua_register_api(game->lua_state, game) == -1) {
     mlog(ERROR, "initialise_lua", "Failed to register Lua API with state");
+    return -1;
+  }
+
+  if (lua_db_register_api(game->lua_state, game->database) == -1) {
+    mlog(ERROR, "initialise_lua", "Failed to register Lua DB API with state");
     return -1;
   }
 
