@@ -83,7 +83,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
 
     if (player->entity != NULL) {
       if (remove_player_from_narration(game->narrator, player->entity, player) != 0) {
-        mlog(ERROR, "entity_command", "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
+        LOG(ERROR, "Unable to remove player [%s] from narration of entity [%s]", player->account->username, entity->id.uuid);
         send_to_player(player, tpl(game->templates, "command.entity.assign.narration.remove.failure"), entity->id.uuid);
       }
     }
@@ -91,7 +91,7 @@ void entity_command(player_t* player, game_t* game, char* input) {
     player->entity = entity;
 
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
-      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      LOG(ERROR, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, tpl(game->templates, "command.entity.assign.narration.remove.success"), entity->id.uuid);
     };
   }

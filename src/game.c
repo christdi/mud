@@ -13,6 +13,8 @@
 #include "mud/ecs/ecs.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/db_api.h"
+#include "mud/lua/log_api.h"
+#include "mud/lua/player_api.h"
 #include "mud/lua/hooks.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
@@ -103,38 +105,38 @@ int start_game(config_t* config) {
 
   game_t* game = create_game_t();
 
-  mlog(INFO, "start_game", "Starting MUD engine");
+  LOG(INFO, "Starting MUD engine");
 
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
   if (template_load_from_file(game->templates, "template.properties") != 0) {
-    mlog(ERROR, "start_game", "Failed to load templates");
+    LOG(ERROR, "Failed to load templates");
 
     return -1;
   }
 
   if (connect_to_database(game, config->database_file) != 0) {
-    mlog(ERROR, "start_game", "Failed to start game server");
+    LOG(ERROR, "Failed to start game server");
 
     return -1;
   }
 
   if (initialise_lua(game, config) == -1) {
-    mlog(ERROR, "start_game", "Failed to initialise Lua");
+    LOG(ERROR, "Failed to initialise Lua");
 
     return -1;
   }
 
   if (load_entities(game) == -1) {
-    mlog(ERROR, "start_game", "Failed to load entities");
+    LOG(ERROR, "Failed to load entities");
 
     return -1;
   }
 
   if (start_game_server(game->network, config->game_port) == -1) {
-    mlog(ERROR, "start_game", "Failed to start game server");
+    LOG(ERROR, "Failed to start game server");
 
     return -1;
   }
@@ -150,7 +152,7 @@ int start_game(config_t* config) {
   }
 
   if (stop_game_server(game->network, config->game_port) == -1) {
-    mlog(ERROR, "start_game", "Failed to shutdown server");
+    LOG(ERROR, "Failed to shutdown server");
 
     return -1;
   }
@@ -159,7 +161,7 @@ int start_game(config_t* config) {
 
   sqlite3_close(game->database);
 
-  mlog(INFO, "start_game", "Stopping MUD engine");
+  LOG(INFO, "Stopping MUD engine");
 
   free_game_t(game);
 
@@ -171,10 +173,10 @@ int start_game(config_t* config) {
  * or 0 on success.
 **/
 int connect_to_database(game_t* game, const char* filename) {
-  mlog(INFO, "connect_to_database", "Connecting to database [%s]", filename);
+  LOG(INFO, "Connecting to database [%s]", filename);
 
   if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
-    mlog(ERROR, "connect_to_database", "Failed to open game database [%s]", sqlite3_errmsg(game->database));
+    LOG(ERROR, "Failed to open game database [%s]", sqlite3_errmsg(game->database));
 
     sqlite3_close(game->database);
 
@@ -239,19 +241,29 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
 
 int initialise_lua(game_t* game, config_t* config) {
   if ((game->lua_state = luaL_newstate()) == NULL) {
-    mlog(ERROR, "initialise_lua", "Failed to initialise Lua state");
+    LOG(ERROR, "Failed to initialise Lua state");
     return -1;
   }
 
   luaL_openlibs(game->lua_state);
 
   if (lua_game_register_api(game->lua_state, game) == -1) {
-    mlog(ERROR, "initialise_lua", "Failed to register Lua API with state");
+    LOG(ERROR, "Failed to register Lua API with state");
     return -1;
   }
 
   if (lua_db_register_api(game->lua_state, game->database) == -1) {
-    mlog(ERROR, "initialise_lua", "Failed to register Lua DB API with state");
+    LOG(ERROR, "Failed to register Lua DB API with state");
+    return -1;
+  }
+
+  if (lua_player_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua player API with state");
+    return -1;
+  }
+
+  if (lua_log_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua log API with state");
     return -1;
   }
 
@@ -263,7 +275,7 @@ int initialise_lua(game_t* game, config_t* config) {
 
   lua_hook_on_startup(game->lua_state);
 
-  mlog(INFO, "initialise_lua", "LUA state successfully initialised");
+  LOG(INFO, "LUA state successfully initialised");
 
   return 0;
 }

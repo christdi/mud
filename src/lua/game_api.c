@@ -14,7 +14,6 @@
 
 static game_t* get_game_global(lua_State *l);
 
-static int lua_log_info(lua_State *l);
 static int lua_new_entity(lua_State *l);
 static int lua_get_entity(lua_State *l);
 static int lua_get_entity_id(lua_State* l);
@@ -24,7 +23,6 @@ static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
 
 static const struct luaL_Reg mud_lib [] = {
-  {"log_info", lua_log_info},
   {"new_entity", lua_new_entity},
   {"get_entity", lua_get_entity},
   {"get_entity_id", lua_get_entity_id},
@@ -44,7 +42,7 @@ static game_t* get_game_global(lua_State *l) {
   int top = lua_gettop(l);
 
   if (lua_islightuserdata(l, top) != 1) {
-    mlog(ERROR, "get_game_global", "Could not retrieve game pointer");
+    LOG(ERROR, "Could not retrieve game pointer");
 
     return NULL;
   }
@@ -64,19 +62,6 @@ int lua_game_register_api(lua_State* l, game_t* game) {
 
   lua_pushlightuserdata(l, game);
   lua_setglobal(l, GLOBAL_GAME_FIELD_NAME);
-
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_log_info(lua_State *l) {
-  const char *function = luaL_checkstring(l, 1);
-  const char * message = luaL_checkstring(l, 2);
-  lua_settop(l, 0);
-
-  mlog(INFO, function, message);
 
   return 0;
 }

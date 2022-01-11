@@ -31,28 +31,28 @@ int db_account_save(sqlite3* db, account_t* account) {
                     "ON CONFLICT(username) DO UPDATE SET username = excluded.username, password_hash = excluded.password_hash";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_account_save", "Failed to prepare statement to insert account into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to insert account into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, account->username, (int)strlen(account->username), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_account_save", "Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 2, account->password_hash, (int)strlen(account->password_hash), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_account_save", "Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   };
 
   if (sqlite3_step(res) != SQLITE_DONE) {
-    mlog(ERROR, "db_account_save", "Failed to insert account into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to insert account into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -79,14 +79,14 @@ int db_account_load_data(sqlite3* db, const char* username, account_t* account) 
   const char* sql = "SELECT username, password_hash FROM account WHERE username=?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_account_load_data", "Failed to prepare statement to load account from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to load account from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_account_load_data", "Failed to bind username to retrieve account from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind username to retrieve account from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -99,7 +99,7 @@ int db_account_load_data(sqlite3* db, const char* username, account_t* account) 
       return 0;
     }
 
-    mlog(ERROR, "db_account_load_data", "Failed to retreive account from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to retreive account from database: [%s]", sqlite3_errmsg(db));
 
     sqlite3_finalize(res);
 
@@ -138,14 +138,14 @@ int db_account_load_entities(sqlite3* db, const char* username, account_t* accou
   const char* sql = "SELECT entity_uuid FROM account_entity WHERE account_username=?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_account_load_entities", "Failed to prepare statement to load account entities from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to load account entities from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_account_load_entities", "Failed to bind username to retrieve account entities from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind username to retrieve account entities from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -156,7 +156,7 @@ int db_account_load_entities(sqlite3* db, const char* username, account_t* accou
 
   while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
     if (rc != SQLITE_ROW) {
-      mlog(ERROR, "db_account_load_entities", "Failed to retreive account entities from database: [%s]", sqlite3_errmsg(db));
+      LOG(ERROR, "Failed to retreive account entities from database: [%s]", sqlite3_errmsg(db));
 
       sqlite3_finalize(res);
 
@@ -185,12 +185,12 @@ int db_account_load_entities(sqlite3* db, const char* username, account_t* accou
 **/
 int db_account_load(sqlite3* db, const char* username, account_t* account) {
   if (db_account_load_data(db, username, account) != 0) {
-    mlog(ERROR, "db_account_load", "Failed to load account data");
+    LOG(ERROR, "Failed to load account data");
     return -1;
   }
 
   if (db_account_load_entities(db, username, account) < 0) {
-    mlog(ERROR, "db_account_load", "Failed to load account entities");
+    LOG(ERROR, "Failed to load account entities");
     return -1;
   }
 
@@ -212,21 +212,21 @@ int db_account_exists(sqlite3* db, const char* username) {
   const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=?)";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_account_exists", "Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_account_exists", "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_step(res) != SQLITE_ROW) {
-    mlog(ERROR, "db_account_exists", "Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -255,14 +255,14 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
   const char* sql = "SELECT name, function FROM command WHERE name = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_command_find_by_name", "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, name, (int)strlen(name), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_command_find_by_name", "Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -273,7 +273,7 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
 
   while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
     if (rc != SQLITE_ROW) {
-      mlog(ERROR, "db_command_find_by_name", "Failed to retreive commands from database: [%s]", sqlite3_errmsg(db));
+      LOG(ERROR, "Failed to retreive commands from database: [%s]", sqlite3_errmsg(db));
 
       sqlite3_finalize(res);
 
@@ -313,7 +313,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
   const char* sql = "SELECT uuid, name, description FROM entity";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_entity_load_all", "Failed to prepare statement to retrieve entities from database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to retrieve entities from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -324,7 +324,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
 
   while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
     if (rc != SQLITE_ROW) {
-      mlog(ERROR, "db_entity_load_all", "Failed to retreive entities from database: [%s]", sqlite3_errmsg(db));
+      LOG(ERROR, "Failed to retreive entities from database: [%s]", sqlite3_errmsg(db));
 
       sqlite3_finalize(res);
 
@@ -366,35 +366,35 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
                     "ON CONFLICT(uuid) DO UPDATE SET name = excluded.name, description = excluded.description";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    mlog(ERROR, "db_entity_save", "Failed to prepare statement to insert entity into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to prepare statement to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 1, entity->id.uuid, (int)strlen(entity->id.uuid), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_entity_save", "Failed to bind uuid to insert entity into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind uuid to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   }
 
   if (sqlite3_bind_text(res, 2, entity->name, (int)strlen(entity->name), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_entity_save", "Failed to bind name to insert entity into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind name to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   };
 
   if (sqlite3_bind_text(res, 3, entity->description, (int)strlen(entity->description), NULL) != SQLITE_OK) {
-    mlog(ERROR, "db_entity_save", "Failed to bind description to insert entity into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to bind description to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
   };
 
   if (sqlite3_step(res) != SQLITE_DONE) {
-    mlog(ERROR, "db_entity_save", "Failed to insert entity into database: [%s]", sqlite3_errmsg(db));
+    LOG(ERROR, "Failed to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;

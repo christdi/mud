@@ -57,7 +57,7 @@ int send_to_client(client_t* client, char* data) {
     bytes_sent = send(client->fd, data, len, 0);
 
     if (bytes_sent == -1L) {
-      mlog(ERROR, "send_to_client", "%s", strerror(errno));
+      LOG(ERROR, "%s", strerror(errno));
 
       return -1;
     }
@@ -84,7 +84,7 @@ int receive_from_client(client_t* client) {
   size_t existing = strnlen(client->input, INPUT_BUFFER_LENGTH);
 
   if (existing == INPUT_BUFFER_LENGTH) {
-    mlog(ERROR, "receive_from_client", "Disconnecting client fd [%d] as their input buffer is full.", client->fd);
+    LOG(ERROR, "Disconnecting client fd [%d] as their input buffer is full.", client->fd);
     send_to_client(client, "Your input buffer is full.  Disconnecting.\n\r");
     client->hungup = 1;
 
@@ -98,7 +98,7 @@ int receive_from_client(client_t* client) {
       return 0;
     }
 
-    mlog(ERROR, "receive_from_client", "%s", strerror(errno));
+    LOG(ERROR, "%s", strerror(errno));
 
     return -1;
   }
@@ -123,7 +123,7 @@ int close_client(client_t* client) {
 
   if (client->fd) {
     if (close(client->fd) != 0) {
-      mlog(ERROR, "close_client", "%s", strerror(errno));
+      LOG(ERROR, "%s", strerror(errno));
 
       return -1;
     }
@@ -167,7 +167,7 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
 
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
-        mlog(ERROR, "extract_from_input", "Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
+        LOG(ERROR, "Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
         send_to_client(client, "Your input was discarded as it was too long.\n\r");
       } else {
         strncpy(dest, client->input, i);

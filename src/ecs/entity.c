@@ -66,12 +66,12 @@ void deallocate_entity(void* value) {
 int load_entities(game_t* game) {
   assert(game);
 
-  mlog(INFO, "load_entities", "Loading entities");
+  LOG(INFO, "Loading entities");
 
   linked_list_t* entities = create_linked_list_t();
 
   if (db_entity_load_all(game->database, entities) == -1) {
-    mlog(ERROR, "load_entities", "Entities could not be retrieved from the database");
+    LOG(ERROR, "Entities could not be retrieved from the database");
 
     free_linked_list_t(entities);
 
@@ -79,7 +79,7 @@ int load_entities(game_t* game) {
   };
 
   if (lua_hook_on_entities_loaded(game->lua_state, entities) != 0) {
-    mlog(ERROR, "load_entities", "Lua on entities loaded hook could not be called");
+    LOG(ERROR, "Lua on entities loaded hook could not be called");
 
     free_linked_list_t(entities);
 
@@ -130,7 +130,7 @@ entity_t* new_entity(game_t* game, const char* name, const char* description) {
   entity->description = strdup(description);
   hash_table_insert(game->entities, entity->id.uuid, entity);
 
-  mlog(INFO, "new_entity", "New entity created [%s], [%s]", name, description);
+  LOG(INFO, "New entity created [%s], [%s]", name, description);
 
   return entity;
 }

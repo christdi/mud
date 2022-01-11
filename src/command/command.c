@@ -100,7 +100,7 @@ command_t* get_command(game_t* game, const char* name) {
 
   if ((count = db_command_find_by_name(game->database, name, commands)) <= 0) {
     if (count == -1) {
-      mlog(ERROR, "get_command", "Unable to retreive commands from database matching [%s]", name);
+      LOG(ERROR, "Unable to retreive commands from database matching [%s]", name);
     }
 
     free_linked_list_t(commands);
@@ -114,7 +114,7 @@ command_t* get_command(game_t* game, const char* name) {
   list_at(commands, 0, (void*)&list_cmd);
 
   if (list_cmd == NULL) {
-    mlog(ERROR, "get_command", "Unable to retreive first command from linked list");
+    LOG(ERROR, "Unable to retreive first command from linked list");
 
     free_linked_list_t(commands);
 
@@ -128,7 +128,7 @@ command_t* get_command(game_t* game, const char* name) {
   const cmd_func_t* func = command_lookup(cmd->function);
 
   if (func == NULL || func->func == NULL) {
-    mlog(ERROR, "get_command", "Unable to retreive command function for command [%s]", name);
+    LOG(ERROR, "Unable to retreive command function for command [%s]", name);
 
     free_command_t(cmd);
     free_linked_list_t(commands);

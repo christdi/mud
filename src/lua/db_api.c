@@ -34,7 +34,7 @@ static sqlite3* get_database_global(lua_State *l) {
   int top = lua_gettop(l);
 
   if (lua_islightuserdata(l, top) != 1) {
-    mlog(ERROR, "get_database_global", "Could not retrieve sqlite3 pointer");
+    LOG(ERROR, "Could not retrieve sqlite3 pointer");
 
     return NULL;
   }

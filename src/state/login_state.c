@@ -69,7 +69,7 @@ void get_account_name(player_t* player, game_t* game, char* input) {
 
 
   if (db_account_load(game->database, input, player->account) != 0) {
-      mlog(ERROR, "get_account_name", "Error retrieving account from database");
+      LOG(ERROR, "Error retrieving account from database");
       return;
   }
 
@@ -174,7 +174,7 @@ void validate_new_account_password(player_t* player, game_t* game, char* input) 
   }
 
   if (db_account_save(game->database, player->account) != 0) {
-      mlog(ERROR, "validate_new_account_password", "Error saving new account to database");
+      LOG(ERROR, "Error saving new account to database");
       return;
   }
 

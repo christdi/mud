@@ -92,7 +92,7 @@ void account_state_input(player_t* player, game_t* game, char* input) {
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
       player->entity = NULL;
 
-      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      LOG(ERROR, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, "We couldn't assign you to %s, please inform an administrator\n\r", name);
       send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
       return;
@@ -116,7 +116,7 @@ void account_state_input(player_t* player, game_t* game, char* input) {
     if (add_player_to_narration(game->narrator, entity, player) != 0) {
       player->entity = NULL;
 
-      mlog(ERROR, "entity_command", "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
+      LOG(ERROR, "Unable to add player [%s] to narration of entity [%s]", player->account->username, entity->id.uuid);
       send_to_player(player, "We couldn't assign you to %s, please inform an administrator\n\r", entity->name);
       send_to_player(player, "\n\rEnter a [bgreen]character name[reset] to select a character, [bgreen]new[reset] to create a new character or [bgreen]quit[reset].\n\r");
       return;
