@@ -21,6 +21,7 @@ static int lua_register_component(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
+static int lua_shutdown(lua_State *l);
 
 static const struct luaL_Reg mud_lib [] = {
   {"new_entity", lua_new_entity},
@@ -29,7 +30,8 @@ static const struct luaL_Reg mud_lib [] = {
   {"register_component", lua_register_component},
   {"has_component", lua_has_component},
   {"add_component", lua_add_component},
-  {"get_component", lua_get_component},  
+  {"get_component", lua_get_component},
+  {"shutdown", lua_shutdown},
   {NULL, NULL}
 };
 
@@ -138,7 +140,7 @@ static int lua_get_entity_id(lua_State* l) {
 
   entity_t* entity = lua_touserdata(l, 1);
 
-  lua_pushstring(l, entity->id.uuid);
+  lua_pushstring(l, entity->id.raw);
 
   lua_pop(l, 1);
 
@@ -195,7 +197,7 @@ static int lua_has_component(lua_State* l) {
   entity_t* entity = lua_touserdata(l, -1);
   lua_pop(l, 1);
 
-  lua_pushboolean(l, hash_table_has(component->entities, entity->id.uuid));
+  lua_pushboolean(l, hash_table_has(component->entities, entity->id.raw));
 
   return 1;
 }
@@ -234,7 +236,7 @@ static int lua_add_component(lua_State* l) {
   component_data_t* component_data = create_component_data_t();
   component_data->ref = ref;
 
-  hash_table_insert(component->entities, entity->id.uuid, component_data);
+  hash_table_insert(component->entities, entity->id.raw, component_data);
 
   return 0;
 }
@@ -264,7 +266,7 @@ static int lua_get_component(lua_State* l) {
   entity_t* entity = lua_touserdata(l, -1);
   lua_pop(l, 1);
 
-  component_data_t* component_data = hash_table_get(component->entities, entity->id.uuid);
+  component_data_t* component_data = hash_table_get(component->entities, entity->id.raw);
 
   if (component_data == NULL) {
     return 0;
@@ -275,3 +277,20 @@ static int lua_get_component(lua_State* l) {
   return 1;
 }
 
+/**
+ * TODO(Chris I)
+**/
+static int lua_shutdown(lua_State *l) {
+  game_t* game = NULL;
+  
+  if ((game = get_game_global(l)) == NULL) {
+    lua_pushliteral(l, "lua_register_component(): Could not retrieve pointer to game");
+    lua_error(l);
+
+    return 0;
+  }
+
+  game->shutdown = 1;
+
+  return 0;
+}

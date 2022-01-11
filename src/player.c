@@ -72,7 +72,7 @@ void player_connected(client_t* client, void* context) {
   player_t* player = create_player_t();
   player->client = client;
 
-  hash_table_insert(game->players, client->uuid, player);
+  hash_table_insert(game->players, uuid_str(&client->uuid), player);
 
   lua_hook_on_player_connected(game->lua_state, player);
 
@@ -85,11 +85,11 @@ void player_connected(client_t* client, void* context) {
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  player_t* player = hash_table_get(game->players, client->uuid);
+  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
 
   lua_hook_on_player_disconnected(game->lua_state, player);
 
-  hash_table_delete(game->players, client->uuid);
+  hash_table_delete(game->players, uuid_str(&client->uuid));
 }
 
 /**
@@ -98,7 +98,7 @@ void player_disconnected(client_t* client, void* context) {
 void player_input(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  player_t* player = hash_table_get(game->players, client->uuid);
+  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
 
   char command[COMMAND_SIZE];
 

@@ -1,26 +1,21 @@
 #ifndef _COMMAND_H_
 #define _COMMAND_H_
 
+#include "mud/util/muduuid.h"
 /**
  * Typedefs
 **/
 typedef struct player player_t;
 typedef struct game game_t;
 
-typedef void (*command_func_t)(player_t* player, game_t* game, char* input);
-
 /**
  * Structs
 **/
-typedef struct cmd_func {
-  char* function;
-  command_func_t func;
-} cmd_func_t;
-
 typedef struct command {
+  mud_uuid_t uuid;
   char* name;
   char* function;
-  command_func_t func;
+  mud_uuid_t script;
 } command_t;
 
 /**
@@ -31,6 +26,7 @@ void free_command_t(command_t* command);
 void deallocate_command(void* value);
 
 void load_commands(game_t* game);
-command_t* get_command(game_t* game, const char* name);
+
+int execute_command(game_t* game, player_t* player, const char* command, const char* arguments);
 
 #endif

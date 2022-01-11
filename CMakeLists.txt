@@ -23,3 +23,4 @@ file(GLOB_RECURSE SRC_FILES RELATIVE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} uuid sqlite3 ssl crypto ${LUA_LIBRARIES} ${CMAKE_DL_LIBS})
+install(TARGETS ${PROJECT_NAME} DESTINATION ../dist)

@@ -61,7 +61,7 @@ int lua_hook_on_entities_loaded(lua_State *l, linked_list_t* entities) {
 
   while ((entity = (entity_t*)it_get(it)) != NULL) {
     lua_pushnumber(l, index);
-    lua_pushstring(l, entity->id.uuid);
+    lua_pushstring(l, entity->id.raw);
 
     lua_rawset(l, 2);
 

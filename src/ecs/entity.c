@@ -91,7 +91,7 @@ int load_entities(game_t* game) {
   entity_t* entity = NULL;
 
   while ((entity = (entity_t*)it_get(it)) != NULL) {
-    hash_table_insert(game->entities, entity->id.uuid, entity);
+    hash_table_insert(game->entities, entity->id.raw, entity);
 
     it = it_next(it);
   }
@@ -125,10 +125,10 @@ entity_t* get_entity(game_t* game, const char* uuid) {
 **/
 entity_t* new_entity(game_t* game, const char* name, const char* description) {
   entity_t* entity = create_entity_t();
-  entity->id = entity_id();
+  entity->id = new_uuid();
   entity->name = strdup(name);
   entity->description = strdup(description);
-  hash_table_insert(game->entities, entity->id.uuid, entity);
+  hash_table_insert(game->entities, entity->id.raw, entity);
 
   LOG(INFO, "New entity created [%s], [%s]", name, description);
 

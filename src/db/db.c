@@ -11,6 +11,7 @@
 #include "mud/ecs/entity.h"
 #include "mud/account.h"
 #include "mud/log.h"
+#include "mud/lua/script.h"
 
 int db_account_load_data(sqlite3* db, const char* username, account_t* account);
 int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
@@ -252,7 +253,13 @@ int db_account_exists(sqlite3* db, const char* username) {
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT name, function FROM command WHERE name = ?";
+  // uuid TEXT PRIMARY KEY,
+  // name TEXT NOT NULL,
+  // function TEXT NOT NULL,
+  // script_uuid TEXT NOT NULL,
+  // FOREIGN KEY(script_uuid) REFERENCES script(uuid)
+
+  const char* sql = "SELECT uuid, name, function, script_uuid FROM command WHERE name = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
@@ -282,8 +289,10 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
 
     command_t* command = create_command_t();
 
-    command->name = strdup((char*)sqlite3_column_text(res, 0));
-    command->function = strdup((char*)sqlite3_column_text(res, 1));
+    command->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+    command->name = strdup((char*)sqlite3_column_text(res, 1));
+    command->function = strdup((char*)sqlite3_column_text(res, 2));
+    command->script = str_uuid((char*)sqlite3_column_text(res, 3));
 
     list_add(results, (void*)command);
 
@@ -333,7 +342,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
 
     entity_t* entity = create_entity_t();
 
-    strlcpy(entity->id.uuid, (char*)sqlite3_column_text(res, 0), UUID_SIZE);
+    strlcpy(entity->id.raw, (char*)sqlite3_column_text(res, 0), sizeof(entity->id.raw));
     entity->name = strdup((char*)sqlite3_column_text(res, 1));
     entity->description = strdup((char*)sqlite3_column_text(res, 2));
 
@@ -372,7 +381,7 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
     return -1;
   }
 
-  if (sqlite3_bind_text(res, 1, entity->id.uuid, (int)strlen(entity->id.uuid), NULL) != SQLITE_OK) {
+  if (sqlite3_bind_text(res, 1, entity->id.raw, (int)strlen(entity->id.raw), NULL) != SQLITE_OK) {
     LOG(ERROR, "Failed to bind uuid to insert entity into database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
@@ -398,6 +407,82 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
     sqlite3_finalize(res);
 
     return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Retrieves an entry from the script table based on the UUID and populates the
+ * provided script_t struct.
+ * 
+ * Parameters
+ *   db - sqlite3 handle
+ *   uuid - uuid of the script to find
+ *   script - script_t to be populated
+ * 
+ * Returns 0 on success or -1 on faiilure
+**/
+int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
+  assert(db);
+  assert(uuid);
+  assert(script);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, filepath, allow_db_api, allow_game_api, allow_log_api, allow_player_api FROM script WHERE uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve script from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve script from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to retreive script from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  script->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
+  script->filepath = strdup((char *)sqlite3_column_text(res, 1));
+  int allow_db_api = sqlite3_column_int(res, 2);
+  int allow_game_api = sqlite3_column_int(res, 3);
+  int allow_log_api = sqlite3_column_int(res, 4);
+  int allow_player_api = sqlite3_column_int(res, 5); // NOLINT(readability-magic-numbers)
+
+  if (allow_db_api) {
+    script->permission |= ALLOW_DB_API;
+  }
+
+  if (allow_game_api) {
+    script->permission |= ALLOW_GAME_API;
+  }
+
+  if (allow_log_api) {
+    script->permission |= ALLOW_LOG_API;
+  }
+
+  if (allow_player_api) {
+    script->permission |= ALLOW_PLAYER_API;
   }
 
   sqlite3_finalize(res);

@@ -22,8 +22,7 @@ client_t* create_client_t() {
   client->fd = 0;
   client->hungup = 0;
   client->last_active = time(NULL);
-
-  generate_uuid(client->uuid, UUID_SIZE);
+  client->uuid = new_uuid();
 
   return client;
 }

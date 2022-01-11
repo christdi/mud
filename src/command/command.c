@@ -2,17 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mud/command/admin.h"
 #include "mud/command/command.h"
-#include "mud/command/communication.h"
-#include "mud/command/general.h"
 #include "mud/db/db.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/script.h"
+#include "mud/player.h"
 
-const cmd_func_t* command_lookup(const char* name);
+static int get_command(game_t* game, const char* name, command_t* command);
 
 /**
  * Allocate memory for and initialize a command_t.
@@ -55,44 +54,60 @@ void deallocate_command(void* value) {
 }
 
 /**
- * Populates the commands hash table from a static array of commands.
+ * TODO(Chris I)
 **/
-const cmd_func_t* command_lookup(const char* name) {
-  static const cmd_func_t funcs[] = {
-    { "function_entity", entity_command },
-    { "function_shutdown", shutdown_command },
-    { "function_quit", quit_command },
-    { "function_say", say_command },
-    { "\0", NULL }
-  };
+int execute_command(game_t* game, player_t* player, const char* command, const char* arguments) {
+  command_t* cmd = create_command_t();
 
-  const cmd_func_t* func = funcs;
+  if (get_command(game, command, cmd) == -1) {
+    free_command_t(cmd);
 
-  while (func->func != NULL) {
-    if (strncmp(func->function, name, strlen(func->function)) == 0) {
-      return func;
-    }
-
-    func++;
+    return -1;
   }
 
-  return NULL;
+  /**
+   * TODO(Chris I): I think this still needs a bit of rejigging
+  **/
+  script_t* script = hash_table_get(game->scripts, uuid_str(&cmd->script));
+
+  if (script == NULL) {
+    script = create_script_t();
+
+    if ((db_script_load(game->database, uuid_str(&cmd->script), script)) == -1) {
+      LOG(ERROR, "Failed to load script from database with UUID [%s]", uuid_str(&cmd->script));
+
+      free_command_t(cmd);
+
+      return -1;
+    }
+
+    if (script_execute(game, game->scripts, script) == -1) {
+      LOG(ERROR, "Failed to execute script [%s]", script->filepath);
+
+      free_command_t(cmd);
+      free_script_t(script);
+
+      return -1;
+    }
+  }
+
+  if (script_call_command(script, cmd, player, arguments) == -1) {
+    LOG(ERROR, "Failed to call command function for command [%s]", cmd->name);
+
+    free_command_t(cmd);
+
+    return -1;
+  }
+
+  free_command_t(cmd);
+
+  return 0;
 }
 
 /**
- * Attempts to retrieve a command for execution.
- *
- * Parameters
- *  game - game_t structure storing database and commands
- *  name - the name of the command to be searched for
- *
- * Returns a pointer to an allocated command_t structure on success or NULL on failure.  It is the responsibility
- * of the caller to free the allocated command_t structure after usage. 
- * 
- * TODO(Chris I): This is crap, caller shouldn't have to free the command structure.  Revisit the design of this
- * in the fuutre.
+ * TODO(Chris I)
 **/
-command_t* get_command(game_t* game, const char* name) {
+static int get_command(game_t* game, const char* name, command_t* command) {
   linked_list_t* commands = create_linked_list_t();
   commands->deallocator = deallocate_command;
 
@@ -105,7 +120,7 @@ command_t* get_command(game_t* game, const char* name) {
 
     free_linked_list_t(commands);
 
-    return NULL;
+    return -1;
   }
 
   /* TODO(Chris I): Don't just select the first command.  Filter for appropriate command */
@@ -118,27 +133,14 @@ command_t* get_command(game_t* game, const char* name) {
 
     free_linked_list_t(commands);
 
-    return NULL;
+    return -1;
   }
 
-  command_t* cmd = create_command_t();
-  cmd->name = strdup(list_cmd->name);
-  cmd->function = strdup(list_cmd->function);
-
-  const cmd_func_t* func = command_lookup(cmd->function);
-
-  if (func == NULL || func->func == NULL) {
-    LOG(ERROR, "Unable to retreive command function for command [%s]", name);
-
-    free_command_t(cmd);
-    free_linked_list_t(commands);
-
-    return NULL;
-  }
-
-  cmd->func = func->func;
+  command->name = strdup(list_cmd->name);
+  command->function = strdup(list_cmd->function);
+  command->script = list_cmd->script;
 
   free_linked_list_t(commands);
 
-  return cmd;
+  return 0;
 }
