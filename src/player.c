@@ -4,6 +4,7 @@
 #include "mud/data/linked_list.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/hooks.h"
 #include "mud/network/client.h"
 #include "mud/state/login_state.h"
 #include "mud/state/state.h"
@@ -71,7 +72,9 @@ void player_connected(client_t* client, void* context) {
   player_t* player = create_player_t();
   player->client = client;
 
-  hash_table_insert(game->players, client->uuid, player);
+  hash_table_insert(game->players, uuid_str(&client->uuid), player);
+
+  lua_hook_on_player_connected(game->lua_state, player);
 
   player_change_state(player, game, login_state());
 }
@@ -82,7 +85,11 @@ void player_connected(client_t* client, void* context) {
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  hash_table_delete(game->players, client->uuid);
+  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
+
+  lua_hook_on_player_disconnected(game->lua_state, player);
+
+  hash_table_delete(game->players, uuid_str(&client->uuid));
 }
 
 /**
@@ -91,13 +98,14 @@ void player_disconnected(client_t* client, void* context) {
 void player_input(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  player_t* player = hash_table_get(game->players, client->uuid);
+  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
 
   char command[COMMAND_SIZE];
 
   while (extract_from_input(client, command, sizeof(command), "\r\n") != -1) {
     if (strnlen(command, sizeof(command) - 1) > 0) {
       if (player->state != NULL && player->state->on_input != NULL) {
+        lua_hook_on_player_input(game->lua_state, player, command);
         player->state->on_input(player, game, command);
       }
     }
@@ -155,7 +163,7 @@ void send_to_player(player_t* player, const char* fmt, ...) {
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    mlog(ERROR, "send_to_player", "Formatted output was too long and was truncated");
+    LOG(ERROR, "Formatted output was too long and was truncated");
   }
 
   va_end(args);
@@ -173,7 +181,7 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    mlog(ERROR, "send_to_player", "Formatted output was too long and was truncated");
+    LOG(ERROR, "Formatted output was too long and was truncated");
   }
 
   va_end(args);
@@ -206,7 +214,7 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
   va_start(args, fmt);
 
   if ((vsnprintf(output, SEND_SIZE, fmt, args)) >= SEND_SIZE) {
-    mlog(ERROR, "send_to_all_players", "Formatted output was too long and was truncated");
+    LOG(ERROR, "Formatted output was too long and was truncated");
   }
 
   while ((target = h_it_get(it)) != NULL) {
@@ -235,7 +243,7 @@ void write_to_player(player_t* player, char* output) {
     char username[USERNAME_SIZE];
     get_player_username(player, username);
 
-    mlog(WARN, "write_to_player", "Send to player with username [%s] failed as they have no client", username);
+    LOG(WARN, "Send to player with username [%s] failed as they have no client", username);
 
     return;
   }
@@ -248,7 +256,7 @@ void write_to_player(player_t* player, char* output) {
   }
 
   if (send_to_client(player->client, chosen_output) != 0) {
-    mlog(WARN, "write_to_player", "Send to player failed, unable to write to client [%s]", player->client->uuid);
+    LOG(WARN, "Send to player failed, unable to write to client [%s]", player->client->uuid);
 
     return;
   }

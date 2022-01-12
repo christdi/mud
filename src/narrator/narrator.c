@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
@@ -37,13 +38,13 @@ int add_player_to_narration(narrator_t* narrator, entity_t* entity, player_t* pl
 
   linked_list_t* players = NULL;
 
-  if (hash_table_has(narrator->entities, entity->id.uuid)) {
-    players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
+  if (hash_table_has(narrator->entities, entity->id.raw)) {
+    players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.raw);
   } else {
     players = create_linked_list_t();
 
-    if (hash_table_insert(narrator->entities, entity->id.uuid, players) != 0) {
-      mlog(ERROR, "add_player_to_narration", "Failed to add player to entity [%s] narration", entity->id.uuid);
+    if (hash_table_insert(narrator->entities, entity->id.raw, players) != 0) {
+      LOG(ERROR, "Failed to add player to entity [%s] narration", entity->id.raw);
 
       return -1;
     };
@@ -59,13 +60,13 @@ int remove_player_from_narration(narrator_t* narrator, entity_t* entity, player_
   assert(entity);
   assert(player);
 
-  if (!hash_table_has(narrator->entities, entity->id.uuid)) {
-    mlog(ERROR, "remove_player_from_narration", "Failed to remove player from entity narration as entity [%s] has no listeners", entity->id.uuid);
+  if (!hash_table_has(narrator->entities, entity->id.raw)) {
+    LOG(ERROR, "Failed to remove player from entity narration as entity [%s] has no listeners", entity->id.raw);
 
     return -1;
   }
 
-  linked_list_t* players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
+  linked_list_t* players = (linked_list_t*)hash_table_get(narrator->entities, entity->id.raw);
 
   list_remove(players, player);
 
@@ -77,13 +78,13 @@ int retrieve_players_for_narration(narrator_t* narrator, entity_t* entity, linke
   assert(entity);
   assert(listeners);
 
-  if (!hash_table_has(narrator->entities, entity->id.uuid)) {
+  if (!hash_table_has(narrator->entities, entity->id.raw)) {
     *listeners = NULL;
 
     return -1;
   }
 
-  *listeners = (linked_list_t*)hash_table_get(narrator->entities, entity->id.uuid);
+  *listeners = (linked_list_t*)hash_table_get(narrator->entities, entity->id.raw);
 
   return 0;
 }
@@ -94,7 +95,7 @@ void narrate_events(game_t* game) {
   while ((event = (event_t*)queue_dequeue(game->events)) != NULL) {
     switch (event->type) {
     case UNDEFINED:
-      mlog(ERROR, "narrate_events", "Event with UNDEFINED type was received.  Discarding.");
+      LOG(ERROR, "Event with UNDEFINED type was received.  Discarding.");
       break;
     case COMMUNICATION:
       narrate_communicate_event(game, event);
@@ -116,7 +117,7 @@ void narrate_communicate_event(game_t* game, event_t* event) {
 
   communicate_event_t* data = (communicate_event_t*)event->data;
 
-  entity_t* origin_entity = get_entity(game, data->origin.uuid);
+  entity_t* origin_entity = get_entity(game, data->origin.raw);
 
   linked_list_t* players = NULL;
 

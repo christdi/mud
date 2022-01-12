@@ -6,7 +6,6 @@ enable_language(C)
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_C_STANDARD_REQUIRED)
 set (PROJECT_NAME mud)
-set (LIB_NAME mudlib)
 set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter" "-header-filter=*")
 # "-warnings-as-errors=*, -readability-non-const-parameter, -misc-unused-parameters, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
 
@@ -19,12 +18,9 @@ add_definitions("-Wall -pedantic")
 
 include_directories(${PROJECT_SOURCE_DIR}/include ${LUA_INCLUDE_DIR})
 
-# Library configuration
-file(GLOB_RECURSE SRC_FILES RELATIVE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/src/*.c)
-list(REMOVE_ITEM SRC_FILES "src/main.c")
-add_library(${LIB_NAME} ${SRC_FILES})
-target_compile_options(${LIB_NAME} PRIVATE -Wall -Wextra -pedantic)
-
 # Executable configuration
-add_executable(${PROJECT_NAME} src/main.c)
-target_link_libraries(${PROJECT_NAME} ${LIB_NAME} uuid sqlite3 ssl crypto ${LUA_LIBRARIES})
+file(GLOB_RECURSE SRC_FILES RELATIVE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/src/*.c)
+
+add_executable(${PROJECT_NAME} ${SRC_FILES})
+target_link_libraries(${PROJECT_NAME} uuid sqlite3 ssl crypto ${LUA_LIBRARIES} ${CMAKE_DL_LIBS})
+install(TARGETS ${PROJECT_NAME} DESTINATION ../dist)

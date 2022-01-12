@@ -14,6 +14,7 @@
 
 int config_parse_line(char* line, config_t* config);
 
+int set_game_script_file(const char* value, config_t* config);
 int set_log_config_file(const char* value, config_t* config);
 int set_database_file(const char* value, config_t* config);
 int set_game_port(const char* value, config_t* config);
@@ -26,6 +27,7 @@ int set_ticks_per_second(const char* value, config_t* config);
 **/
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
+  config->game_script_file = strdup("main.lua");
   config->log_config_file = strdup("log.ini");
   config->database_file = strdup("mud.db");
   config->game_port = DEFAULT_PORT;
@@ -39,6 +41,10 @@ config_t* config_new(void) {
 **/
 void config_free(config_t* config) {
   assert(config);
+
+  if (config->game_script_file != NULL) {
+    free(config->game_script_file);
+  }
 
   if (config->log_config_file != NULL) {
     free(config->log_config_file);
@@ -57,8 +63,15 @@ void config_free(config_t* config) {
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, ":d:p:t:h")) != -1) {
+  while ((opt = getopt(argc, argv, ":s:d:p:t:h")) != -1) {
     switch (opt) {
+    case 's':
+      if (set_game_script_file(optarg, config) == -1) {
+        return -1;
+      }
+
+      break;
+
     case 'd':
       if (set_database_file(optarg, config) == -1) {
         return -1;
@@ -81,7 +94,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
       break;
 
     case 'h':
-      printf("%s [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+      printf("%s [-s game script file] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
 
       return -1;
 
@@ -102,7 +115,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
 
 /**
  * Loads configuration from a Lua script.
- * 
+ *
  * Parameters:
  *   filename - The name of the Lua script to be evaluated
  *   config - The config struct to be populated
@@ -117,7 +130,7 @@ int load_configuration(const char* filename, config_t* config) {
 
   if ((l = luaL_newstate()) == NULL) {
     printf("Failed to create new Lua state to parse configuration");
-    
+
     return -1;
   }
 
@@ -127,6 +140,12 @@ int load_configuration(const char* filename, config_t* config) {
     lua_close(l);
 
     return -1;
+  }
+
+  lua_getglobal(l, "game_script_file");
+
+  if (lua_isstring(l, -1)) {
+    set_game_script_file(lua_tostring(l, -1), config);
   }
 
   lua_getglobal(l, "game_port");
@@ -162,6 +181,21 @@ int load_configuration(const char* filename, config_t* config) {
   lua_pop(l, 1);
 
   lua_close(l);
+
+  return 0;
+}
+
+/**
+ * Sets the filename of the game script file in the configuration.
+ *
+ * Returns 0 on success.
+**/
+int set_game_script_file(const char* value, config_t* config) {
+  if (config->game_script_file != NULL) {
+    free(config->game_script_file);
+  }
+
+  config->game_script_file = strdup(value);
 
   return 0;
 }

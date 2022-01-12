@@ -71,7 +71,7 @@ int list_add(linked_list_t* list, void* value) {
   assert(value);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    mlog(ERROR, "list_add", "Failed to obtain mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -91,7 +91,7 @@ int list_add(linked_list_t* list, void* value) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    mlog(ERROR, "list_add", "Failed to unlock mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -112,7 +112,7 @@ it_t list_remove(linked_list_t* list, void* value) {
   it.node = NULL;
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    mlog(ERROR, "list_remove", "Failed to obtain mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
 
     return it;
   }
@@ -130,7 +130,47 @@ it_t list_remove(linked_list_t* list, void* value) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    mlog(ERROR, "list_remove", "Failed to unlock mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return it;
+  }
+
+  return it;
+}
+
+/**
+ * Removes a node pointing to a given value from the linked list without calling deallocator.
+ *
+ * Returns an iterator to the node after the one removed.
+**/
+it_t list_steal(linked_list_t* list, void* value) {
+  assert(list);
+  assert(value);
+
+  it_t it;
+  it.node = NULL;
+
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return it;
+  }
+
+  node_t* node = list->first;
+
+  while (node != NULL) {
+    if (node->data == value) {
+      it.node = node->next;
+      node->deallocator = NULL;
+      remove_node(list, node);
+      break;
+    }
+
+    node = node->next;
+  }
+
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
 
     return it;
   }
@@ -154,7 +194,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
   assert(predicate);
 
   if (pthread_mutex_lock(&src->mutex) != 0) {
-    mlog(ERROR, "list_extract", "Failed to obtain mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -178,7 +218,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
   }
 
   if (pthread_mutex_unlock(&src->mutex) != 0) {
-    mlog(ERROR, "list_extract", "Failed to unlock mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -200,7 +240,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
   assert(list);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    mlog(ERROR, "list_at", "Failed to obtain mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -224,7 +264,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    mlog(ERROR, "list_at", "Failed to unlock mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
 
     return -1;
   }
@@ -286,7 +326,7 @@ int list_size(linked_list_t* list) {
   assert(list);
 
   if (pthread_mutex_lock(&list->mutex) != 0) {
-    mlog(ERROR, "list_size", "Failed to obtain mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
 
     return 0;
   }
@@ -300,7 +340,7 @@ int list_size(linked_list_t* list) {
   }
 
   if (pthread_mutex_unlock(&list->mutex) != 0) {
-    mlog(ERROR, "list_size", "Failed to unlock mutex [%s]", strerror(errno));
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
 
     return 0;
   }

@@ -15,11 +15,12 @@ static const char* log_get_level(log_level_t level);
  *
  * Parameters
  *  level - the level at which to log this line
- *  origin - the function logging the line
+ *  function - the function log is called from
+ *  line - the line log is called from
  *  format - formatted spring for use with vsprintf to build log line
  *  ... - varargs for vsprintf to build log line
 **/
-void mlog(log_level_t level, const char* origin, const char* format, ...) {
+void mlog(log_level_t level, const char* function, const int line, const char* format, ...) {
   if (level < min_log_level) {
     return;
   }
@@ -41,7 +42,7 @@ void mlog(log_level_t level, const char* origin, const char* format, ...) {
   struct tm* tm = localtime(&current_time);
   strftime(date_time, MAX_LOG_DATE_TIME_LENGTH, "%d-%m-%Y %X", tm);
 
-  printf("[%-16s %-5s] %s() - %s\n\r", date_time, log_get_level(level), origin, log_line);
+  printf("%-16s %5s [%s:%d] %s\n\r", date_time, log_get_level(level), function, line, log_line);
 }
 
 /**

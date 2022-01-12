@@ -67,7 +67,7 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
   assert(templates);
   assert(filename);
 
-  mlog(INFO, "template_load_from_file", "Loading templates from [%s]", filename);
+  LOG(INFO, "Loading templates from [%s]", filename);
 
   FILE* fp = fopen(filename, "re");
 
@@ -81,14 +81,14 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
   while (fgets(buffer + position, TEMPLATE_FILE_BUFFER_SIZE - position, fp) != NULL) {
     if (strnlen(buffer, TEMPLATE_FILE_MAX_LINE_LENGTH) == TEMPLATE_FILE_MAX_LINE_LENGTH) {
       if (buffer[TEMPLATE_FILE_MAX_LINE_LENGTH - 1] != '\n') {
-        mlog(ERROR, "template_load_from_file", "Template line was too long [%s]", buffer);
+        LOG(ERROR, "Template line was too long [%s]", buffer);
 
         return -1;
       }
     }
 
     if (template_parse_buffer(buffer, templates, &position) != 0) {
-      mlog(ERROR, "template_load_from_file", "Unable to parse template file line: [%s]", buffer);
+      LOG(ERROR, "Unable to parse template file line: [%s]", buffer);
 
       continue;
     }

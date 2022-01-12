@@ -1,16 +1,18 @@
 #ifndef MUD_UTIL_MUDUUID_H
 #define MUD_UTIL_MUDUUID_H
 
-#include <stddef.h>
-
 /**
- * Definitions
+ * Structs
 **/
-#define UUID_SIZE 37
+typedef struct mud_uuid {
+  char raw[37];
+} mud_uuid_t;
 
 /**
  * Function prototypes
 **/
-void generate_uuid(char* dest, size_t size);
+mud_uuid_t new_uuid();
+const char* uuid_str(const mud_uuid_t* uuid);
+mud_uuid_t str_uuid(const char* data);
 
 #endif

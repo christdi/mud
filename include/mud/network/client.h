@@ -21,7 +21,7 @@ typedef struct client {
   unsigned int hungup;
   time_t last_active;
 
-  char uuid[UUID_SIZE];
+  mud_uuid_t uuid;
   char input[INPUT_BUFFER_SIZE];
 } client_t;
 

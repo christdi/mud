@@ -1,9 +1,25 @@
+#include <assert.h>
+#include <stdlib.h>
+
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
 #include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/lua/common.h"
+#include "mud/lua/game_api.h"
+#include "mud/lua/db_api.h"
+#include "mud/lua/log_api.h"
+#include "mud/lua/player_api.h"
+#include "mud/lua/script_api.h"
+#include "mud/lua/hooks.h"
+#include "mud/lua/script.h"
+#include "mud/lua/repository.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
@@ -11,13 +27,11 @@
 #include "mud/task/task.h"
 #include "mud/template.h"
 
-#include <assert.h>
-#include <stdlib.h>
-
 int connect_to_database(game_t* game, const char* filename);
 void game_execute_tasks(game_t* game);
 int game_pulse_players(game_t* game);
 void game_sleep_until_tick(game_t* game, unsigned int ticks_per_second);
+int initialise_lua(game_t* game, config_t* config);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -41,14 +55,20 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
 
+  game->scripts = create_script_repository_t();
+
+  game->components = create_linked_list_t();
+  game->components->deallocator = deallocate_component_t;
+
   game->tasks = create_linked_list_t();
   game->tasks->deallocator = deallocate_task_t;
 
   game->events = create_linked_list_t();
 
   game->network = create_network_t();
-  game->components = create_components_t();
   game->narrator = create_narrator_t();
+
+  game->lua_state = NULL;
 
   return game;
 }
@@ -67,12 +87,19 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
 
+  free_script_repository_t(game->scripts);
+
+  free_linked_list_t(game->components);
   free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
   free_network_t(game->network);
-  free_components_t(game->components);
   free_narrator_t(game->narrator);
+
+  if (game->lua_state != NULL) {
+    lua_close(game->lua_state);
+  }
+
   free(game);
 }
 
@@ -86,32 +113,38 @@ int start_game(config_t* config) {
 
   game_t* game = create_game_t();
 
-  mlog(INFO, "start_game", "Starting MUD engine");
+  LOG(INFO, "Starting MUD engine");
 
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
 
   if (template_load_from_file(game->templates, "template.properties") != 0) {
-    mlog(ERROR, "start_game", "Failed to load templates");
+    LOG(ERROR, "Failed to load templates");
 
     return -1;
   }
 
   if (connect_to_database(game, config->database_file) != 0) {
-    mlog(ERROR, "start_game", "Failed to start game server");
+    LOG(ERROR, "Failed to start game server");
+
+    return -1;
+  }
+
+  if (initialise_lua(game, config) == -1) {
+    LOG(ERROR, "Failed to initialise Lua");
 
     return -1;
   }
 
   if (load_entities(game) == -1) {
-    mlog(ERROR, "start_game", "Failed to load entities");
+    LOG(ERROR, "Failed to load entities");
 
     return -1;
   }
 
   if (start_game_server(game->network, config->game_port) == -1) {
-    mlog(ERROR, "start_game", "Failed to start game server");
+    LOG(ERROR, "Failed to start game server");
 
     return -1;
   }
@@ -123,11 +156,12 @@ int start_game(config_t* config) {
     update_systems(game);
     task_execute(game->tasks, game);
     narrate_events(game);
+    script_repository_update(game->scripts);
     game_sleep_until_tick(game, config->ticks_per_second);
   }
 
   if (stop_game_server(game->network, config->game_port) == -1) {
-    mlog(ERROR, "start_game", "Failed to shutdown server");
+    LOG(ERROR, "Failed to shutdown server");
 
     return -1;
   }
@@ -136,7 +170,7 @@ int start_game(config_t* config) {
 
   sqlite3_close(game->database);
 
-  mlog(INFO, "start_game", "Stopping MUD engine");
+  LOG(INFO, "Stopping MUD engine");
 
   free_game_t(game);
 
@@ -148,10 +182,10 @@ int start_game(config_t* config) {
  * or 0 on success.
 **/
 int connect_to_database(game_t* game, const char* filename) {
-  mlog(INFO, "connect_to_database", "Connecting to database [%s]", filename);
+  LOG(INFO, "Connecting to database [%s]", filename);
 
   if (sqlite3_open(filename, &game->database) != SQLITE_OK) {
-    mlog(ERROR, "connect_to_database", "Failed to open game database [%s]", sqlite3_errmsg(game->database));
+    LOG(ERROR, "Failed to open game database [%s]", sqlite3_errmsg(game->database));
 
     sqlite3_close(game->database);
 
@@ -211,4 +245,58 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   }
 
   game->last_tick = current_time;
+}
+
+
+int initialise_lua(game_t* game, config_t* config) {
+  if ((game->lua_state = luaL_newstate()) == NULL) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }
+
+  if ((lua_common_initialise_state(game->lua_state, game)) == -1) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }
+
+  luaL_openlibs(game->lua_state);
+
+  if (lua_game_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua API with state");
+    return -1;
+  }
+
+  if (lua_db_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua DB API with state");
+    return -1;
+  }
+
+  if (lua_player_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua player API with state");
+    return -1;
+  }
+
+  if (lua_log_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua log API with state");
+    return -1;
+  }
+
+  if (lua_script_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua script API with state");
+    return -1;
+  }
+
+  if (luaL_dofile(game->lua_state, config->game_script_file) != 0) {
+    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
+
+    return -1;
+  }
+
+  if (lua_hook_on_startup(game->lua_state) != 0) {
+    return -1;
+  }
+
+  LOG(INFO, "LUA state successfully initialised");
+
+  return 0;
 }

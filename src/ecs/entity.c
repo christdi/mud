@@ -8,8 +8,8 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
-#include "mud/ecs/component/location.h"
 #include "mud/ecs/entity.h"
+#include "mud/lua/hooks.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"
@@ -66,24 +66,32 @@ void deallocate_entity(void* value) {
 int load_entities(game_t* game) {
   assert(game);
 
-  mlog(INFO, "load_entities", "Loading entities");
+  LOG(INFO, "Loading entities");
 
   linked_list_t* entities = create_linked_list_t();
 
   if (db_entity_load_all(game->database, entities) == -1) {
-    mlog(ERROR, "load_entities", "Entities could not be retrieved from the database");
+    LOG(ERROR, "Entities could not be retrieved from the database");
 
     free_linked_list_t(entities);
 
     return -1;
   };
 
+  if (lua_hook_on_entities_loaded(game->lua_state, entities) != 0) {
+    LOG(ERROR, "Lua on entities loaded hook could not be called");
+
+    free_linked_list_t(entities);
+
+    return -1;
+  }
+
   it_t it = list_begin(entities);
 
   entity_t* entity = NULL;
 
   while ((entity = (entity_t*)it_get(it)) != NULL) {
-    hash_table_insert(game->entities, entity->id.uuid, entity);
+    hash_table_insert(game->entities, entity->id.raw, entity);
 
     it = it_next(it);
   }
@@ -98,7 +106,7 @@ int load_entities(game_t* game) {
  *
  * Returns a pointer to the entity if found or NULL if not.
 **/
-entity_t* get_entity(game_t* game, char* uuid) {
+entity_t* get_entity(game_t* game, const char* uuid) {
   assert(game);
   assert(uuid);
 
@@ -115,12 +123,14 @@ entity_t* get_entity(game_t* game, char* uuid) {
  *
  * Returns a pointer to an entity struct representing the new entity
 **/
-entity_t* new_entity(game_t* game, char* name, char* description) {
+entity_t* new_entity(game_t* game, const char* name, const char* description) {
   entity_t* entity = create_entity_t();
-  entity->id = entity_id();
+  entity->id = new_uuid();
   entity->name = strdup(name);
   entity->description = strdup(description);
-  hash_table_insert(game->entities, entity->id.uuid, entity);
+  hash_table_insert(game->entities, entity->id.raw, entity);
+
+  LOG(INFO, "New entity created [%s], [%s]", name, description);
 
   return entity;
 }
