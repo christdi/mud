@@ -129,9 +129,9 @@ int player_change_state(player_t* player, game_t* game, const char* state) {
 
 
   if (player->state != NULL) {
-    // if (player->state->on_exit != NULL) {
-    //   player->state->on_exit(player, game);
-    // }
+    if (player->state->on_exit != NULL) {
+          // player->state->on_exit(player, game);
+    }
 
     free_state_t(player->state);
   }

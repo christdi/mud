@@ -70,30 +70,12 @@ int execute_command(game_t* game, player_t* player, const char* command, const c
 
   script_t* script = NULL;
 
-  if (script_repository_has(game->scripts, script_uuid) == 1) {
-    if (script_repository_get(game->scripts, script_uuid, &script) == -1) {
-      LOG(ERROR, "Failed to get script with uuid [%s]", script_uuid);
+  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", script_uuid);
 
-      free_command_t(cmd);
+    free_command_t(cmd);
 
-      return -1;
-    }
-  } else {
-    if (script_load(game, script_uuid, &script) == -1) {
-      LOG(ERROR, "Failed to load script with uuid [%s]", script_uuid);
-
-      free_command_t(cmd);
-
-      return -1;
-    }
-
-    if (script_repository_add(game->scripts, script) == -1) {
-      LOG(ERROR, "Failed to add script with uuid [%s] to repository", script_uuid);
-
-      free_command_t(cmd);
-
-      return -1;
-    }
+    return -1;
   }
 
   if (script_call_command(script, cmd, player, arguments) == -1) {
