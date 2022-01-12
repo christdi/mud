@@ -32,6 +32,7 @@ typedef struct script {
 script_t* create_script_t();
 void free_script_t(script_t* script);
 void deallocate_script(void* value);
+int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out);
 int script_execute(game_t* game, hash_table_t* scripts, script_t* script);
 int script_call_command(script_t* script, command_t* command, player_t* player, const char* arguments);
 

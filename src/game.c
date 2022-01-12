@@ -16,6 +16,7 @@
 #include "mud/lua/db_api.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
+#include "mud/lua/script_api.h"
 #include "mud/lua/hooks.h"
 #include "mud/lua/script.h"
 #include "mud/log.h"
@@ -275,6 +276,11 @@ int initialise_lua(game_t* game, config_t* config) {
 
   if (lua_log_register_api(game->lua_state) == -1) {
     LOG(ERROR, "Failed to register Lua log API with state");
+    return -1;
+  }
+
+  if (lua_script_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua script API with state");
     return -1;
   }
 

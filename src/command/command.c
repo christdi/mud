@@ -65,30 +65,15 @@ int execute_command(game_t* game, player_t* player, const char* command, const c
     return -1;
   }
 
-  /**
-   * TODO(Chris I): I think this still needs a bit of rejigging
-  **/
-  script_t* script = hash_table_get(game->scripts, uuid_str(&cmd->script));
+  const char* script_uuid = uuid_str(&cmd->script);
+  script_t* script = NULL;
 
-  if (script == NULL) {
-    script = create_script_t();
+  if (script_load(game, game->scripts, script_uuid, &script) != 0) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", script_uuid);
 
-    if ((db_script_load(game->database, uuid_str(&cmd->script), script)) == -1) {
-      LOG(ERROR, "Failed to load script from database with UUID [%s]", uuid_str(&cmd->script));
+    free_command_t(cmd);
 
-      free_command_t(cmd);
-
-      return -1;
-    }
-
-    if (script_execute(game, game->scripts, script) == -1) {
-      LOG(ERROR, "Failed to execute script [%s]", script->filepath);
-
-      free_command_t(cmd);
-      free_script_t(script);
-
-      return -1;
-    }
+    return -1;
   }
 
   if (script_call_command(script, cmd, player, arguments) == -1) {

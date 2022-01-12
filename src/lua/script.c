@@ -7,7 +7,9 @@
 
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
+#include "mud/db/db.h"
 #include "mud/game.h"
+#include "mud/lua/common.h"
 #include "mud/lua/script.h"
 #include "mud/lua/db_api.h"
 #include "mud/lua/game_api.h"
@@ -48,6 +50,79 @@ void deallocate_script(void* value) {
   assert(value);
 
   free_script_t(value);
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out) {
+  assert(game);
+  assert(scripts);
+  assert(uuid);
+
+  if (hash_table_has(scripts, uuid)) {
+    script_t* script = hash_table_get(scripts, uuid);
+
+    if (script_out != NULL) {
+      *script_out = script;
+    }
+    
+    return 0;
+  }
+
+  script_t* script = create_script_t();
+
+  if (db_script_load(game->database, uuid, script) != 0) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+
+    return -1;
+  }
+
+  if ((script->state = luaL_newstate()) == NULL) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }
+
+  if ((lua_common_initialise_state(script->state, game)) == -1) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }  
+
+  luaL_openlibs(script->state);
+
+  if (script->permission & ALLOW_GAME_API && lua_game_register_api(script->state, game) == -1) {
+    LOG(ERROR, "Failed to register Lua API with state");
+    return -1;
+  }
+
+  if (script->permission & ALLOW_DB_API && lua_db_register_api(script->state, game->database) == -1) {
+    LOG(ERROR, "Failed to register Lua DB API with state");
+    return -1;
+  }
+
+  if (script->permission & ALLOW_PLAYER_API && lua_player_register_api(script->state) == -1) {
+    LOG(ERROR, "Failed to register Lua player API with state");
+    return -1;
+  }
+
+  if (script->permission & ALLOW_LOG_API && lua_log_register_api(script->state) == -1) {
+    LOG(ERROR, "Failed to register Lua log API with state");
+    return -1;
+  }
+
+  if (luaL_dofile(script->state, script->filepath) != 0) {
+    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
+
+    return -1;
+  }
+
+  hash_table_insert(scripts, uuid_str(&script->uuid), script);
+
+  if (script_out != NULL) {
+    *script_out = script;
+  }
+  
+  return 0;
 }
 
 /**
