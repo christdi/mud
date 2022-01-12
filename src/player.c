@@ -237,8 +237,22 @@ static int call_state_enter_function(state_t* state, player_t* player, game_t* g
  *  game - game object containing all necessary game data
 **/
 void player_on_tick(player_t* player, game_t* game) {
-  if (player->state != NULL) {
-    // player->state->on_tick(player, game);
+  if (player->state != NULL && player->state->on_tick != NULL) {
+    const char* script_uuid = uuid_str(&player->state->script);
+
+    script_t* script = NULL;
+
+    if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+      LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
+
+      return;
+    }
+
+    if (script_call_state_tick(script, player->state, player) == -1) {
+      LOG(ERROR, "Error calling state script with uuid [%s] on_tick function", script_uuid);
+
+      return;
+    }
   }
 }
 

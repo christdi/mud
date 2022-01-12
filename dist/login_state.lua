@@ -9,5 +9,6 @@ end
 function on_input(p, arg)
 end
 
-function on_tick(p, arg)
+function on_tick(p)
+  player.send(p, "Tick\n\r")
 end
