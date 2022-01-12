@@ -1,30 +1,32 @@
 #ifndef _STATE_H_
 #define _STATE_H_
 
+#include <mud/util/muduuid.h>
+
 /**
  * Typedefs
 **/
 typedef struct player player_t;
 typedef struct game game_t;
-
-typedef void (*state_func_t)(player_t* player, game_t* game);
-typedef void (*state_input_func_t)(player_t* player, game_t* game, char* input);
+typedef struct mud_uuid mud_uuid_t;
 
 /**
  * Structs
 **/
 typedef struct state {
-  void* context;
-  state_func_t on_enter;
-  state_func_t on_exit;
-  state_func_t on_tick;
-  state_input_func_t on_input;
+  mud_uuid_t uuid;
+  char* name;
+  char* on_enter;
+  char* on_exit;
+  char* on_input;
+  char* on_tick;
+  mud_uuid_t script;
 } state_t;
 
 /**
  * Function prototypes
 **/
 state_t* create_state_t();
-void free_state_t(state_t* const state);
+void free_state_t(state_t* state);
 
 #endif

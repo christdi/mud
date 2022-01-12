@@ -35,13 +35,13 @@ CREATE TABLE IF NOT EXISTS state (
   uuid TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   on_enter_function TEXT,
-  on_leave_function TEXT,
+  on_exit_function TEXT,
   on_tick_function TEXT,
   on_input_function TEXT,
   script_uuid TEXT NOT NULL
 );
 
-INSERT INTO state VALUES('6c508205-b798-4ede-8353-619d47a0ed94', 'login', 'on_enter', 'on_leave', 'on_tick', 'on_input', '96b6080b-5cf6-4781-89ee-e6602f9f274d');
+INSERT INTO state VALUES('6c508205-b798-4ede-8353-619d47a0ed94', 'login', 'on_enter', 'on_exit', 'on_tick', 'on_input', '96b6080b-5cf6-4781-89ee-e6602f9f274d');
 
 CREATE TABLE IF NOT EXISTS entity (
   uuid TEXT PRIMARY KEY,

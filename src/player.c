@@ -116,17 +116,17 @@ void player_input(client_t* client, void* context) {
 **/
 void player_change_state(player_t* player, game_t* game, state_t* state) {
   if (player->state != NULL) {
-    if (player->state->on_exit != NULL) {
-      player->state->on_exit(player, game);
-    }
+    // if (player->state->on_exit != NULL) {
+    //   player->state->on_exit(player, game);
+    // }
 
     free_state_t(player->state);
   }
 
   player->state = state;
 
-  if (player->state != NULL && player->state->on_enter != NULL) {
-    player->state->on_enter(player, game);
+  if (player->state != NULL) {
+    // player->state->on_enter(player, game);
   }
 }
 
@@ -139,8 +139,8 @@ void player_change_state(player_t* player, game_t* game, state_t* state) {
  *  game - game object containing all necessary game data
 **/
 void player_on_tick(player_t* player, game_t* game) {
-  if (player->state != NULL && player->state->on_tick != NULL) {
-    player->state->on_tick(player, game);
+  if (player->state != NULL) {
+    // player->state->on_tick(player, game);
   }
 }
 

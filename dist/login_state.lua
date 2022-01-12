@@ -1,7 +1,7 @@
 function on_enter(p)
 end
 
-function on_leave(p)
+function on_exit(p)
 end
 
 function on_input(p, arg)
