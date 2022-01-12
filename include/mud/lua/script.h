@@ -16,10 +16,12 @@ typedef struct player player_t;
  * Structs
 **/
 typedef enum {
-  ALLOW_DB_API = (1 << 0),
-  ALLOW_GAME_API = (1 << 1),
-  ALLOW_LOG_API = (1 << 2),
-  ALLOW_PLAYER_API = (1 << 3)
+  ALLOW_STD_LIB = (1 << 0),
+  ALLOW_DB_API = (1 << 1),
+  ALLOW_GAME_API = (1 << 2),
+  ALLOW_LOG_API = (1 << 3),
+  ALLOW_PLAYER_API = (1 << 4),
+  ALLOW_SCRIPT_API = (1 << 5)
 } permission_t;
 
 typedef struct script {
@@ -32,8 +34,10 @@ typedef struct script {
 script_t* create_script_t();
 void free_script_t(script_t* script);
 void deallocate_script(void* value);
+void script_set_permission(script_t* script, permission_t flag, int permitted);
+int script_has_permission(script_t* script, permission_t flag);
 int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out);
-int script_execute(game_t* game, hash_table_t* scripts, script_t* script);
+int script_unload(hash_table_t* scripts, const char* uuid);
 int script_call_command(script_t* script, command_t* command, player_t* player, const char* arguments);
 
 #endif

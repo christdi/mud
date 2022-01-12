@@ -13,8 +13,8 @@
 #include "mud/log.h"
 #include "mud/lua/script.h"
 
-int db_account_load_data(sqlite3* db, const char* username, account_t* account);
-int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
+static int db_account_load_data(sqlite3* db, const char* username, account_t* account);
+static int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
 
 /**
  * Persists an account to the database.  If the account already exists it will be updated.
@@ -74,7 +74,7 @@ int db_account_save(sqlite3* db, account_t* account) {
  *
  * Returns 0 on success or -1 on failure
 **/
-int db_account_load_data(sqlite3* db, const char* username, account_t* account) {
+static int db_account_load_data(sqlite3* db, const char* username, account_t* account) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT username, password_hash FROM account WHERE username=?";
@@ -133,7 +133,7 @@ int db_account_load_data(sqlite3* db, const char* username, account_t* account) 
  *
  * Returns 0 on success or -1 on failure.
 **/
-int db_account_load_entities(sqlite3* db, const char* username, account_t* account) {
+static int db_account_load_entities(sqlite3* db, const char* username, account_t* account) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT entity_uuid FROM account_entity WHERE account_username=?";
@@ -432,7 +432,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, filepath, allow_db_api, allow_game_api, allow_log_api, allow_player_api FROM script WHERE uuid = ?";
+  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api FROM script WHERE uuid = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve script from database: [%s]", sqlite3_errmsg(db));
@@ -464,25 +464,61 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 
   script->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
   script->filepath = strdup((char *)sqlite3_column_text(res, 1));
-  int allow_db_api = sqlite3_column_int(res, 2);
-  int allow_game_api = sqlite3_column_int(res, 3);
-  int allow_log_api = sqlite3_column_int(res, 4);
-  int allow_player_api = sqlite3_column_int(res, 5); // NOLINT(readability-magic-numbers)
 
-  if (allow_db_api) {
-    script->permission |= ALLOW_DB_API;
+  script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
+  script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
+  script_set_permission(script, ALLOW_GAME_API, sqlite3_column_int(res, 4));
+  script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
+  script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
+  script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
+  assert(db);
+  assert(scripts);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api FROM script";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve scripts from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
   }
 
-  if (allow_game_api) {
-    script->permission |= ALLOW_GAME_API;
-  }
+  int rc = 0;
 
-  if (allow_log_api) {
-    script->permission |= ALLOW_LOG_API;
-  }
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive scripts from database: [%s]", sqlite3_errmsg(db));
 
-  if (allow_player_api) {
-    script->permission |= ALLOW_PLAYER_API;
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    script_t* script = create_script_t();
+
+    script->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
+    script->filepath = strdup((char *)sqlite3_column_text(res, 1));
+
+    script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
+    script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
+    script_set_permission(script, ALLOW_GAME_API, sqlite3_column_int(res, 4));
+    script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
+    script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
+    script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
+
+    list_add(scripts, script);
   }
 
   sqlite3_finalize(res);

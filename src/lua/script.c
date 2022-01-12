@@ -15,6 +15,7 @@
 #include "mud/lua/game_api.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
+#include "mud/lua/script_api.h"
 #include "mud/log.h"
 
 /**
@@ -55,6 +56,24 @@ void deallocate_script(void* value) {
 /**
  * TODO(Chris I)
 **/
+void script_set_permission(script_t* script, permission_t flag, int permitted) {
+  if (permitted) {
+    script->permission |= flag;
+  } else {
+    script->permission &= ~flag;
+  }
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_has_permission(script_t* script, permission_t flag) {
+  return script->permission & flag;
+}
+
+/**
+ * TODO(Chris I)
+**/
 int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out) {
   assert(game);
   assert(scripts);
@@ -88,27 +107,35 @@ int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t*
     return -1;
   }  
 
-  luaL_openlibs(script->state);
+  if (script_has_permission(script, ALLOW_STD_LIB)) {
+    luaL_openlibs(script->state);
+  }
 
-  if (script->permission & ALLOW_GAME_API && lua_game_register_api(script->state, game) == -1) {
+  if (script_has_permission(script, ALLOW_GAME_API) && lua_game_register_api(script->state) == -1) {
     LOG(ERROR, "Failed to register Lua API with state");
     return -1;
   }
 
-  if (script->permission & ALLOW_DB_API && lua_db_register_api(script->state, game->database) == -1) {
+  if (script_has_permission(script, ALLOW_DB_API) && lua_db_register_api(script->state) == -1) {
     LOG(ERROR, "Failed to register Lua DB API with state");
     return -1;
   }
 
-  if (script->permission & ALLOW_PLAYER_API && lua_player_register_api(script->state) == -1) {
+  if (script_has_permission(script, ALLOW_PLAYER_API) && lua_player_register_api(script->state) == -1) {
     LOG(ERROR, "Failed to register Lua player API with state");
     return -1;
   }
 
-  if (script->permission & ALLOW_LOG_API && lua_log_register_api(script->state) == -1) {
+  if (script_has_permission(script, ALLOW_LOG_API) && lua_log_register_api(script->state) == -1) {
     LOG(ERROR, "Failed to register Lua log API with state");
     return -1;
   }
+
+  if (script_has_permission(script, ALLOW_SCRIPT_API) && lua_script_register_api(script->state) == -1) {
+    LOG(ERROR, "Failed to register Lua script API with state");
+    return -1;
+  }
+
 
   if (luaL_dofile(script->state, script->filepath) != 0) {
     printf("Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
@@ -128,55 +155,17 @@ int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t*
 /**
  * TODO(Chris I)
 **/
-int script_execute(game_t* game, hash_table_t* scripts, script_t* script) {
+int script_unload(hash_table_t* scripts, const char* uuid) {
   assert(scripts);
-  assert(script);
+  assert(uuid);
 
-  if (hash_table_has(scripts, uuid_str(&script->uuid))) {
-    LOG(INFO, "Script [%s] already loaded", uuid_str(&script->uuid));
-
-    return 0;
-  }
-
-  if ((script->state = luaL_newstate()) == NULL) {
-    LOG(ERROR, "Failed to initialise Lua state");
-    return -1;
-  }
-
-  if ((lua_common_initialise_state(script->state, game)) == -1) {
-    LOG(ERROR, "Failed to initialise Lua state");
-    return -1;
-  }  
-
-  luaL_openlibs(script->state);
-
-  if (script->permission & ALLOW_GAME_API && lua_game_register_api(script->state, game) == -1) {
-    LOG(ERROR, "Failed to register Lua API with state");
-    return -1;
-  }
-
-  if (script->permission & ALLOW_DB_API && lua_db_register_api(script->state, game->database) == -1) {
-    LOG(ERROR, "Failed to register Lua DB API with state");
-    return -1;
-  }
-
-  if (script->permission & ALLOW_PLAYER_API && lua_player_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua player API with state");
-    return -1;
-  }
-
-  if (script->permission & ALLOW_LOG_API && lua_log_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua log API with state");
-    return -1;
-  }
-
-  if (luaL_dofile(script->state, script->filepath) != 0) {
-    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
+  if (hash_table_has(scripts, uuid) != 1) {
+    LOG(WARN, "Request to unload script uuid [%s] which was not loaded", uuid);
 
     return -1;
   }
 
-  hash_table_insert(scripts, uuid_str(&script->uuid), script);
+  hash_table_delete(scripts, uuid);
 
   return 0;
 }

@@ -36,7 +36,7 @@ static const struct luaL_Reg game_lib [] = {
 /**
  * TODO(Chris I)
 **/
-int lua_game_register_api(lua_State* l, game_t* game) {
+int lua_game_register_api(lua_State* l) {
   luaL_newlib(l, game_lib);
   lua_setglobal(l, API_TABLE_NAME);
 

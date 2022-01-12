@@ -28,7 +28,7 @@ static const struct luaL_Reg db_lib [] = {
 /**
  * TODO(Chris I)
 **/
-int lua_db_register_api(lua_State* l, sqlite3* db) {
+int lua_db_register_api(lua_State* l) {
   luaL_newlib(l, db_lib);
   lua_setglobal(l, "db");
 

@@ -10,6 +10,6 @@ typedef struct sqlite3 sqlite3;
 /**
  * Function prototypes
 **/
-int lua_db_register_api(lua_State* l, sqlite3* db);
+int lua_db_register_api(lua_State* l);
 
 #endif

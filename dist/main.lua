@@ -18,10 +18,6 @@ function main()
 
   game.components.location = game.register_component();
   game.components.has_inventory = game.register_component()
-
-  script.load("9f12ba01-d6c7-4e3d-bcff-0a2c92f91764")
-  script.load("510a37d6-5e9a-4d77-884b-8a470a8f42a2")
-  print(dump(script.loaded()))
 end
 
 function entities_loaded(entities)

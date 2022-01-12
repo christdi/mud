@@ -23,5 +23,6 @@ int db_entity_load_all(sqlite3* db, linked_list_t *entities);
 int db_entity_save(sqlite3* db, entity_t* entity);
 
 int db_script_load(sqlite3* db, const char* uuid, script_t* script);
+int db_script_load_all(sqlite3* db, linked_list_t *scripts);
 
 #endif

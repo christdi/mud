@@ -259,12 +259,12 @@ int initialise_lua(game_t* game, config_t* config) {
 
   luaL_openlibs(game->lua_state);
 
-  if (lua_game_register_api(game->lua_state, game) == -1) {
+  if (lua_game_register_api(game->lua_state) == -1) {
     LOG(ERROR, "Failed to register Lua API with state");
     return -1;
   }
 
-  if (lua_db_register_api(game->lua_state, game->database) == -1) {
+  if (lua_db_register_api(game->lua_state) == -1) {
     LOG(ERROR, "Failed to register Lua DB API with state");
     return -1;
   }
