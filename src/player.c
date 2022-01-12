@@ -2,6 +2,7 @@
 #include "mud/account.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
+#include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
@@ -110,11 +111,23 @@ void player_input(client_t* client, void* context) {
 }
 
 /**
- * Method which changes the players current state.  It'll assign the new state
- * and then call it with NULL input which indicates the state is being entered
- * for the first time.
+ * Function which attempts to find a state from persistence and assign it to the player.
+ *
+ * Parameters
+ *   player - the player whose state is to be changed
+ *   game - the game struct
+ *   state - the name of the state to be found
 **/
-void player_change_state(player_t* player, game_t* game, state_t* state) {
+int player_change_state(player_t* player, game_t* game, const char* state) {
+  state_t* new_state = NULL;
+
+  if (db_state_load_by_name(game->database, state, new_state) == -1) {
+    LOG(ERROR, "Unable to change player state to [%s] as it was not in database");
+
+    return -1;
+  }
+
+
   if (player->state != NULL) {
     // if (player->state->on_exit != NULL) {
     //   player->state->on_exit(player, game);
@@ -123,11 +136,13 @@ void player_change_state(player_t* player, game_t* game, state_t* state) {
     free_state_t(player->state);
   }
 
-  player->state = state;
+  player->state = new_state;
 
   if (player->state != NULL) {
     // player->state->on_enter(player, game);
   }
+
+  return 0;
 }
 
 /**
