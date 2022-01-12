@@ -12,6 +12,7 @@
 #include "mud/account.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
+#include "mud/state/state.h"
 
 static int db_account_load_data(sqlite3* db, const char* username, account_t* account);
 static int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
@@ -520,6 +521,59 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
 
     list_add(scripts, script);
   }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int db_state_load(sqlite3* db, const char* uuid, state_t* state) {
+  assert(db);
+  assert(uuid);
+  assert(state);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, name, on_enter, on_exit, on_input, on_tick, script_uuid FROM state WHERE uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to retreive state from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
+  state->name = strdup((char *)sqlite3_column_text(res, 1));
+  state->on_enter = strdup((char *)sqlite3_column_text(res, 2));
+  state->on_exit = strdup((char *)sqlite3_column_text(res, 3));
+  state->on_input = strdup((char *)sqlite3_column_text(res, 4));
+  state->on_tick = strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
 
   sqlite3_finalize(res);
 

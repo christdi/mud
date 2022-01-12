@@ -9,6 +9,7 @@ typedef struct entity entity_t;
 typedef struct sqlite3 sqlite3;
 typedef struct linked_list linked_list_t;
 typedef struct script script_t;
+typedef struct state state_t;
 
 /**
  * Function prototypes
@@ -24,5 +25,7 @@ int db_entity_save(sqlite3* db, entity_t* entity);
 
 int db_script_load(sqlite3* db, const char* uuid, script_t* script);
 int db_script_load_all(sqlite3* db, linked_list_t *scripts);
+
+int db_state_load(sqlite3* db, const char* uuid, state_t* state);
 
 #endif
