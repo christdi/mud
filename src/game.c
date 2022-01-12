@@ -19,6 +19,7 @@
 #include "mud/lua/script_api.h"
 #include "mud/lua/hooks.h"
 #include "mud/lua/script.h"
+#include "mud/lua/repository.h"
 #include "mud/log.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
@@ -54,8 +55,7 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
 
-  game->scripts = create_hash_table_t();
-  game->scripts->deallocator = deallocate_script;
+  game->scripts = create_script_repository_t();
 
   game->components = create_linked_list_t();
   game->components->deallocator = deallocate_component_t;
@@ -86,7 +86,8 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
-  free_hash_table_t(game->scripts);
+
+  free_script_repository_t(game->scripts);
 
   free_linked_list_t(game->components);
   free_linked_list_t(game->tasks);
@@ -155,6 +156,7 @@ int start_game(config_t* config) {
     update_systems(game);
     task_execute(game->tasks, game);
     narrate_events(game);
+    script_repository_update(game->scripts);
     game_sleep_until_tick(game, config->ticks_per_second);
   }
 

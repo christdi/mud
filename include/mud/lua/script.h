@@ -36,7 +36,7 @@ void free_script_t(script_t* script);
 void deallocate_script(void* value);
 void script_set_permission(script_t* script, permission_t flag, int permitted);
 int script_has_permission(script_t* script, permission_t flag);
-int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out);
+int script_load(game_t* game, const char* uuid, script_t** script_out);
 int script_unload(hash_table_t* scripts, const char* uuid);
 int script_call_command(script_t* script, command_t* command, player_t* player, const char* arguments);
 

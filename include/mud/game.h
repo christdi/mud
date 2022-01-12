@@ -16,6 +16,7 @@ typedef struct hash_table hash_table_t;
 typedef struct linked_list linked_list_t;
 typedef struct network network_t;
 typedef struct narrator narrator_t;
+typedef struct script_repository script_repository_t;
 typedef struct lua_State lua_State;
 
 /**
@@ -30,7 +31,8 @@ typedef struct game {
   hash_table_t* templates;
   hash_table_t* players;
   hash_table_t* entities;
-  hash_table_t* scripts;
+
+  script_repository_t* scripts;
 
   linked_list_t* components;
   linked_list_t* tasks;

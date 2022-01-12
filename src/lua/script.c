@@ -74,20 +74,9 @@ int script_has_permission(script_t* script, permission_t flag) {
 /**
  * TODO(Chris I)
 **/
-int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t** script_out) {
+int script_load(game_t* game, const char* uuid, script_t** script_out) {
   assert(game);
-  assert(scripts);
   assert(uuid);
-
-  if (hash_table_has(scripts, uuid)) {
-    script_t* script = hash_table_get(scripts, uuid);
-
-    if (script_out != NULL) {
-      *script_out = script;
-    }
-    
-    return 0;
-  }
 
   script_t* script = create_script_t();
 
@@ -142,8 +131,6 @@ int script_load(game_t* game, hash_table_t* scripts, const char* uuid, script_t*
 
     return -1;
   }
-
-  hash_table_insert(scripts, uuid_str(&script->uuid), script);
 
   if (script_out != NULL) {
     *script_out = script;

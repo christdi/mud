@@ -8,6 +8,7 @@
 #include "mud/lua/common.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
+#include "mud/lua/repository.h"
 #include "mud/util/muduuid.h"
 
 static int lua_script_load(lua_State *l);
@@ -43,7 +44,15 @@ static int lua_script_load(lua_State *l) {
 
   const char* uuid = luaL_checkstring(l, 1);
 
-  script_load(game, game->scripts, uuid, NULL);
+  script_t* script = NULL;
+
+  if (script_load(game, uuid, &script) == -1) {
+    return luaL_error(l, "Failed to load script with uuid [%s]", uuid);
+  }
+
+  if (script_repository_add(game->scripts, script) == -1) {
+    return luaL_error(l, "Failed to add script with uuid [%s] to repository", uuid);
+  }
 
   lua_pop(l, 1);
 
@@ -60,8 +69,14 @@ static int lua_script_unload(lua_State *l) {
 
   const char* uuid = luaL_checkstring(l, 1);
 
-  if (script_unload(game->scripts, uuid) != 0) {
-    return luaL_error(l, "Failed to unload script with uuid [%s]", uuid);
+  script_t* script = NULL;
+
+  if (script_repository_get(game->scripts, uuid, &script) == -1) {
+    return luaL_error(l, "Failed to obtain script with uuid [%s] to unload", uuid);
+  }
+
+  if (script_repository_remove(game->scripts, script) == -1) {
+    return luaL_error(l, "Failed to schedule script with uuid [%s] for removal", uuid);
   }
 
   lua_pop(l, 1);
@@ -77,7 +92,7 @@ static int lua_script_loaded(lua_State *l) {
 
   game_t* game = lua_common_get_game(l);
 
-  h_it_t it = hash_table_iterator(game->scripts);
+  h_it_t it = hash_table_iterator(game->scripts->scripts);
 
   script_t* script = NULL;
   int index = 1;

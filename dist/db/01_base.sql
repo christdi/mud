@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS script (
 
 INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './command/quit.lua', 1, 1, 1, 1, 1, 1);
 INSERT INTO script VALUES('510a37d6-5e9a-4d77-884b-8a470a8f42a2', './command/shutdown.lua', 1, 1, 1, 1, 1, 1);
+INSERT INTO script VALUES('13ed9890-3f2d-4c6d-be36-59386c63a776', './command/script.lua', 1, 1, 1, 1, 1, 1);
 
 CREATE TABLE IF NOT EXISTS command (
   uuid TEXT PRIMARY KEY,
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS command (
 
 INSERT INTO command VALUES('1f8b5793-298f-4794-8557-4b851d668eb8', 'quit', 'do_command', '9f12ba01-d6c7-4e3d-bcff-0a2c92f91764');
 INSERT INTO command VALUES('9456c374-81b6-49f7-8295-579001d629c0', 'shutdown', 'do_command', '510a37d6-5e9a-4d77-884b-8a470a8f42a2');
+INSERT INTO command VALUES('fa479582-6465-44bd-8847-2b0971655706', 'script', 'do_command', '13ed9890-3f2d-4c6d-be36-59386c63a776');
 
 CREATE TABLE IF NOT EXISTS entity (
   uuid TEXT PRIMARY KEY,
