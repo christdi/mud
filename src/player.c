@@ -6,9 +6,11 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/repository.h"
 #include "mud/network/client.h"
 #include "mud/state/state.h"
 #include "mud/util/mudstring.h"
+#include "mud/util/muduuid.h"
 
 #include <assert.h>
 #include <sqlite3.h>
@@ -75,6 +77,8 @@ void player_connected(client_t* client, void* context) {
   hash_table_insert(game->players, uuid_str(&client->uuid), player);
 
   lua_hook_on_player_connected(game->lua_state, player);
+
+  player_change_state(player, game, "login");
 }
 
 /**
@@ -119,14 +123,26 @@ void player_input(client_t* client, void* context) {
  *   state - the name of the state to be found
 **/
 int player_change_state(player_t* player, game_t* game, const char* state) {
-  state_t* new_state = NULL;
+  state_t* new_state = create_state_t();
 
-  if (db_state_load_by_name(game->database, state, new_state) == -1) {
-    LOG(ERROR, "Unable to change player state to [%s] as it was not in database");
+  if (db_state_load_by_name(game->database, state, new_state) < 1) {
+    LOG(ERROR, "Unable to change player state to [%s] as it was not in database", state);
+
+    free_state_t(new_state);
 
     return -1;
   }
 
+  const char* script_uuid = uuid_str(&new_state->script);
+  script_t* script = NULL;
+
+  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+    LOG(ERROR, "Unable to load state script with uuid [%s]", script_uuid);
+
+    free_state_t(new_state);
+
+    return -1;
+  };
 
   if (player->state != NULL) {
     if (player->state->on_exit != NULL) {

@@ -58,6 +58,8 @@ void deallocate_script(void* value) {
  * TODO(Chris I)
 **/
 void script_set_permission(script_t* script, permission_t flag, int permitted) {
+  assert(script);
+
   if (permitted) {
     script->permission |= flag;
   } else {
@@ -69,6 +71,8 @@ void script_set_permission(script_t* script, permission_t flag, int permitted) {
  * TODO(Chris I)
 **/
 int script_has_permission(script_t* script, permission_t flag) {
+  assert(script);
+
   return script->permission & flag;
 }
 
@@ -126,9 +130,8 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
     return -1;
   }
 
-
   if (luaL_dofile(script->state, script->filepath) != 0) {
-    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
+    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
 
     return -1;
   }
@@ -136,7 +139,7 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
   if (script_out != NULL) {
     *script_out = script;
   }
-  
+
   return 0;
 }
 

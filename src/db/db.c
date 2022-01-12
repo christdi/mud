@@ -587,7 +587,7 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, name, on_enter, on_exit, on_input, on_tick, script_uuid FROM state WHERE name = ?";
+  const char* sql = "SELECT uuid, name, on_enter_function, on_exit_function, on_input_function, on_tick_function, script_uuid FROM state WHERE name = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve state from database: [%s]", sqlite3_errmsg(db));
@@ -627,5 +627,5 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
 
   sqlite3_finalize(res);
 
-  return 0;
+  return 1;
 }
