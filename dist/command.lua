@@ -11,7 +11,7 @@ function one_argument(str)
   return subcommand, str
 end
 
-function do_command(p, arg)
+function do_script(p, arg)
   if (arg == nil or arg == "") then
     player.send(p, "Syntax: script <load|unload|loaded|available>\n\r")
 
@@ -79,4 +79,15 @@ function do_command(p, arg)
 
     return
   end
+
+  player.send(p, "Syntax: script <load|unload|loaded|available>\n\r")
+end
+
+function do_quit(p, arg)
+  player.send(p, "So long!\n\r")
+  player.disconnect(p)
+end
+
+function do_shutdown(p, arg)
+  game.shutdown();
 end

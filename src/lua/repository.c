@@ -8,6 +8,9 @@
 #include "mud/lua/repository.h"
 #include "mud/util/muduuid.h"
 
+static void process_pending_removal(script_repository_t* repository);
+static void process_pending_addition(script_repository_t* repository);
+
 /**
  * TODO(Chris I)
 **/
@@ -117,7 +120,17 @@ int script_repository_get(script_repository_t* repository, const char* uuid, scr
 void script_repository_update(script_repository_t* repository) {
   assert(repository);
 
-  if (list_size(repository->pending_add) == 0 && list_size(repository->pending_rem) == 0) {
+  process_pending_removal(repository);
+  process_pending_addition(repository);
+}
+
+/**
+ * TODO(Chris I)
+**/
+static void process_pending_removal(script_repository_t* repository) {
+  assert(repository);
+
+  if (list_size(repository->pending_rem) == 0) {
     return;
   }
 
@@ -138,8 +151,21 @@ void script_repository_update(script_repository_t* repository) {
 
     it = list_remove(repository->pending_rem, script);
   }
+}
 
-  it = list_begin(repository->pending_add);
+/**
+ * TODO(Chris I)
+**/
+static void process_pending_addition(script_repository_t* repository) {
+  assert(repository);
+
+  if (list_size(repository->pending_add) == 0) {
+    return;
+  }
+
+  script_t* script = NULL;
+
+  it_t it = list_begin(repository->pending_add);
 
   while((script = it_get(it)) != NULL) {
     const char* uuid = uuid_str(&script->uuid);
