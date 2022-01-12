@@ -115,7 +115,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
 
 /**
  * Loads configuration from a Lua script.
- * 
+ *
  * Parameters:
  *   filename - The name of the Lua script to be evaluated
  *   config - The config struct to be populated
@@ -130,7 +130,7 @@ int load_configuration(const char* filename, config_t* config) {
 
   if ((l = luaL_newstate()) == NULL) {
     printf("Failed to create new Lua state to parse configuration");
-    
+
     return -1;
   }
 
