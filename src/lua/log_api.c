@@ -1,6 +1,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "mud/lua/common.h"
 #include "mud/lua/log_api.h"
 #include "mud/log.h"
 
@@ -48,10 +49,7 @@ static lua_Debug get_debug_info(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_log_trace(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_log_trace(): Expected 1 argument");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
   lua_settop(l, 0);
@@ -66,10 +64,7 @@ static int lua_log_trace(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_log_debug(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_log_debug(): Expected 1 argument");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
   lua_settop(l, 0);
@@ -84,10 +79,7 @@ static int lua_log_debug(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_log_info(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_log_info(): Expected 1 argument");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
   lua_settop(l, 0);
@@ -102,10 +94,7 @@ static int lua_log_info(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_log_warn(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_log_warn(): Expected 1 argument");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
   lua_settop(l, 0);
@@ -120,10 +109,7 @@ static int lua_log_warn(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_log_error(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_log_error(): Expected 1 argument");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
   lua_settop(l, 0);
