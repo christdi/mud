@@ -68,6 +68,11 @@ int script_execute(game_t* game, hash_table_t* scripts, script_t* script) {
     return -1;
   }
 
+  if ((lua_common_initialise_state(script->state, game)) == -1) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }  
+
   luaL_openlibs(script->state);
 
   if (script->permission & ALLOW_GAME_API && lua_game_register_api(script->state, game) == -1) {

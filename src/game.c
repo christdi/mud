@@ -11,6 +11,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/lua/common.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/db_api.h"
 #include "mud/lua/log_api.h"
@@ -246,6 +247,11 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
 
 int initialise_lua(game_t* game, config_t* config) {
   if ((game->lua_state = luaL_newstate()) == NULL) {
+    LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }
+
+  if ((lua_common_initialise_state(game->lua_state, game)) == -1) {
     LOG(ERROR, "Failed to initialise Lua state");
     return -1;
   }

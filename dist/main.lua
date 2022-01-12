@@ -20,7 +20,6 @@ function main()
   game.components.has_inventory = game.register_component()
 end
 
-
 function entities_loaded(entities)
 end
 
