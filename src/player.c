@@ -6,7 +6,6 @@
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
 #include "mud/network/client.h"
-#include "mud/state/login_state.h"
 #include "mud/state/state.h"
 #include "mud/util/mudstring.h"
 
@@ -75,8 +74,6 @@ void player_connected(client_t* client, void* context) {
   hash_table_insert(game->players, uuid_str(&client->uuid), player);
 
   lua_hook_on_player_connected(game->lua_state, player);
-
-  player_change_state(player, game, login_state());
 }
 
 /**
@@ -104,9 +101,9 @@ void player_input(client_t* client, void* context) {
 
   while (extract_from_input(client, command, sizeof(command), "\r\n") != -1) {
     if (strnlen(command, sizeof(command) - 1) > 0) {
-      if (player->state != NULL && player->state->on_input != NULL) {
-        lua_hook_on_player_input(game->lua_state, player, command);
-        player->state->on_input(player, game, command);
+      lua_hook_on_player_input(game->lua_state, player, command);
+
+      if (player->state != NULL) {
       }
     }
   }
