@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS state (
   FOREIGN KEY(script_uuid) REFERENCES script(uuid)
 );
 
+CREATE UNIQUE INDEX idx_table_name ON state(name);
+
 INSERT INTO state VALUES('6c508205-b798-4ede-8353-619d47a0ed94', 'login', 'on_enter', 'on_exit', 'on_tick', 'on_input', '96b6080b-5cf6-4781-89ee-e6602f9f274d');
 
 CREATE TABLE IF NOT EXISTS entity (
