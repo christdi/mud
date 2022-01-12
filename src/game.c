@@ -284,7 +284,9 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  lua_hook_on_startup(game->lua_state);
+  if (lua_hook_on_startup(game->lua_state) != 0) {
+    return -1;
+  }
 
   LOG(INFO, "LUA state successfully initialised");
 
