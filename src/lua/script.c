@@ -17,6 +17,7 @@
 #include "mud/lua/player_api.h"
 #include "mud/lua/script_api.h"
 #include "mud/log.h"
+#include "mud/state/state.h"
 
 /**
  * TODO(Chris I)
@@ -187,5 +188,33 @@ int script_call_command(script_t* script, command_t* command, player_t* player, 
     return -1;
   }  
 
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_enter(script_t* script, state_t* state, player_t* player) {
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_exit(script_t* script, state_t* state, player_t* player) {
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_input(script_t* script, state_t* state, player_t* player, const char* input) {
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_tick(script_t* script, state_t* state, player_t* player) {
   return 0;
 }
