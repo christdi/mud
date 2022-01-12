@@ -1,6 +1,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "mud/lua/common.h"
 #include "mud/lua/player_api.h"
 #include "mud/network/client.h"
 #include "mud/player.h"
@@ -28,15 +29,9 @@ int lua_player_register_api(lua_State* l) {
  * TODO(Chris I)
 **/
 static int lua_send_to_player(lua_State *l) {
-  if (lua_gettop(l) != 2) {
-    lua_pushliteral(l, "lua_send_to_player(): Expected 2 arguments");
-    lua_error(l);
-  }
-
-  if (lua_islightuserdata(l, 1) != 1) {
-    lua_pushliteral(l, "lua_send_to_player(): Expected first argument to be pointer to player");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 2);
+  
+  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   player_t* player = lua_touserdata(l, 1);
   const char* msg = luaL_checkstring(l, 2);
@@ -51,19 +46,15 @@ static int lua_send_to_player(lua_State *l) {
  * TODO(Chris I)
 **/
 static int lua_disconnect(lua_State *l) {
-  if (lua_gettop(l) != 1) {
-    lua_pushliteral(l, "lua_disconnect(): Expected 1 arguments");
-    lua_error(l);
-  }
+  lua_common_assert_n_arguments(l, 1);
 
-  if (lua_islightuserdata(l, 1) != 1) {
-    lua_pushliteral(l, "lua_disconnect(): Expected first argument to be pointer to player");
-    lua_error(l);
-  }
+  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   player_t* player = lua_touserdata(l, 1);
   
   player->client->hungup = 1;
+
+  lua_pop(l, 1);
 
   return 0;
 }
