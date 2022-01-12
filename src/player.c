@@ -7,6 +7,7 @@
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
 #include "mud/lua/repository.h"
+#include "mud/lua/script.h"
 #include "mud/network/client.h"
 #include "mud/state/state.h"
 #include "mud/util/mudstring.h"
@@ -18,8 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void get_player_username(player_t* player, char* username);
-void write_to_player(player_t* player, char* output);
+static int call_state_exit_function(state_t* state, player_t* player, game_t* game);
+static int call_state_enter_function(state_t* state, player_t* player, game_t* game);
+static void get_player_username(player_t* player, char* username);
+static void write_to_player(player_t* player, char* output);
 
 /**
  * Allocates and initialises a new player_t struct.
@@ -79,6 +82,8 @@ void player_connected(client_t* client, void* context) {
   lua_hook_on_player_connected(game->lua_state, player);
 
   player_change_state(player, game, "login");
+  player_change_state(player, game, "login");
+  player_change_state(player, game, "login");
 }
 
 /**
@@ -125,7 +130,7 @@ void player_input(client_t* client, void* context) {
 int player_change_state(player_t* player, game_t* game, const char* state) {
   state_t* new_state = create_state_t();
 
-  if (db_state_load_by_name(game->database, state, new_state) < 1) {
+  if (db_state_load_by_name(game->database, state, new_state) != 1) {
     LOG(ERROR, "Unable to change player state to [%s] as it was not in database", state);
 
     free_state_t(new_state);
@@ -133,29 +138,91 @@ int player_change_state(player_t* player, game_t* game, const char* state) {
     return -1;
   }
 
-  const char* script_uuid = uuid_str(&new_state->script);
+  state_t* old_state = player->state;
+  player->state = new_state;
+
+  if (call_state_exit_function(old_state, player, game) == -1) {
+    LOG(WARN, "Error encountered while running on_exit for state [%s]", old_state->name);
+  }
+
+  if (call_state_enter_function(player->state, player, game) == -1) {
+    LOG(WARN, "Error encountered while running on_enter for state [%s]", player->state->name);
+  }
+
+  if (old_state != NULL) {
+    free_state_t(old_state);
+  }
+  
+  return 0;
+}
+
+/**
+ * Attempts to load and run the on_exit method of a state.
+ * 
+ * Parameters
+ *   state - state for which to run on_exit
+ *   player - the player whose state it is
+ *   game - general game data
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+static int call_state_exit_function(state_t* state, player_t* player, game_t* game) {
+  assert(player);
+  assert(game);
+
+  if (state == NULL || state->on_exit == NULL) {
+    return 0;
+  }
+
+  const char* script_uuid = uuid_str(&state->script);
   script_t* script = NULL;
 
   if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
-    LOG(ERROR, "Unable to load state script with uuid [%s]", script_uuid);
-
-    free_state_t(new_state);
+    LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
 
     return -1;
-  };
-
-  if (player->state != NULL) {
-    if (player->state->on_exit != NULL) {
-          // player->state->on_exit(player, game);
-    }
-
-    free_state_t(player->state);
   }
 
-  player->state = new_state;
+  if (script_call_state_exit(script, state, player) == -1) {
+    LOG(ERROR, "Error calling state script with uuid [%s] on_exit function", script_uuid);
 
-  if (player->state != NULL) {
-    // player->state->on_enter(player, game);
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Attempts to load and run the on_enter method of a state.
+ * 
+ * Parameters
+ *   state - state for which to run on_exit
+ *   player - the player whose state it is
+ *   game - general game data
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+static int call_state_enter_function(state_t* state, player_t* player, game_t* game) {
+  assert(player);
+  assert(game);
+
+  if (state == NULL || state->on_enter == NULL) {
+    return 0;
+  }
+
+  const char* script_uuid = uuid_str(&state->script);
+  script_t* script = NULL;
+
+  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+    LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
+
+    return -1;
+  }
+
+  if (script_call_state_enter(script, state, player) == -1) {
+    LOG(ERROR, "Error calling state script with uuid [%s] on_enter function", script_uuid);
+
+    return -1;
   }
 
   return 0;
@@ -263,7 +330,7 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
 /**
  * Writes a character array to a player.  Ensures that they first have a client.
 **/
-void write_to_player(player_t* player, char* output) {
+static void write_to_player(player_t* player, char* output) {
   assert(player);
   assert(output);
 
@@ -294,7 +361,7 @@ void write_to_player(player_t* player, char* output) {
  * Copies the players username into the buffer pointed to by username. If
  * the player does not have a username yet, it is replaced with a placeholder.
 **/
-void get_player_username(player_t* player, char* username) {
+static void get_player_username(player_t* player, char* username) {
   assert(player);
   assert(username);
 

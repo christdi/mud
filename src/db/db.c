@@ -619,10 +619,10 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
 
   state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
   state->name = strdup((char *)sqlite3_column_text(res, 1));
-  state->on_enter = strdup((char *)sqlite3_column_text(res, 2));
-  state->on_exit = strdup((char *)sqlite3_column_text(res, 3));
-  state->on_input = strdup((char *)sqlite3_column_text(res, 4));
-  state->on_tick = strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->on_enter = sqlite3_column_type(res, 2) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 2));
+  state->on_exit = sqlite3_column_type(res, 3) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 3));
+  state->on_input = sqlite3_column_type(res, 4) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 4));
+  state->on_tick = sqlite3_column_type(res, 5) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
   state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
 
   sqlite3_finalize(res);
