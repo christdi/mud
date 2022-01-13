@@ -69,11 +69,10 @@ void player_connected(client_t* client, void* context) {
 
   player_t* player = create_player_t();
   player->client = client;
+  client->userdata = player;
 
-  hash_table_insert(game->players, uuid_str(&client->uuid), player);
-
+  hash_table_insert(game->players, uuid_str(&player->uuid), player);
   lua_hook_on_player_connected(game->lua_state, player);
-
   player_change_state(player, game, "login");
 }
 
@@ -82,12 +81,10 @@ void player_connected(client_t* client, void* context) {
 **/
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
-
-  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
+  player_t* player = client->userdata;
 
   lua_hook_on_player_disconnected(game->lua_state, player);
-
-  hash_table_delete(game->players, uuid_str(&client->uuid));
+  hash_table_delete(game->players, uuid_str(&player->uuid));
 }
 
 /**
@@ -95,8 +92,7 @@ void player_disconnected(client_t* client, void* context) {
 **/
 void player_input(client_t* client, void* context) {
   game_t* game = (game_t*)context;
-
-  player_t* player = hash_table_get(game->players, uuid_str(&client->uuid));
+  player_t* player = client->userdata;
 
   char command[COMMAND_SIZE];
 
@@ -355,7 +351,8 @@ static void write_to_player(player_t* player, char* output) {
   assert(output);
 
   if (player->client == NULL) {
-    // TODO(Chris I): Log warning
+    LOG(WARN, "Could not write to player [%s] as client has disconnected", player->uuid);
+    
     return;
   }
 
@@ -367,7 +364,7 @@ static void write_to_player(player_t* player, char* output) {
   }
 
   if (send_to_client(player->client, chosen_output) != 0) {
-    LOG(WARN, "Send to player failed, unable to write to client [%s]", player->client->uuid);
+    LOG(WARN, "Send to player failed, unable to write to client [%s]", player->uuid);
 
     return;
   }
