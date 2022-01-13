@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS script (
 
 INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './command.lua', 1, 1, 1, 1, 1, 1);
 INSERT INTO script VALUES('96b6080b-5cf6-4781-89ee-e6602f9f274d', './login_state.lua', 1, 1, 1, 1, 1, 1);
+INSERT INTO script VALUES('f019f74f-66ce-4e93-8ca5-7f8319f9fa1f', './play_state.lua', 1, 1, 1, 1, 1, 1);
 
 CREATE TABLE IF NOT EXISTS command (
   uuid TEXT PRIMARY KEY,
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS state (
 CREATE UNIQUE INDEX idx_table_name ON state(name);
 
 INSERT INTO state VALUES('6c508205-b798-4ede-8353-619d47a0ed94', 'login', 'on_enter', 'on_exit', 'on_tick', 'on_input', '96b6080b-5cf6-4781-89ee-e6602f9f274d');
+INSERT INTO state VALUES('88461e14-cdc5-4092-9f96-bc7dc81f2b1d', 'play', 'on_enter', 'on_exit', 'on_tick', 'on_input', 'f019f74f-66ce-4e93-8ca5-7f8319f9fa1f');
 
 CREATE TABLE IF NOT EXISTS entity (
   uuid TEXT PRIMARY KEY,

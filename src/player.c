@@ -111,7 +111,22 @@ void player_input(client_t* client, void* context) {
     if (strnlen(command, sizeof(command) - 1) > 0) {
       lua_hook_on_player_input(game->lua_state, player, command);
 
-      if (player->state != NULL) {
+      if (player->state != NULL && player->state->on_input != NULL) {
+        const char* script_uuid = uuid_str(&player->state->script);
+
+        script_t* script = NULL;
+
+        if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+          LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
+
+          return;
+        }
+
+        if (script_call_state_input(script, player->state, player, command) == -1) {
+          LOG(ERROR, "Error calling state script with uuid [%s] on_input function", script_uuid);
+
+          return;
+        }
       }
     }
   }

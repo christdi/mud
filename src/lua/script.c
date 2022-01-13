@@ -264,7 +264,7 @@ int script_call_state_input(script_t* script, state_t* state, player_t* player, 
     return 0;
   }
 
-  if (lua_getglobal(script->state, state->on_enter) != LUA_TFUNCTION) {
+  if (lua_getglobal(script->state, state->on_input) != LUA_TFUNCTION) {
     LOG(ERROR, "Function [%s] specified for state [%s] with script [%s] was not defined", state->on_input, state->name, script->filepath);
 
     return -1;
