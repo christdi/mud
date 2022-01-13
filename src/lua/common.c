@@ -11,6 +11,7 @@
 #define GLOBAL_DB_FIELD_NAME "dbptr"
 #define GLOBAL_LUA_FIELD_NAME "luaptr"
 #define MAX_ERROR_LINE_LENGTH 128
+#define LOG_STACK_TYPE_SIZE 128
 
 /**
  * Initialises a new Lua state with global fields used for API calls.
@@ -178,11 +179,9 @@ int lua_common_copy_table(lua_State* origin, lua_State* dest) {
     // origin stack = 1/-3 table 2/-2 key 3/-1 value, dest stack = 1/-1 new table
     if (lua_type(origin, -2) == LUA_TNUMBER) {
       int key = lua_tonumber(origin, -2);
-      LOG(INFO, "Key is: [%d]", key);
       lua_pushnumber(dest, key);
     } else if (lua_type(origin, -2) == LUA_TSTRING) {
       const char* key = lua_tostring(origin, -2);
-      LOG(INFO, "Key is: [%s]", key);
       lua_pushstring(dest, key);
     } else {
       return luaL_error(origin, "Unsupported key type, must be number or string");
@@ -195,6 +194,8 @@ int lua_common_copy_table(lua_State* origin, lua_State* dest) {
     } else if (lua_type(origin, -1) == LUA_TSTRING) {
       const char* value = lua_tostring(origin, -1);
       lua_pushstring(dest, value);
+    } else if (lua_type(origin, -1) == LUA_TTABLE) {
+      lua_common_copy_table(origin, dest);
     } else {
       return luaL_error(origin, "Unsupported value type, must be number or string");
     }
@@ -207,4 +208,44 @@ int lua_common_copy_table(lua_State* origin, lua_State* dest) {
   }
 
   return 0;
+}
+
+/**
+ * Outputs the contents a Lua state stack to logging.
+ *
+ * Parameters
+ *   l - The lua state whose stack should be printed
+**/
+void lua_common_log_stack(lua_State* l) {
+  int top = lua_gettop(l);
+
+  int i = 1;
+
+  LOG(DEBUG, "LUA STACK");
+
+  for (i = 1; i <= top; i++) {
+    char details[LOG_STACK_TYPE_SIZE];
+
+    switch(lua_type(l, i)) {
+      case LUA_TNUMBER:
+        snprintf(details, LOG_STACK_TYPE_SIZE, "%g", lua_tonumber(l, i));
+        break;
+      case LUA_TSTRING:
+        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_tostring(l, i));
+        break;
+      case LUA_TBOOLEAN:
+        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_toboolean(l, i) ? "true" : "false");
+        break;
+      case LUA_TNIL:
+        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", "nil");
+        break;
+      default:
+        snprintf(details, LOG_STACK_TYPE_SIZE, "%p", lua_topointer(l, i));
+        break;
+    }
+
+    LOG(DEBUG, "%d - %s [%s]", i, luaL_typename(l, i), details);
+  }
+
+  LOG(DEBUG, "");
 }

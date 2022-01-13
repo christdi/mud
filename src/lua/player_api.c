@@ -64,7 +64,6 @@ static int lua_get_player_data(lua_State *l) {
 
   // stack 1 = global player data, 2 = player uuid
   if (lua_rawget(master, 1) == LUA_TNIL) {
-    LOG(INFO, "Player table was NIL, so creating one");
 
     // stack 1 = player data table 2 = nil
     lua_pop(master, 1);
@@ -85,20 +84,15 @@ static int lua_get_player_data(lua_State *l) {
     if (lua_rawget(master, 1) != LUA_TTABLE) {
       return luaL_error(master, "Unable to create individual player data table for [%s]", player_uuid);
     }
-  } else {
-    LOG(INFO, "Player table not NIL");
   }
-
-  luaL_checktype(master, 1, LUA_TTABLE);
-  luaL_checktype(master, 2, LUA_TTABLE);
 
   // stack 1 = player data table, 2 = individual player data table
   lua_remove(master, 1);
 
-  assert(lua_gettop(master) == 1);
-
   // stack 1 = individual player table
   lua_common_copy_table(master, l);
+
+  lua_pop(master, 1);
 
   return 1;
 }

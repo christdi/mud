@@ -22,5 +22,6 @@ lua_State* lua_common_get_master_state(lua_State* l);
 lua_Debug lua_common_get_debug(lua_State* l);
 int lua_common_assert_n_arguments(lua_State *l, int n);
 int lua_common_copy_table(lua_State* origin, lua_State* dest);
+void lua_common_log_stack(lua_State* l);
 
 #endif

@@ -1,31 +1,15 @@
-function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
-end
+substate = {
+   GET_USERNAME = 1,
+   GET_PASSWORD = 2
+}
 
 function on_enter(p)
-  player.send(p, "Login state hello!\n\r")
+  player.send(p, "Welcome to [bred]demo[reset] MUD!\n\r")
 
-  log.info("First get data");
   local data = player.get_data(p)
-  
-  data.test = "hello";
+  data.login = { substate = substate.GET_USERNAME }
+
   player.save_data(p, data)
-
-  log.info(dump(data));
-
-  log.info("Second get data");
-  data = player.get_data(p)
-
-  log.info("Data test is [" .. data.test .. "]")
 end
 
 function on_exit(p)
@@ -36,5 +20,5 @@ function on_input(p, arg)
 end
 
 function on_tick(p)
-  player.send(p, "Tick\n\r")
 end
+
