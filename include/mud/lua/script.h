@@ -11,6 +11,7 @@ typedef struct hash_table hash_table_t;
 typedef struct game game_t;
 typedef struct command command_t;
 typedef struct player player_t;
+typedef struct state state_t;
 
 /**
  * Structs
@@ -38,6 +39,11 @@ void script_set_permission(script_t* script, permission_t flag, int permitted);
 int script_has_permission(script_t* script, permission_t flag);
 int script_load(game_t* game, const char* uuid, script_t** script_out);
 int script_unload(hash_table_t* scripts, const char* uuid);
+
 int script_call_command(script_t* script, command_t* command, player_t* player, const char* arguments);
+int script_call_state_enter(script_t* script, state_t* state, player_t* player);
+int script_call_state_exit(script_t* script, state_t* state, player_t* player);
+int script_call_state_input(script_t* script, state_t* state, player_t* player, const char* input);
+int script_call_state_tick(script_t* script, state_t* state, player_t* player);
 
 #endif

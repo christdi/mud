@@ -15,10 +15,12 @@ static int lua_script_load(lua_State *l);
 static int lua_script_loaded(lua_State *l);
 static int lua_script_available(lua_State *l);
 static int lua_script_unload(lua_State *l);
+static int lua_script_reload(lua_State *l);
 
 static const struct luaL_Reg script_lib [] = {
   {"load", lua_script_load},
   {"unload", lua_script_unload},
+  {"reload", lua_script_reload},
   {"loaded", lua_script_loaded},
   {"available", lua_script_available},  
   {NULL, NULL}
@@ -46,11 +48,7 @@ static int lua_script_load(lua_State *l) {
 
   script_t* script = NULL;
 
-  if (script_load(game, uuid, &script) == -1) {
-    return luaL_error(l, "Failed to load script with uuid [%s]", uuid);
-  }
-
-  if (script_repository_add(game->scripts, script) == -1) {
+  if (script_repository_load(game->scripts, game, uuid, &script) == -1) {
     return luaL_error(l, "Failed to add script with uuid [%s] to repository", uuid);
   }
 
@@ -69,14 +67,27 @@ static int lua_script_unload(lua_State *l) {
 
   const char* uuid = luaL_checkstring(l, 1);
 
-  script_t* script = NULL;
-
-  if (script_repository_get(game->scripts, uuid, &script) == -1) {
-    return luaL_error(l, "Failed to obtain script with uuid [%s] to unload", uuid);
+  if (script_repository_delete(game->scripts, uuid) == -1) {
+    return luaL_error(l, "Failed to schedule script with uuid [%s] for removal", uuid);
   }
 
-  if (script_repository_remove(game->scripts, script) == -1) {
-    return luaL_error(l, "Failed to schedule script with uuid [%s] for removal", uuid);
+  lua_pop(l, 1);
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+static int lua_script_reload(lua_State *l) {
+  lua_common_assert_n_arguments(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+
+  const char* uuid = luaL_checkstring(l, 1);
+
+  if (script_repository_reload(game->scripts, game, uuid, NULL) == -1) {
+    return luaL_error(l, "Failed to reload script with uuid [%s]", uuid);
   }
 
   lua_pop(l, 1);

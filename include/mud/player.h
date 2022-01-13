@@ -2,6 +2,7 @@
 #define _PLAYER_H_
 
 #include "mud/util/mudhash.h"
+#include "mud/util/muduuid.h"
 
 /**
  * Defines
@@ -19,11 +20,11 @@ typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct state state_t;
 typedef struct linked_list linked_list_t;
-
 /**
  * Structs
 **/
 typedef struct player {
+  mud_uuid_t uuid;
   client_t* client;
   account_t* account;
   entity_t* entity;
@@ -41,7 +42,7 @@ void player_connected(client_t* client, void* context);
 void player_disconnected(client_t* client, void* context);
 void player_input(client_t* client, void* context);
 
-void player_change_state(player_t* player, game_t* game, state_t* state);
+int player_change_state(player_t* player, game_t* game, const char* state);
 void player_on_tick(player_t* player, game_t* game);
 
 void send_to_player(player_t* player, const char* fmt, ...);

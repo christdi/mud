@@ -12,6 +12,7 @@
 #include "mud/account.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
+#include "mud/state/state.h"
 
 static int db_account_load_data(sqlite3* db, const char* username, account_t* account);
 static int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
@@ -524,4 +525,107 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
   sqlite3_finalize(res);
 
   return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int db_state_load(sqlite3* db, const char* uuid, state_t* state) {
+  assert(db);
+  assert(uuid);
+  assert(state);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, name, on_enter, on_exit, on_input, on_tick, script_uuid FROM state WHERE uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to retreive state from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
+  state->name = strdup((char *)sqlite3_column_text(res, 1));
+  state->on_enter = strdup((char *)sqlite3_column_text(res, 2));
+  state->on_exit = strdup((char *)sqlite3_column_text(res, 3));
+  state->on_input = strdup((char *)sqlite3_column_text(res, 4));
+  state->on_tick = strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
+  assert(db);
+  assert(name);
+  assert(state);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, name, on_enter_function, on_exit_function, on_input_function, on_tick_function, script_uuid FROM state WHERE name = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, name, (int)strlen(name), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind name to retrieve state from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to retreive state from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
+  state->name = strdup((char *)sqlite3_column_text(res, 1));
+  state->on_enter = sqlite3_column_type(res, 2) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 2));
+  state->on_exit = sqlite3_column_type(res, 3) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 3));
+  state->on_input = sqlite3_column_type(res, 4) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 4));
+  state->on_tick = sqlite3_column_type(res, 5) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
+
+  sqlite3_finalize(res);
+
+  return 1;
 }

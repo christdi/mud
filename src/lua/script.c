@@ -17,6 +17,7 @@
 #include "mud/lua/player_api.h"
 #include "mud/lua/script_api.h"
 #include "mud/log.h"
+#include "mud/state/state.h"
 
 /**
  * TODO(Chris I)
@@ -57,6 +58,8 @@ void deallocate_script(void* value) {
  * TODO(Chris I)
 **/
 void script_set_permission(script_t* script, permission_t flag, int permitted) {
+  assert(script);
+
   if (permitted) {
     script->permission |= flag;
   } else {
@@ -68,6 +71,8 @@ void script_set_permission(script_t* script, permission_t flag, int permitted) {
  * TODO(Chris I)
 **/
 int script_has_permission(script_t* script, permission_t flag) {
+  assert(script);
+
   return script->permission & flag;
 }
 
@@ -125,9 +130,8 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
     return -1;
   }
 
-
   if (luaL_dofile(script->state, script->filepath) != 0) {
-    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
+    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
 
     return -1;
   }
@@ -135,7 +139,7 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
   if (script_out != NULL) {
     *script_out = script;
   }
-  
+
   return 0;
 }
 
@@ -182,6 +186,123 @@ int script_call_command(script_t* script, command_t* command, player_t* player, 
   lua_pushstring(script->state, arguments);
 
   if (lua_pcall(script->state, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
+
+    return -1;
+  }  
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_enter(script_t* script, state_t* state, player_t* player) {
+  assert(script);
+  assert(state);
+  assert(player);
+
+  if (state->on_enter == NULL) {
+    return 0;
+  }
+
+  if (lua_getglobal(script->state, state->on_enter) != LUA_TFUNCTION) {
+    LOG(ERROR, "Function [%s] specified for state [%s] with script [%s] was not defined", state->on_enter, state->name, script->filepath);
+
+    return -1;
+  }
+
+  lua_pushlightuserdata(script->state, player);
+
+  if (lua_pcall(script->state, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
+
+    return -1;
+  }  
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_exit(script_t* script, state_t* state, player_t* player) {
+  assert(script);
+  assert(state);
+  assert(player);
+
+  if (state->on_exit == NULL) {
+    return 0;
+  }
+
+  if (lua_getglobal(script->state, state->on_exit) != LUA_TFUNCTION) {
+    LOG(ERROR, "Function [%s] specified for state [%s] with script [%s] was not defined", state->on_exit, state->name, script->filepath);
+
+    return -1;
+  }
+
+  lua_pushlightuserdata(script->state, player);
+
+  if (lua_pcall(script->state, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
+
+    return -1;
+  }  
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_input(script_t* script, state_t* state, player_t* player, const char* input) {
+  assert(script);
+  assert(state);
+  assert(player);
+
+  if (state->on_input == NULL) {
+    return 0;
+  }
+
+  if (lua_getglobal(script->state, state->on_input) != LUA_TFUNCTION) {
+    LOG(ERROR, "Function [%s] specified for state [%s] with script [%s] was not defined", state->on_input, state->name, script->filepath);
+
+    return -1;
+  }
+
+  lua_pushlightuserdata(script->state, player);
+  lua_pushstring(script->state, input);
+
+  if (lua_pcall(script->state, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
+
+    return -1;
+  }  
+
+  return 0;
+}
+
+/**
+ * TODO(Chris I)
+**/
+int script_call_state_tick(script_t* script, state_t* state, player_t* player) {
+  assert(script);
+  assert(state);
+  assert(player);
+
+  if (state->on_tick == NULL) {
+    return 0;
+  }
+
+  if (lua_getglobal(script->state, state->on_tick) != LUA_TFUNCTION) {
+    LOG(ERROR, "Function [%s] specified for state [%s] with script [%s] was not defined", state->on_tick, state->name, script->filepath);
+
+    return -1;
+  }
+
+  lua_pushlightuserdata(script->state, player);
+
+  if (lua_pcall(script->state, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;

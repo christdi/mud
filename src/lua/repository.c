@@ -53,29 +53,17 @@ void free_script_repository_t(script_repository_t* repository) {
 /**
  * TODO(Chris I)
 **/
-int script_repository_add(script_repository_t* repository, script_t* script) {
+int script_repository_delete(script_repository_t* repository, const char* uuid) {
   assert(repository);
-  assert(script);
+  assert(uuid);
 
-  const char* uuid = uuid_str(&script->uuid);
+  script_t* script = NULL;
 
-  if (list_add(repository->pending_add, script) == -1) {
-    LOG(ERROR, "Error inserting script with uuid [%s] into script repository pending add", uuid);
+  if ((script = hash_table_get(repository->scripts, uuid)) == NULL) {
+    LOG(ERROR, "Error retrieving script with uuid [%s] for deletion", uuid);
 
     return -1;
   }
-
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-int script_repository_remove(script_repository_t* repository, script_t* script) {
-  assert(repository);
-  assert(script);
-
-  const char* uuid = uuid_str(&script->uuid);
 
   if (list_add(repository->pending_rem, script) == -1) {
     LOG(ERROR, "Error inserting script with uuid [%s] into script repository pending removal", uuid);
@@ -89,27 +77,59 @@ int script_repository_remove(script_repository_t* repository, script_t* script) 
 /**
  * TODO(Chris I)
 **/
-int script_repository_has(script_repository_t* repository, const char* uuid) {
+int script_repository_load(script_repository_t* repository, game_t* game, const char* uuid, script_t** script_out) {
   assert(repository);
   assert(uuid);
 
-  return hash_table_has(repository->scripts, uuid);
+  if (hash_table_has(repository->scripts, uuid) == 1) {
+    script_t* script = hash_table_get(repository->scripts, uuid);
+
+    if (script_out != NULL) {
+      *script_out = script;
+    }
+
+    return 0;
+  }
+
+  if (script_load(game, uuid, script_out) == -1) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+
+    return -1;
+  }
+
+  if (list_add(repository->pending_add, *script_out) == -1) {
+    LOG(ERROR, "Failed to add script [%s] to pending addition in script repository", uuid);
+
+    return -1;
+  }
+
+  return 0;
 }
 
 /**
  * TODO(Chris I)
 **/
-int script_repository_get(script_repository_t* repository, const char* uuid, script_t** script_out) {
+int script_repository_reload(script_repository_t* repository, game_t* game, const char* uuid, script_t** script_out) {
   assert(repository);
   assert(uuid);
 
-  if (hash_table_has(repository->scripts, uuid) == -1) {
-    LOG(WARN, "Attempt to retrieve script with uuid [%s] failed as there was no matching script", uuid);
+  if (script_repository_delete(repository, uuid) == -1) {
+    LOG(ERROR, "Failed to delete script with uuid [%s] for reload", uuid);
 
     return -1;
   }
 
-  *script_out = hash_table_get(repository->scripts, uuid);
+  if (script_load(game, uuid, script_out) == -1) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+
+    return -1;
+  }
+
+  if (list_add(repository->pending_add, *script_out) == -1) {
+    LOG(ERROR, "Failed to add script [%s] to pending addition in script repository", uuid);
+
+    return -1;
+  }
 
   return 0;
 }
