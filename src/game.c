@@ -291,6 +291,11 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
+  if (lua_command_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua script API with state");
+    return -1;
+  }
+
   if (luaL_dofile(game->lua_state, config->game_script_file) != 0) {
     printf("Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
