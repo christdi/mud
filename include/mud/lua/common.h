@@ -15,6 +15,7 @@ typedef struct sqlite3 sqlite3;
 int lua_common_initialise_state(lua_State *l, game_t* game);
 game_t* lua_common_get_game(lua_State* l);
 sqlite3* lua_common_get_database(lua_State* l);
+lua_State* lua_common_get_master_state(lua_State* l);
 lua_Debug lua_common_get_debug(lua_State* l);
 int lua_common_assert_n_arguments(lua_State *l, int n);
 
