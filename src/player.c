@@ -1,5 +1,4 @@
 #include "mud/player.h"
-#include "mud/account.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
@@ -20,7 +19,6 @@
 
 static int call_state_exit_function(state_t* state, player_t* player, game_t* game);
 static int call_state_enter_function(state_t* state, player_t* player, game_t* game);
-static void get_player_username(player_t* player, char* username);
 static void write_to_player(player_t* player, char* output);
 
 /**
@@ -32,7 +30,6 @@ player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
   player->uuid = new_uuid();
-  player->account = account_t_new();
   player->state = NULL;
   player->client = NULL;
 
@@ -44,10 +41,6 @@ player_t* create_player_t() {
 **/
 void free_player_t(player_t* player) {
   assert(player);
-
-  if (player->account != NULL) {
-    account_t_free(player->account);
-  }
 
   if (player->state != NULL) {
     free_state_t(player->state);
@@ -362,11 +355,7 @@ static void write_to_player(player_t* player, char* output) {
   assert(output);
 
   if (player->client == NULL) {
-    char username[USERNAME_SIZE];
-    get_player_username(player, username);
-
-    LOG(WARN, "Send to player with username [%s] failed as they have no client", username);
-
+    // TODO(Chris I): Log warning
     return;
   }
 
@@ -382,15 +371,4 @@ static void write_to_player(player_t* player, char* output) {
 
     return;
   }
-}
-
-/**
- * Copies the players username into the buffer pointed to by username. If
- * the player does not have a username yet, it is replaced with a placeholder.
-**/
-static void get_player_username(player_t* player, char* username) {
-  assert(player);
-  assert(username);
-
-  strncpy(username, player->account->username != NULL ? player->account->username : "anonymous", USERNAME_SIZE);
 }
