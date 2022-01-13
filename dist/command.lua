@@ -1,16 +1,3 @@
-function one_argument(str)
-  local index = str:find(" ")
-
-  if index == nil then
-    return str, ""
-  end
-
-  local subcommand = str:sub(0, index - 1)
-  str = str:sub(index + 1)
-
-  return subcommand, str
-end
-
 function do_script(p, arg)
   if (arg == nil or arg == "") then
     player.send(p, "Syntax: script <load|unload|loaded|available>\n\r")

@@ -26,6 +26,8 @@ typedef struct game {
   unsigned int shutdown;
   struct timeval last_tick;
 
+  config_t* config;
+
   sqlite3* database;
 
   hash_table_t* templates;
@@ -49,6 +51,6 @@ typedef struct game {
 game_t* create_game_t(void);
 void free_game_t(game_t* game);
 
-int start_game(config_t* config);
+int start_game(int argc, char * argv[]);
 
 #endif

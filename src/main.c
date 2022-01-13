@@ -11,21 +11,9 @@
  * configuration or initialise logging.  Otherwise, starts the game.
 **/
 int main(int argc, char* argv[]) {
-  config_t* config = config_new();
-
-  if (!config || load_configuration("config.lua", config) != 0) {
-    printf("Unable to load [config.lua].  Using default configuration\n\r");
+  if (start_game(argc, argv) != 0) {
+    return -1;
   }
-
-  if (!config || parse_configuration(argc, argv, config) != 0) {
-    exit(-1);
-  }
-
-  if (start_game(config) != 0) {
-    exit(-1);
-  }
-
-  config_free(config);
 
   return 0;
 }
