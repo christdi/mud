@@ -15,6 +15,7 @@
 int config_parse_line(char* line, config_t* config);
 
 int set_game_script_file(const char* value, config_t* config);
+int set_lua_common_script(const char* value, config_t* config);
 int set_log_config_file(const char* value, config_t* config);
 int set_database_file(const char* value, config_t* config);
 int set_game_port(const char* value, config_t* config);
@@ -28,6 +29,7 @@ int set_ticks_per_second(const char* value, config_t* config);
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
   config->game_script_file = strdup("main.lua");
+  config->lua_common_script = strdup("common.lua");
   config->log_config_file = strdup("log.ini");
   config->database_file = strdup("mud.db");
   config->game_port = DEFAULT_PORT;
@@ -44,6 +46,10 @@ void config_free(config_t* config) {
 
   if (config->game_script_file != NULL) {
     free(config->game_script_file);
+  }
+
+  if (config->lua_common_script != NULL) {
+    free(config->lua_common_script);
   }
 
   if (config->log_config_file != NULL) {
@@ -63,10 +69,17 @@ void config_free(config_t* config) {
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, ":s:d:p:t:h")) != -1) {
+  while ((opt = getopt(argc, argv, ":s:c:d:p:t:h")) != -1) {
     switch (opt) {
     case 's':
       if (set_game_script_file(optarg, config) == -1) {
+        return -1;
+      }
+
+      break;
+
+    case 'c':
+      if (set_lua_common_script(optarg, config) == 1) {
         return -1;
       }
 
@@ -94,7 +107,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
       break;
 
     case 'h':
-      printf("%s [-s game script file] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+      printf("%s [-s game script file] [-c common lua script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
 
       return -1;
 
@@ -148,6 +161,14 @@ int load_configuration(const char* filename, config_t* config) {
     set_game_script_file(lua_tostring(l, -1), config);
   }
 
+  lua_getglobal(l, "lua_common_script");
+
+  if (lua_isstring(l, -1)) {
+    set_lua_common_script(lua_tostring(l, -1), config);
+  }
+
+  lua_pop(l, 1);
+
   lua_getglobal(l, "game_port");
 
   if (lua_isstring(l, -1)) {
@@ -196,6 +217,16 @@ int set_game_script_file(const char* value, config_t* config) {
   }
 
   config->game_script_file = strdup(value);
+
+  return 0;
+}
+
+int set_lua_common_script(const char* value, config_t* config) {
+   if (config->lua_common_script != NULL) {
+    free(config->lua_common_script);
+  }
+
+  config->lua_common_script = strdup(value);
 
   return 0;
 }

@@ -11,6 +11,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/lua/command_api.h"
 #include "mud/lua/common.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/db_api.h"
