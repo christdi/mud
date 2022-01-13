@@ -5,6 +5,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "mud/config.h"
 #include "mud/command/command.h"
 #include "mud/data/hash_table.h"
 #include "mud/db/db.h"
@@ -104,6 +105,14 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
 
   if (script_has_permission(script, ALLOW_STD_LIB)) {
     luaL_openlibs(script->state);
+  }
+
+  if (game->config->lua_common_script != NULL) {
+    if (luaL_dofile(script->state, game->config->lua_common_script) != 0) {
+      LOG(ERROR, "Error while loading Lua common script [%s].\n\r", lua_tostring(script->state, -1));
+
+      return -1;
+    }
   }
 
   if (script_has_permission(script, ALLOW_GAME_API) && lua_game_register_api(script->state) == -1) {

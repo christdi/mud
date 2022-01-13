@@ -45,6 +45,8 @@ game_t* create_game_t(void) {
   game->shutdown = 0;
   gettimeofday(&game->last_tick, NULL);
 
+  game->config = config_new();
+
   game->database = NULL;
 
   game->templates = create_hash_table_t();
@@ -84,6 +86,8 @@ void free_game_t(game_t* game) {
   assert(game->components);
   assert(game->narrator);
 
+  config_free(game->config);
+
   free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
@@ -109,12 +113,18 @@ void free_game_t(game_t* game) {
  *
  * Returns a 0 on success or -1 on failure.
 **/
-int start_game(config_t* config) {
-  assert(config);
-
+int start_game(int argc, char *argv[]) {
   game_t* game = create_game_t();
 
   LOG(INFO, "Starting MUD engine");
+
+  if (load_configuration("config.lua", game->config) != 0) {
+    printf("Unable to load [config.lua].  Using default configuration\n\r");
+  }
+
+  if (parse_configuration(argc, argv, game->config) != 0) {
+    exit(-1);
+  }
 
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
@@ -126,13 +136,13 @@ int start_game(config_t* config) {
     return -1;
   }
 
-  if (connect_to_database(game, config->database_file) != 0) {
+  if (connect_to_database(game, game->config->database_file) != 0) {
     LOG(ERROR, "Failed to start game server");
 
     return -1;
   }
 
-  if (initialise_lua(game, config) == -1) {
+  if (initialise_lua(game, game->config) == -1) {
     LOG(ERROR, "Failed to initialise Lua");
 
     return -1;
@@ -144,7 +154,7 @@ int start_game(config_t* config) {
     return -1;
   }
 
-  if (start_game_server(game->network, config->game_port) == -1) {
+  if (start_game_server(game->network, game->config->game_port) == -1) {
     LOG(ERROR, "Failed to start game server");
 
     return -1;
@@ -158,10 +168,10 @@ int start_game(config_t* config) {
     task_execute(game->tasks, game);
     narrate_events(game);
     script_repository_update(game->scripts);
-    game_sleep_until_tick(game, config->ticks_per_second);
+    game_sleep_until_tick(game, game->config->ticks_per_second);
   }
 
-  if (stop_game_server(game->network, config->game_port) == -1) {
+  if (stop_game_server(game->network, game->config->game_port) == -1) {
     LOG(ERROR, "Failed to shutdown server");
 
     return -1;
@@ -297,8 +307,16 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
+  if (game->config->lua_common_script != NULL) {
+    if (luaL_dofile(game->lua_state, game->config->lua_common_script) != 0) {
+      LOG(ERROR, "Error while loading Lua common script [%s].\n\r", lua_tostring(game->lua_state, -1));
+
+      return -1;
+    }
+  }
+
   if (luaL_dofile(game->lua_state, config->game_script_file) != 0) {
-    printf("Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
+    LOG(ERROR, "Error while loading Lua main script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
     return -1;
   }
