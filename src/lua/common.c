@@ -38,6 +38,25 @@ int lua_common_initialise_state(lua_State *l, game_t* game) {
 }
 
 /**
+ * Intended to create a table for player data in the master Lua state.  Transient
+ * script states will be able to obtain a local copy which they may then persist
+ * back to the master Lua state.
+ * 
+ * Parameters
+ *   l - The Lua state to be populated, should be master state
+ * 
+ * Returns 0 on success
+**/
+int lua_common_create_player_table(lua_State *l) {
+  assert(l);
+
+  lua_newtable(l);
+  lua_setglobal(l, PLAYER_DATA_TABLE_NAME);
+
+  return 0;
+}
+
+/**
  * Parameters
  *   l - Lua state which is currently active
  * 
@@ -132,6 +151,59 @@ int lua_common_assert_n_arguments(lua_State *l, int n) {
 
   if (count != n) {
     return luaL_error(l, "Expected %d arguments but received %d", n, count);
+  }
+
+  return 0;
+}
+
+/**
+ * Copies the table from the top of the stack of origin and pushes it to the top of the stack
+ * of dest.
+ * 
+ * Parameters
+ *   origin - The origin Lua state
+ *   dest - The destination Lua state
+ * 
+ * Returns 0 on success or throws a Lua error
+**/
+int lua_common_copy_table(lua_State* origin, lua_State* dest) {
+  luaL_checktype(origin, -1, LUA_TTABLE);
+
+  // origin stack = 1 table, dest stack = empty
+  lua_pushnil(origin);
+  lua_newtable(dest);
+
+  // origin stack = 1/-2 table 2/-1 = key (nil initially), dest stack = 1/-1 new table
+  while (lua_next(origin, -2) != 0) {
+    // origin stack = 1/-3 table 2/-2 key 3/-1 value, dest stack = 1/-1 new table
+    if (lua_type(origin, -2) == LUA_TNUMBER) {
+      int key = lua_tonumber(origin, -2);
+      LOG(INFO, "Key is: [%d]", key);
+      lua_pushnumber(dest, key);
+    } else if (lua_type(origin, -2) == LUA_TSTRING) {
+      const char* key = lua_tostring(origin, -2);
+      LOG(INFO, "Key is: [%s]", key);
+      lua_pushstring(dest, key);
+    } else {
+      return luaL_error(origin, "Unsupported key type, must be number or string");
+    }
+
+    // origin stack = 1/-3 table 2/-2 key 3/-1 value, dest stack = 1/-2 new table 2/-1 key
+    if (lua_type(origin, -1) == LUA_TNUMBER) {
+      int value = lua_tonumber(origin, -1);
+      lua_pushnumber(dest, value);
+    } else if (lua_type(origin, -1) == LUA_TSTRING) {
+      const char* value = lua_tostring(origin, -1);
+      lua_pushstring(dest, value);
+    } else {
+      return luaL_error(origin, "Unsupported value type, must be number or string");
+    }
+
+    // origin stack = 1/-3 table 2/-2 key 3/-1 value, dest stack 1/-3 = new table 2/-2 key 3/-1 value
+    lua_rawset(dest, -3);
+
+    // origin stack = 1/-3 table 2/-2 key 3/-3 value, dest atack = 1/-1 new table
+    lua_pop(origin, 1);
   }
 
   return 0;

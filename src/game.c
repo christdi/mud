@@ -254,8 +254,13 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  if ((lua_common_initialise_state(game->lua_state, game)) == -1) {
+  if (lua_common_initialise_state(game->lua_state, game) == -1) {
     LOG(ERROR, "Failed to initialise Lua state");
+    return -1;
+  }
+
+  if (lua_common_create_player_table(game->lua_state) == -1 ) {
+    LOG(ERROR, "Failed to create global player table");
     return -1;
   }
 
