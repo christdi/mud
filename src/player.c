@@ -11,7 +11,6 @@
 #include "mud/network/client.h"
 #include "mud/state/state.h"
 #include "mud/util/mudstring.h"
-#include "mud/util/muduuid.h"
 
 #include <assert.h>
 #include <sqlite3.h>
@@ -32,6 +31,7 @@ static void write_to_player(player_t* player, char* output);
 player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
+  player->uuid = new_uuid();
   player->account = account_t_new();
   player->state = NULL;
   player->client = NULL;
@@ -81,8 +81,6 @@ void player_connected(client_t* client, void* context) {
 
   lua_hook_on_player_connected(game->lua_state, player);
 
-  player_change_state(player, game, "login");
-  player_change_state(player, game, "login");
   player_change_state(player, game, "login");
 }
 
