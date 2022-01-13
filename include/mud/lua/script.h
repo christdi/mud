@@ -22,7 +22,8 @@ typedef enum {
   ALLOW_GAME_API = (1 << 2),
   ALLOW_LOG_API = (1 << 3),
   ALLOW_PLAYER_API = (1 << 4),
-  ALLOW_SCRIPT_API = (1 << 5)
+  ALLOW_SCRIPT_API = (1 << 5),
+  ALLOW_COMMAND_API = (1 << 6)
 } permission_t;
 
 typedef struct script {

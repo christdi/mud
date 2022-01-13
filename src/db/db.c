@@ -433,7 +433,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api FROM script WHERE uuid = ?";
+  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api, allow_command_api FROM script WHERE uuid = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve script from database: [%s]", sqlite3_errmsg(db));
@@ -472,6 +472,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
   script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
   script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
   script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
+  script_set_permission(script, ALLOW_COMMAND_API, sqlite3_column_int(res, 8)); // NOLINT(readability-magic-numbers)
 
   sqlite3_finalize(res);
 
@@ -487,7 +488,7 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api FROM script";
+  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api, allow_command_api FROM script";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve scripts from database: [%s]", sqlite3_errmsg(db));
@@ -518,6 +519,7 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
     script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
     script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
     script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
+    script_set_permission(script, ALLOW_COMMAND_API, sqlite3_column_int(res, 8)); // NOLINT(readability-magic-numbers)
 
     list_add(scripts, script);
   }

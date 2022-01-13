@@ -9,12 +9,13 @@
 #include "mud/data/hash_table.h"
 #include "mud/db/db.h"
 #include "mud/game.h"
+#include "mud/lua/command_api.h"
 #include "mud/lua/common.h"
-#include "mud/lua/script.h"
 #include "mud/lua/db_api.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
+#include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
 #include "mud/log.h"
 #include "mud/state/state.h"
@@ -126,6 +127,11 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
   }
 
   if (script_has_permission(script, ALLOW_SCRIPT_API) && lua_script_register_api(script->state) == -1) {
+    LOG(ERROR, "Failed to register Lua script API with state");
+    return -1;
+  }
+
+  if (script_has_permission(script, ALLOW_COMMAND_API) && lua_command_register_api(script->state) == -1) {
     LOG(ERROR, "Failed to register Lua script API with state");
     return -1;
   }
