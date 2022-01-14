@@ -31,9 +31,8 @@ mud_uuid_t new_uuid() {
 const char* uuid_str(const mud_uuid_t* uuid) {
   assert(uuid);
 
-  return uuid->raw;  
+  return uuid->raw;
 }
-
 
 /**
  * Returns a mud_uuit_t populated with a UUID.
@@ -45,7 +44,7 @@ const char* uuid_str(const mud_uuid_t* uuid) {
 **/
 mud_uuid_t str_uuid(const char* data) {
   assert(data);
-  
+
   mud_uuid_t uuid;
 
   strlcpy(uuid.raw, data, UUID_SIZE);

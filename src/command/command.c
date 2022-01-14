@@ -3,13 +3,13 @@
 #include <string.h>
 
 #include "mud/command/command.h"
-#include "mud/db/db.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
+#include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/lua/script.h"
 #include "mud/lua/repository.h"
+#include "mud/lua/script.h"
 #include "mud/player.h"
 
 static int get_command(game_t* game, const char* name, command_t* command);
@@ -35,7 +35,7 @@ void free_command_t(command_t* command) {
     free(command->name);
   }
 
-  if(command->function != NULL) {
+  if (command->function != NULL) {
     free(command->function);
   }
 

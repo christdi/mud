@@ -28,5 +28,4 @@ component_data_t* create_component_data_t();
 void free_component_data_t(component_data_t* component_data);
 void deallocate_component_data_t(void* value);
 
-
 #endif

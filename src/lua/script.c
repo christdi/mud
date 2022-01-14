@@ -1,15 +1,16 @@
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 #include "lualib.h"
 
-#include "mud/config.h"
 #include "mud/command/command.h"
+#include "mud/config.h"
 #include "mud/data/hash_table.h"
 #include "mud/db/db.h"
 #include "mud/game.h"
+#include "mud/log.h"
 #include "mud/lua/command_api.h"
 #include "mud/lua/common.h"
 #include "mud/lua/db_api.h"
@@ -18,7 +19,6 @@
 #include "mud/lua/player_api.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
-#include "mud/log.h"
 #include "mud/state/state.h"
 
 /**
@@ -101,7 +101,7 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
   if ((lua_common_initialise_state(script->state, game)) == -1) {
     LOG(ERROR, "Failed to initialise Lua state");
     return -1;
-  }  
+  }
 
   if (script_has_permission(script, ALLOW_STD_LIB)) {
     luaL_openlibs(script->state);
@@ -204,7 +204,7 @@ int script_call_command(script_t* script, command_t* command, player_t* player, 
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;
-  }  
+  }
 
   return 0;
 }
@@ -233,7 +233,7 @@ int script_call_state_enter(script_t* script, state_t* state, player_t* player) 
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;
-  }  
+  }
 
   return 0;
 }
@@ -262,7 +262,7 @@ int script_call_state_exit(script_t* script, state_t* state, player_t* player) {
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;
-  }  
+  }
 
   return 0;
 }
@@ -292,7 +292,7 @@ int script_call_state_input(script_t* script, state_t* state, player_t* player, 
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;
-  }  
+  }
 
   return 0;
 }
@@ -321,7 +321,7 @@ int script_call_state_tick(script_t* script, state_t* state, player_t* player) {
     LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
 
     return -1;
-  }  
+  }
 
   return 0;
 }

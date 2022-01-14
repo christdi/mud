@@ -7,6 +7,7 @@
 typedef struct hash_table hash_table_t;
 typedef struct linked_list linked_list_t;
 typedef struct game game_t;
+typedef struct script script_t;
 
 typedef struct script_repository {
   hash_table_t* scripts;

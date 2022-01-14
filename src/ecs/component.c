@@ -43,7 +43,6 @@ void free_component_data_t(component_data_t* component_data) {
   free(component_data);
 }
 
-
 void deallocate_component_data_t(void* value) {
   assert(value);
 

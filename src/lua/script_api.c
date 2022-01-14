@@ -1,29 +1,29 @@
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "mud/data/hash_table.h"
 #include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
+#include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
-#include "mud/lua/repository.h"
 #include "mud/util/muduuid.h"
 
-static int lua_script_load(lua_State *l);
-static int lua_script_loaded(lua_State *l);
-static int lua_script_available(lua_State *l);
-static int lua_script_unload(lua_State *l);
-static int lua_script_reload(lua_State *l);
+static int lua_script_load(lua_State* l);
+static int lua_script_loaded(lua_State* l);
+static int lua_script_available(lua_State* l);
+static int lua_script_unload(lua_State* l);
+static int lua_script_reload(lua_State* l);
 
-static const struct luaL_Reg script_lib [] = {
-  {"load", lua_script_load},
-  {"unload", lua_script_unload},
-  {"reload", lua_script_reload},
-  {"loaded", lua_script_loaded},
-  {"available", lua_script_available},  
-  {NULL, NULL}
+static const struct luaL_Reg script_lib[] = {
+  { "load", lua_script_load },
+  { "unload", lua_script_unload },
+  { "reload", lua_script_reload },
+  { "loaded", lua_script_loaded },
+  { "available", lua_script_available },
+  { NULL, NULL }
 };
 
 /**
@@ -39,7 +39,7 @@ int lua_script_register_api(lua_State* l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_script_load(lua_State *l) {
+static int lua_script_load(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   game_t* game = lua_common_get_game(l);
@@ -60,7 +60,7 @@ static int lua_script_load(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_script_unload(lua_State *l) {
+static int lua_script_unload(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   game_t* game = lua_common_get_game(l);
@@ -79,7 +79,7 @@ static int lua_script_unload(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_script_reload(lua_State *l) {
+static int lua_script_reload(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   game_t* game = lua_common_get_game(l);
@@ -98,7 +98,7 @@ static int lua_script_reload(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_script_loaded(lua_State *l) {
+static int lua_script_loaded(lua_State* l) {
   lua_common_assert_n_arguments(l, 0);
 
   game_t* game = lua_common_get_game(l);
@@ -113,7 +113,7 @@ static int lua_script_loaded(lua_State *l) {
   while ((script = h_it_get(it)) != NULL) {
     lua_pushnumber(l, index); // stack = 1 table, 2 index
     lua_newtable(l); // stack = 1 table, 2 index, 3 table
-    
+
     lua_pushstring(l, "uuid"); // stack = 1 table, 2 index, 3 table, 4 uuid key
     lua_pushstring(l, uuid_str(&script->uuid)); // stack = 1 table, 2 index, 3 table, 4 uuid key, 5 uuid value
     lua_rawset(l, 3); // stack = 1 table, 2 index, 3 table
@@ -134,7 +134,7 @@ static int lua_script_loaded(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_script_available(lua_State *l) {
+static int lua_script_available(lua_State* l) {
   lua_common_assert_n_arguments(l, 0);
 
   game_t* game = lua_common_get_game(l);

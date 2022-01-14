@@ -1,7 +1,7 @@
 #include <assert.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "mud/command/command.h"
 #include "mud/log.h"
@@ -9,13 +9,12 @@
 #include "mud/lua/common.h"
 #include "mud/player.h"
 
+static int lua_execute_command(lua_State* l);
 
-static int lua_execute_command(lua_State *l);
+static const struct luaL_Reg command_lib[] = {
+  { "execute", lua_execute_command },
 
-static const struct luaL_Reg command_lib [] = {
-  {"execute", lua_execute_command},
-
-  {NULL, NULL}
+  { NULL, NULL }
 };
 
 /**
@@ -41,7 +40,7 @@ int lua_command_register_api(lua_State* l) {
  *
  * Returns 0 on success or calls luaL_error on failure.
 **/
-static int lua_execute_command(lua_State *l) {
+static int lua_execute_command(lua_State* l) {
   lua_common_assert_n_arguments(l, 3);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -64,4 +63,3 @@ static int lua_execute_command(lua_State *l) {
 
   return 1;
 }
-

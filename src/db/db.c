@@ -68,7 +68,7 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
 
   sqlite3_finalize(res);
 
-  return count;  
+  return count;
 }
 
 /**
@@ -80,7 +80,7 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
  *
  * Returns number of results on success or -1 on failure.
 **/
-int db_entity_load_all(sqlite3* db, linked_list_t *entities) {
+int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
   assert(db);
   assert(entities);
 
@@ -229,8 +229,8 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
     return -1;
   }
 
-  script->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
-  script->filepath = strdup((char *)sqlite3_column_text(res, 1));
+  script->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+  script->filepath = strdup((char*)sqlite3_column_text(res, 1));
 
   script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
   script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
@@ -248,7 +248,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 /**
  * TODO(Chris I)
 **/
-int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
+int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
   assert(db);
   assert(scripts);
 
@@ -276,8 +276,8 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts) {
 
     script_t* script = create_script_t();
 
-    script->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
-    script->filepath = strdup((char *)sqlite3_column_text(res, 1));
+    script->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+    script->filepath = strdup((char*)sqlite3_column_text(res, 1));
 
     script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
     script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
@@ -335,13 +335,13 @@ int db_state_load(sqlite3* db, const char* uuid, state_t* state) {
     return -1;
   }
 
-  state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
-  state->name = strdup((char *)sqlite3_column_text(res, 1));
-  state->on_enter = strdup((char *)sqlite3_column_text(res, 2));
-  state->on_exit = strdup((char *)sqlite3_column_text(res, 3));
-  state->on_input = strdup((char *)sqlite3_column_text(res, 4));
-  state->on_tick = strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
-  state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
+  state->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+  state->name = strdup((char*)sqlite3_column_text(res, 1));
+  state->on_enter = strdup((char*)sqlite3_column_text(res, 2));
+  state->on_exit = strdup((char*)sqlite3_column_text(res, 3));
+  state->on_input = strdup((char*)sqlite3_column_text(res, 4));
+  state->on_tick = strdup((char*)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->script = str_uuid((char*)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
 
   sqlite3_finalize(res);
 
@@ -385,19 +385,18 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
     return -1;
   }
 
-  state->uuid = str_uuid((char *)sqlite3_column_text(res, 0));
-  state->name = strdup((char *)sqlite3_column_text(res, 1));
-  state->on_enter = sqlite3_column_type(res, 2) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 2));
-  state->on_exit = sqlite3_column_type(res, 3) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 3));
-  state->on_input = sqlite3_column_type(res, 4) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 4));
-  state->on_tick = sqlite3_column_type(res, 5) == SQLITE_NULL ? NULL : strdup((char *)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
-  state->script = str_uuid((char *)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
+  state->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+  state->name = strdup((char*)sqlite3_column_text(res, 1));
+  state->on_enter = sqlite3_column_type(res, 2) == SQLITE_NULL ? NULL : strdup((char*)sqlite3_column_text(res, 2));
+  state->on_exit = sqlite3_column_type(res, 3) == SQLITE_NULL ? NULL : strdup((char*)sqlite3_column_text(res, 3));
+  state->on_input = sqlite3_column_type(res, 4) == SQLITE_NULL ? NULL : strdup((char*)sqlite3_column_text(res, 4));
+  state->on_tick = sqlite3_column_type(res, 5) == SQLITE_NULL ? NULL : strdup((char*)sqlite3_column_text(res, 5)); // NOLINT(readability-magic-numbers)
+  state->script = str_uuid((char*)sqlite3_column_text(res, 6)); // NOLINT(readability-magic-numbers)
 
   sqlite3_finalize(res);
 
   return 1;
 }
-
 
 /**
  * Checks for the existence of a user matching a given username and password_hash.
@@ -437,7 +436,7 @@ int db_user_authenticate(sqlite3* db, const char* username, const char* password
     sqlite3_finalize(res);
 
     return -1;
-  } 
+  }
 
   int rc = 0;
 

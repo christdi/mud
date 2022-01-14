@@ -1,36 +1,36 @@
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
-#include "mud/game.h"
-#include "mud/data/linked_list.h"
 #include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/ecs/component.h"
 #include "mud/ecs/entity.h"
+#include "mud/game.h"
+#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/game_api.h"
-#include "mud/log.h"
 
 #define API_TABLE_NAME "game"
 
-static int lua_new_entity(lua_State *l);
-static int lua_get_entity(lua_State *l);
+static int lua_new_entity(lua_State* l);
+static int lua_get_entity(lua_State* l);
 static int lua_get_entity_id(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
-static int lua_shutdown(lua_State *l);
+static int lua_shutdown(lua_State* l);
 
-static const struct luaL_Reg game_lib [] = {
-  {"new_entity", lua_new_entity},
-  {"get_entity", lua_get_entity},
-  {"get_entity_id", lua_get_entity_id},
-  {"register_component", lua_register_component},
-  {"has_component", lua_has_component},
-  {"add_component", lua_add_component},
-  {"get_component", lua_get_component},
-  {"shutdown", lua_shutdown},
-  {NULL, NULL}
+static const struct luaL_Reg game_lib[] = {
+  { "new_entity", lua_new_entity },
+  { "get_entity", lua_get_entity },
+  { "get_entity_id", lua_get_entity_id },
+  { "register_component", lua_register_component },
+  { "has_component", lua_has_component },
+  { "add_component", lua_add_component },
+  { "get_component", lua_get_component },
+  { "shutdown", lua_shutdown },
+  { NULL, NULL }
 };
 
 /**
@@ -46,12 +46,12 @@ int lua_game_register_api(lua_State* l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_new_entity(lua_State *l) {
+static int lua_new_entity(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
 
   const char* name = luaL_checkstring(l, 1);
   const char* description = luaL_checkstring(l, 2);
-  
+
   game_t* game = lua_common_get_game(l);
 
   entity_t* entity = new_entity(game, name, description);
@@ -66,7 +66,7 @@ static int lua_new_entity(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_get_entity(lua_State *l) {
+static int lua_get_entity(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   game_t* game = lua_common_get_game(l);
@@ -131,7 +131,7 @@ static int lua_has_component(lua_State* l) {
 
   entity_t* entity = lua_touserdata(l, 1);
   component_t* component = lua_touserdata(l, 2);
-  
+
   lua_pop(l, 2);
 
   lua_pushboolean(l, hash_table_has(component->entities, entity->id.raw));
@@ -153,7 +153,7 @@ static int lua_add_component(lua_State* l) {
 
   entity_t* entity = lua_touserdata(l, 1);
   component_t* component = lua_touserdata(l, 2);
-  
+
   component_data_t* component_data = create_component_data_t();
   component_data->ref = ref;
 
@@ -192,9 +192,9 @@ static int lua_get_component(lua_State* l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_shutdown(lua_State *l) {
+static int lua_shutdown(lua_State* l) {
   game_t* game = lua_common_get_game(l);
-  
+
   game->shutdown = 1;
 
   return 0;

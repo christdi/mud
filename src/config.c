@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "bsd/string.h"
 
@@ -139,7 +139,7 @@ int load_configuration(const char* filename, config_t* config) {
   assert(filename);
   assert(config);
 
-  lua_State *l = NULL;
+  lua_State* l = NULL;
 
   if ((l = luaL_newstate()) == NULL) {
     printf("Failed to create new Lua state to parse configuration");
@@ -222,7 +222,7 @@ int set_game_script_file(const char* value, config_t* config) {
 }
 
 int set_lua_common_script(const char* value, config_t* config) {
-   if (config->lua_common_script != NULL) {
+  if (config->lua_common_script != NULL) {
     free(config->lua_common_script);
   }
 

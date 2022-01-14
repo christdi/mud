@@ -1,27 +1,27 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
-#include "lauxlib.h"
 
-#include "mud/game.h"
 #include "mud/command/command.h"
 #include "mud/config.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/game.h"
+#include "mud/log.h"
 #include "mud/lua/command_api.h"
 #include "mud/lua/common.h"
-#include "mud/lua/game_api.h"
 #include "mud/lua/db_api.h"
+#include "mud/lua/game_api.h"
+#include "mud/lua/hooks.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
-#include "mud/lua/script_api.h"
-#include "mud/lua/hooks.h"
-#include "mud/lua/script.h"
 #include "mud/lua/repository.h"
-#include "mud/log.h"
+#include "mud/lua/script.h"
+#include "mud/lua/script_api.h"
 #include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
 #include "mud/player.h"
@@ -113,7 +113,7 @@ void free_game_t(game_t* game) {
  *
  * Returns a 0 on success or -1 on failure.
 **/
-int start_game(int argc, char *argv[]) {
+int start_game(int argc, char* argv[]) {
   game_t* game = create_game_t();
 
   LOG(INFO, "Starting MUD engine");
@@ -258,7 +258,6 @@ void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   game->last_tick = current_time;
 }
 
-
 int initialise_lua(game_t* game, config_t* config) {
   if ((game->lua_state = luaL_newstate()) == NULL) {
     LOG(ERROR, "Failed to initialise Lua state");
@@ -270,7 +269,7 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  if (lua_common_create_player_table(game->lua_state) == -1 ) {
+  if (lua_common_create_player_table(game->lua_state) == -1) {
     LOG(ERROR, "Failed to create global player table");
     return -1;
   }

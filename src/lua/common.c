@@ -1,7 +1,7 @@
 #include <assert.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "mud/game.h"
 #include "mud/log.h"
@@ -22,7 +22,7 @@
  * 
  * Returns 0 on success.
 **/
-int lua_common_initialise_state(lua_State *l, game_t* game) {
+int lua_common_initialise_state(lua_State* l, game_t* game) {
   assert(l);
   assert(game);
 
@@ -35,7 +35,7 @@ int lua_common_initialise_state(lua_State *l, game_t* game) {
   lua_pushlightuserdata(l, game->lua_state);
   lua_setglobal(l, GLOBAL_LUA_FIELD_NAME);
 
-  return 0;    
+  return 0;
 }
 
 /**
@@ -48,7 +48,7 @@ int lua_common_initialise_state(lua_State *l, game_t* game) {
  * 
  * Returns 0 on success
 **/
-int lua_common_create_player_table(lua_State *l) {
+int lua_common_create_player_table(lua_State* l) {
   assert(l);
 
   lua_newtable(l);
@@ -91,10 +91,10 @@ sqlite3* lua_common_get_database(lua_State* l) {
 
   luaL_checktype(l, top, LUA_TLIGHTUSERDATA);
   sqlite3* db = lua_touserdata(l, top);
-  
+
   lua_pop(l, 1);
 
-  return db;  
+  return db;
 }
 
 /**
@@ -145,7 +145,7 @@ lua_Debug lua_common_get_debug(lua_State* l) {
  * 
  * Returns 0 on success or a Lua error on failure.
 **/
-int lua_common_assert_n_arguments(lua_State *l, int n) {
+int lua_common_assert_n_arguments(lua_State* l, int n) {
   assert(l);
 
   int count = lua_gettop(l);
@@ -226,22 +226,22 @@ void lua_common_log_stack(lua_State* l) {
   for (i = 1; i <= top; i++) {
     char details[LOG_STACK_TYPE_SIZE];
 
-    switch(lua_type(l, i)) {
-      case LUA_TNUMBER:
-        snprintf(details, LOG_STACK_TYPE_SIZE, "%g", lua_tonumber(l, i));
-        break;
-      case LUA_TSTRING:
-        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_tostring(l, i));
-        break;
-      case LUA_TBOOLEAN:
-        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_toboolean(l, i) ? "true" : "false");
-        break;
-      case LUA_TNIL:
-        snprintf(details, LOG_STACK_TYPE_SIZE, "%s", "nil");
-        break;
-      default:
-        snprintf(details, LOG_STACK_TYPE_SIZE, "%p", lua_topointer(l, i));
-        break;
+    switch (lua_type(l, i)) {
+    case LUA_TNUMBER:
+      snprintf(details, LOG_STACK_TYPE_SIZE, "%g", lua_tonumber(l, i));
+      break;
+    case LUA_TSTRING:
+      snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_tostring(l, i));
+      break;
+    case LUA_TBOOLEAN:
+      snprintf(details, LOG_STACK_TYPE_SIZE, "%s", lua_toboolean(l, i) ? "true" : "false");
+      break;
+    case LUA_TNIL:
+      snprintf(details, LOG_STACK_TYPE_SIZE, "%s", "nil");
+      break;
+    default:
+      snprintf(details, LOG_STACK_TYPE_SIZE, "%p", lua_topointer(l, i));
+      break;
     }
 
     LOG(DEBUG, "%d - %s [%s]", i, luaL_typename(l, i), details);

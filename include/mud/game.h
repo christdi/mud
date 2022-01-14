@@ -51,6 +51,6 @@ typedef struct game {
 game_t* create_game_t(void);
 void free_game_t(game_t* game);
 
-int start_game(int argc, char * argv[]);
+int start_game(int argc, char* argv[]);
 
 #endif

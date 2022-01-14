@@ -4,8 +4,8 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/log.h"
-#include "mud/lua/script.h"
 #include "mud/lua/repository.h"
+#include "mud/lua/script.h"
 #include "mud/util/muduuid.h"
 
 static void process_pending_removal(script_repository_t* repository);
@@ -158,7 +158,7 @@ static void process_pending_removal(script_repository_t* repository) {
 
   it_t it = list_begin(repository->pending_rem);
 
-  while((script = it_get(it)) != NULL) {
+  while ((script = it_get(it)) != NULL) {
     const char* uuid = uuid_str(&script->uuid);
 
     if (hash_table_has(repository->scripts, uuid)) {
@@ -187,7 +187,7 @@ static void process_pending_addition(script_repository_t* repository) {
 
   it_t it = list_begin(repository->pending_add);
 
-  while((script = it_get(it)) != NULL) {
+  while ((script = it_get(it)) != NULL) {
     const char* uuid = uuid_str(&script->uuid);
 
     if (hash_table_has(repository->scripts, uuid)) {

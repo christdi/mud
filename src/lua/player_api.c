@@ -1,7 +1,7 @@
 #include <assert.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "mud/log.h"
 #include "mud/lua/common.h"
@@ -12,21 +12,21 @@
 
 #define PLAYER_DATA_TABLE_NAME "_players"
 
-static int lua_authenticate(lua_State *l);
-static int lua_get_player_data(lua_State *l);
-static int lua_save_player_data(lua_State *l);
-static int lua_change_state(lua_State *l);
-static int lua_send_to_player(lua_State *l);
-static int lua_disconnect(lua_State *l);
+static int lua_authenticate(lua_State* l);
+static int lua_get_player_data(lua_State* l);
+static int lua_save_player_data(lua_State* l);
+static int lua_change_state(lua_State* l);
+static int lua_send_to_player(lua_State* l);
+static int lua_disconnect(lua_State* l);
 
-static const struct luaL_Reg player_lib [] = {
-  {"authenticate", lua_authenticate},
-  {"get_data", lua_get_player_data},
-  {"save_data", lua_save_player_data},
-  {"change_state", lua_change_state},
-  {"send", lua_send_to_player},
-  {"disconnect", lua_disconnect},
-  {NULL, NULL}
+static const struct luaL_Reg player_lib[] = {
+  { "authenticate", lua_authenticate },
+  { "get_data", lua_get_player_data },
+  { "save_data", lua_save_player_data },
+  { "change_state", lua_change_state },
+  { "send", lua_send_to_player },
+  { "disconnect", lua_disconnect },
+  { NULL, NULL }
 };
 
 /**
@@ -52,7 +52,7 @@ int lua_player_register_api(lua_State* l) {
  * 
  * Returns 0 on success or calls LuaL_Error on failure.
 **/
-static int lua_authenticate(lua_State *l) {
+static int lua_authenticate(lua_State* l) {
   lua_common_assert_n_arguments(l, 3);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -83,7 +83,7 @@ static int lua_authenticate(lua_State *l) {
  *
  * Returns 0 on success, calls luaL_error on failure.
 **/
-static int lua_get_player_data(lua_State * l) {
+static int lua_get_player_data(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -145,7 +145,7 @@ static int lua_get_player_data(lua_State * l) {
  *
  * Returns 0 on success or calls luaL_error on failure.
 **/
-static int lua_save_player_data(lua_State * l) {
+static int lua_save_player_data(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -167,7 +167,7 @@ static int lua_save_player_data(lua_State * l) {
   // l stack = 1 table, master stack = 1 global player table 2 player uuid
   lua_common_copy_table(l, master);
 
-  // l stack = 1 table, master stack = 1 global player table 2 player uuid 3 copied table 
+  // l stack = 1 table, master stack = 1 global player table 2 player uuid 3 copied table
   lua_rawset(master, 1);
 
   lua_settop(l, 0);
@@ -184,7 +184,7 @@ static int lua_save_player_data(lua_State * l) {
  *
  * Returns 0 on success or calls luaL_error on failure.
 **/
-static int lua_change_state(lua_State *l) {
+static int lua_change_state(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -211,9 +211,9 @@ static int lua_change_state(lua_State *l) {
  *
  * Returns 0 on success or calls luaL_error on failure.
 **/
-static int lua_send_to_player(lua_State *l) {
+static int lua_send_to_player(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
-  
+
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   player_t* player = lua_touserdata(l, 1);
@@ -233,13 +233,13 @@ static int lua_send_to_player(lua_State *l) {
  *
  * Returns 0 on success or calls luaL_error on failure.
 **/
-static int lua_disconnect(lua_State *l) {
+static int lua_disconnect(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   player_t* player = lua_touserdata(l, 1);
-  
+
   player->client->hungup = 1;
 
   lua_pop(l, 1);

@@ -9,9 +9,9 @@
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
 #include "mud/ecs/entity.h"
-#include "mud/lua/hooks.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/hooks.h"
 #include "mud/player.h"
 #include "mud/util/muduuid.h"
 

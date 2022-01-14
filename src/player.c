@@ -160,7 +160,7 @@ int player_change_state(player_t* player, game_t* game, const char* state) {
   if (old_state != NULL) {
     free_state_t(old_state);
   }
-  
+
   return 0;
 }
 

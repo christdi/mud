@@ -4,8 +4,8 @@
 
 #include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
-#include "mud/lua/hooks.h"
 #include "mud/log.h"
+#include "mud/lua/hooks.h"
 #include "mud/player.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
@@ -17,7 +17,7 @@
 /**
  * TODO(Chris I)
 **/
-int lua_hook_on_startup(lua_State *l) {
+int lua_hook_on_startup(lua_State* l) {
   assert(l);
 
   if (lua_getglobal(l, ON_STARTUP_HOOK_FUNCTION) != LUA_TFUNCTION) {
@@ -43,7 +43,7 @@ int lua_hook_on_startup(lua_State *l) {
  * 2/-3 table
  * 1/-4 on_entities_loaded
 **/
-int lua_hook_on_entities_loaded(lua_State *l, linked_list_t* entities) {
+int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
   assert(l);
   assert(entities);
 
@@ -80,7 +80,7 @@ int lua_hook_on_entities_loaded(lua_State *l, linked_list_t* entities) {
 /**
  * TODO(Chris I)
 **/
-int lua_hook_on_player_connected(lua_State *l, player_t* player) {
+int lua_hook_on_player_connected(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
@@ -104,7 +104,7 @@ int lua_hook_on_player_connected(lua_State *l, player_t* player) {
 /**
  * TODO(Chris I)
 **/
-int lua_hook_on_player_disconnected(lua_State *l, player_t* player) {
+int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
@@ -128,7 +128,7 @@ int lua_hook_on_player_disconnected(lua_State *l, player_t* player) {
 /**
  * TODO(Chris I)
 **/
-int lua_hook_on_player_input(lua_State *l, player_t* player, const char* input) {
+int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) {
   assert(l);
   assert(player);
   assert(input);
@@ -150,4 +150,3 @@ int lua_hook_on_player_input(lua_State *l, player_t* player, const char* input) 
 
   return 0;
 }
-

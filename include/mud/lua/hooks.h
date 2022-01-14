@@ -11,10 +11,10 @@ typedef struct player player_t;
 /**
  * Functions
 **/
-int lua_hook_on_startup(lua_State *l);
-int lua_hook_on_entities_loaded(lua_State *l, linked_list_t* entities);
-int lua_hook_on_player_connected(lua_State *l, player_t* player);
-int lua_hook_on_player_disconnected(lua_State *l, player_t* player);
-int lua_hook_on_player_input(lua_State *l, player_t* player, const char* input);
+int lua_hook_on_startup(lua_State* l);
+int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities);
+int lua_hook_on_player_connected(lua_State* l, player_t* player);
+int lua_hook_on_player_disconnected(lua_State* l, player_t* player);
+int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input);
 
 #endif

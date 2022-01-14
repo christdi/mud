@@ -10,6 +10,6 @@ typedef struct game game_t;
 /**
  * Function prototypes
 **/
-int lua_log_register_api(lua_State *l);
+int lua_log_register_api(lua_State* l);
 
 #endif

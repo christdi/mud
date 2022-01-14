@@ -1,27 +1,27 @@
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
+#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/log_api.h"
-#include "mud/log.h"
 
 #define MAX_SCRIPT_INFO_LINE_LENGTH 128
 
-static lua_Debug get_debug_info(lua_State *l);
+static lua_Debug get_debug_info(lua_State* l);
 
-static int lua_log_trace(lua_State *l);
-static int lua_log_debug(lua_State *l);
-static int lua_log_info(lua_State *l);
-static int lua_log_warn(lua_State *l);
-static int lua_log_error(lua_State *l);
+static int lua_log_trace(lua_State* l);
+static int lua_log_debug(lua_State* l);
+static int lua_log_info(lua_State* l);
+static int lua_log_warn(lua_State* l);
+static int lua_log_error(lua_State* l);
 
-static const struct luaL_Reg log_lib [] = {
-  {"trace", lua_log_trace},
-  {"debug", lua_log_debug},
-  {"info", lua_log_info},
-  {"warn", lua_log_warn},
-  {"error", lua_log_error},
-  {NULL, NULL}
+static const struct luaL_Reg log_lib[] = {
+  { "trace", lua_log_trace },
+  { "debug", lua_log_debug },
+  { "info", lua_log_info },
+  { "warn", lua_log_warn },
+  { "error", lua_log_error },
+  { NULL, NULL }
 };
 
 /**
@@ -37,7 +37,7 @@ int lua_log_register_api(lua_State* l) {
 /**
  * TODO(Chris I)
 **/
-static lua_Debug get_debug_info(lua_State *l) {
+static lua_Debug get_debug_info(lua_State* l) {
   lua_Debug debug;
   lua_getstack(l, 1, &debug);
   lua_getinfo(l, "nSl", &debug);
@@ -48,7 +48,7 @@ static lua_Debug get_debug_info(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_log_trace(lua_State *l) {
+static int lua_log_trace(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
@@ -63,7 +63,7 @@ static int lua_log_trace(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_log_debug(lua_State *l) {
+static int lua_log_debug(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
@@ -78,7 +78,7 @@ static int lua_log_debug(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_log_info(lua_State *l) {
+static int lua_log_info(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
@@ -93,7 +93,7 @@ static int lua_log_info(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_log_warn(lua_State *l) {
+static int lua_log_warn(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);
@@ -108,7 +108,7 @@ static int lua_log_warn(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_log_error(lua_State *l) {
+static int lua_log_error(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   const char* message = luaL_checkstring(l, 1);

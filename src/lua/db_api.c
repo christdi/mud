@@ -1,29 +1,28 @@
 #include <sqlite3.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
+#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/db_api.h"
-#include "mud/log.h"
 
-static int lua_db_prepare_statement(lua_State *l);
-static int lua_db_bind(lua_State *l);
+static int lua_db_prepare_statement(lua_State* l);
+static int lua_db_bind(lua_State* l);
 static int lua_db_step(lua_State* l);
 static int lua_db_column_text(lua_State* l);
 static int lua_db_finalize(lua_State* l);
 
-static const struct luaL_Reg db_lib [] = {
-  {"prepare", lua_db_prepare_statement},
-  {"bind", lua_db_bind},
-  {"step", lua_db_step},
-  {"column_text", lua_db_column_text},
-  {"finalize", lua_db_finalize},
-  {NULL, NULL}
+static const struct luaL_Reg db_lib[] = {
+  { "prepare", lua_db_prepare_statement },
+  { "bind", lua_db_bind },
+  { "step", lua_db_step },
+  { "column_text", lua_db_column_text },
+  { "finalize", lua_db_finalize },
+  { NULL, NULL }
 };
-
 
 /**
  * TODO(Chris I)
@@ -38,7 +37,7 @@ int lua_db_register_api(lua_State* l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_db_prepare_statement(lua_State *l) {
+static int lua_db_prepare_statement(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
   sqlite3* db = lua_common_get_database(l);
@@ -61,7 +60,7 @@ static int lua_db_prepare_statement(lua_State *l) {
 /**
  * TODO(Chris I)
 **/
-static int lua_db_bind(lua_State *l) {
+static int lua_db_bind(lua_State* l) {
   lua_common_assert_n_arguments(l, 3);
 
   sqlite3* db = lua_common_get_database(l);
@@ -134,14 +133,14 @@ static int lua_db_step(lua_State* l) {
 **/
 static int lua_db_column_text(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
-  
+
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   sqlite3_stmt* res = lua_touserdata(l, 1);
   int row = luaL_checknumber(l, 2);
   lua_pop(l, 2);
 
-  lua_pushstring(l, (char *)sqlite3_column_text(res, row));
+  lua_pushstring(l, (char*)sqlite3_column_text(res, row));
 
   return 1;
 }
