@@ -9,6 +9,7 @@
 #include "mud/lua/script.h"
 #include "mud/network/client.h"
 #include "mud/state/state.h"
+#include "mud/util/mudhash.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -30,6 +31,7 @@ player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
   player->uuid = new_uuid();
+  player->username = NULL;
   player->state = NULL;
   player->client = NULL;
 
@@ -41,6 +43,10 @@ player_t* create_player_t() {
 **/
 void free_player_t(player_t* player) {
   assert(player);
+
+  if (player->username != NULL) {
+    free(player->username);
+  }
 
   if (player->state != NULL) {
     free_state_t(player->state);
@@ -259,6 +265,34 @@ void player_on_tick(player_t* player, game_t* game) {
 }
 
 /**
+ * Authenticates a player by hashing their password and comparing the supplied username
+ * and password hash against users in the database.
+ * 
+ * Parameters
+ *   player - the player to be authenticated
+ *   username - the username to be authenticated
+ *   password - the password to be authenticated
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+int player_authenticate(player_t* player, game_t* game, const char* username, const char* password) {
+  assert(player);
+  assert(username);
+  assert(password);
+
+  char password_hash[SHA256_HEX_SIZE];
+  mudhash_sha256(username, password_hash);
+
+  if (db_user_authenticate(game->database, username, password_hash) != 1) {
+    return -1;
+  }
+
+  player->username = strdup(username);
+
+  return 0;
+}
+
+/**
  * Attempts to send formatted outputted to a player.  Will check if the underlying
  * client_t is valid before attempting to write.
  *
@@ -352,7 +386,7 @@ static void write_to_player(player_t* player, char* output) {
 
   if (player->client == NULL) {
     LOG(WARN, "Could not write to player [%s] as client has disconnected", player->uuid);
-    
+
     return;
   }
 

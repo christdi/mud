@@ -15,7 +15,6 @@
  * Typedefs
 **/
 typedef struct client client_t;
-typedef struct account account_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct state state_t;
@@ -25,8 +24,10 @@ typedef struct linked_list linked_list_t;
 **/
 typedef struct player {
   mud_uuid_t uuid;
+
+  char* username;
+
   client_t* client;
-  account_t* account;
   entity_t* entity;
   state_t* state;
 } player_t;
@@ -41,9 +42,10 @@ void deallocate_player(void* value);
 void player_connected(client_t* client, void* context);
 void player_disconnected(client_t* client, void* context);
 void player_input(client_t* client, void* context);
+void player_on_tick(player_t* player, game_t* game);
 
 int player_change_state(player_t* player, game_t* game, const char* state);
-void player_on_tick(player_t* player, game_t* game);
+int player_authenticate(player_t* player, game_t* game, const char* username, const char* password);
 
 void send_to_player(player_t* player, const char* fmt, ...);
 void send_to_players(linked_list_t* players, const char* fmt, ...);

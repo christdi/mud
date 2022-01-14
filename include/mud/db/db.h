@@ -24,4 +24,6 @@ int db_script_load_all(sqlite3* db, linked_list_t *scripts);
 int db_state_load(sqlite3* db, const char* uuid, state_t* state);
 int db_state_load_by_name(sqlite3* db, const char* name, state_t* state);
 
+int db_user_authenticate(sqlite3* db, const char* username, const char* password_hash);
+
 #endif

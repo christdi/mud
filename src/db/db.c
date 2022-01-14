@@ -26,12 +26,6 @@
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
-  // uuid TEXT PRIMARY KEY,
-  // name TEXT NOT NULL,
-  // function TEXT NOT NULL,
-  // script_uuid TEXT NOT NULL,
-  // FOREIGN KEY(script_uuid) REFERENCES script(uuid)
-
   const char* sql = "SELECT uuid, name, function, script_uuid FROM command WHERE name = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
@@ -402,4 +396,66 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
   sqlite3_finalize(res);
 
   return 1;
+}
+
+
+/**
+ * Checks for the existence of a user matching a given username and password_hash.
+ * 
+ * Parameters
+ *   db - pointer to sqlite3 database
+ *   username - username to query for
+ *   password_hash - password_hash to query for
+ * 
+ * Returns 1 if we have a match, 0 if we do not or -1 on error
+**/
+int db_user_authenticate(sqlite3* db, const char* username, const char* password_hash) {
+  assert(db);
+  assert(username);
+  assert(password_hash);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT EXISTS(SELECT 1 FROM user WHERE username=? AND password_hash=?)";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind name to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 2, password_hash, (int)strlen(password_hash), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind password hash to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  } 
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to authenticate user from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int authenticated = sqlite3_column_int(res, 0);
+
+  sqlite3_finalize(res);
+
+  return authenticated;
 }

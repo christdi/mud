@@ -11,6 +11,6 @@
 /**
  * Function prototypes
 **/
-void string_to_sha256(char* input, char* output);
+void mudhash_sha256(const char* input, char* output);
 
 #endif

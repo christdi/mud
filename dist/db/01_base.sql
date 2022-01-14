@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS user (
 
 CREATE UNIQUE INDEX idx_user_username ON user(username);
 
-INSERT INTO user VALUES('1e4995dc-ddc7-4697-a8d4-76b6aa3939cc', 'christdi', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8');
+INSERT INTO user VALUES('1e4995dc-ddc7-4697-a8d4-76b6aa3939cc', 'christdi', 'f21e213ba273c7d686ed7a97dd5ff7bdfd8438ee1edcb0ffcb7529c3a343bb31');
 
 CREATE TABLE IF NOT EXISTS user_entity (
   user_uuid TEXT NOT NULL,
