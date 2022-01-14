@@ -9,237 +9,9 @@
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
 #include "mud/ecs/entity.h"
-#include "mud/account.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
 #include "mud/state/state.h"
-
-static int db_account_load_data(sqlite3* db, const char* username, account_t* account);
-static int db_account_load_entities(sqlite3* db, const char* username, account_t* account);
-
-/**
- * Persists an account to the database.  If the account already exists it will be updated.
- *
- * Parameters
- *   db - Handle to sqlite database
- *   account - The account to be persisted
- *
- * This function returns 0 on success or -1 on failure.
-**/
-int db_account_save(sqlite3* db, account_t* account) {
-  sqlite3_stmt* res = NULL;
-
-  const char* sql = "INSERT INTO account(username, password_hash) VALUES(?, ?) "
-                    "ON CONFLICT(username) DO UPDATE SET username = excluded.username, password_hash = excluded.password_hash";
-
-  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    LOG(ERROR, "Failed to prepare statement to insert account into database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, account->username, (int)strlen(account->username), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind username to insert account into database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 2, account->password_hash, (int)strlen(account->password_hash), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind password hash to insert account into database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  };
-
-  if (sqlite3_step(res) != SQLITE_DONE) {
-    LOG(ERROR, "Failed to insert account into database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  sqlite3_finalize(res);
-
-  return 0;
-}
-
-/**
- * Loads the base data of an account from persistence.
- *
- * Parameters
- *   db - Handle to sqlite database
- *   username - Username of the account to load
- *   account - Account to be populated with loaded data
- *
- * Returns 0 on success or -1 on failure
-**/
-static int db_account_load_data(sqlite3* db, const char* username, account_t* account) {
-  sqlite3_stmt* res = NULL;
-
-  const char* sql = "SELECT username, password_hash FROM account WHERE username=?";
-
-  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    LOG(ERROR, "Failed to prepare statement to load account from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind username to retrieve account from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  int rc = 0;
-
-  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
-    if (rc == SQLITE_DONE) {
-      return 0;
-    }
-
-    LOG(ERROR, "Failed to retreive account from database: [%s]", sqlite3_errmsg(db));
-
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (account->username != NULL) {
-    free(account->username);
-  }
-
-  if (account->password_hash != NULL) {
-    free(account->password_hash);
-  }
-
-  account->username = strdup((char*)sqlite3_column_text(res, 0));
-  account->password_hash = strdup((char*)sqlite3_column_text(res, 1));
-
-  sqlite3_finalize(res);
-
-  return 0;
-}
-
-/**
- * Loads the entities assigned to an account.
- *
- * Parameters:
- *   db - Handle to the sqlite database
- *   username - Username of the account to load
- *   account - Account to be populated with data
- *
- * Returns 0 on success or -1 on failure.
-**/
-static int db_account_load_entities(sqlite3* db, const char* username, account_t* account) {
-  sqlite3_stmt* res = NULL;
-
-  const char* sql = "SELECT entity_uuid FROM account_entity WHERE account_username=?";
-
-  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    LOG(ERROR, "Failed to prepare statement to load account entities from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind username to retrieve account entities from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  int rc = 0;
-  int count = 0;
-
-  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
-    if (rc != SQLITE_ROW) {
-      LOG(ERROR, "Failed to retreive account entities from database: [%s]", sqlite3_errmsg(db));
-
-      sqlite3_finalize(res);
-
-      return 0;
-    }
-
-    list_add(account->entities, strdup((char*)sqlite3_column_text(res, 0)));
-
-    count++;
-  }
-
-  sqlite3_finalize(res);
-
-  return count;
-}
-
-/**
- * Loads an account from persistence.
- *
- * Parameters:
- *   db - Handle to sqlite database
- *   username - Username of the account to be loaded
- *   account - Account to be populated with data
- *
- * Returns 0 on success or -1 on failure.
-**/
-int db_account_load(sqlite3* db, const char* username, account_t* account) {
-  if (db_account_load_data(db, username, account) != 0) {
-    LOG(ERROR, "Failed to load account data");
-    return -1;
-  }
-
-  if (db_account_load_entities(db, username, account) < 0) {
-    LOG(ERROR, "Failed to load account entities");
-    return -1;
-  }
-
-  return 0;
-}
-
-/**
- * Determines if an account exists in persistence.
- *
- * Parameters:
- *   db - Handle to sqlite database
- *   username - Username to find account whose existence is to be confirmed
- *
- * Returns 0 if account exists or -1 otherwise
-**/
-int db_account_exists(sqlite3* db, const char* username) {
-  sqlite3_stmt* res = NULL;
-
-  const char* sql = "SELECT EXISTS(SELECT 1 FROM account WHERE username=?)";
-
-  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    LOG(ERROR, "Failed to prepare statement to validate account in database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind username to validate account in database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_step(res) != SQLITE_ROW) {
-    LOG(ERROR, "Failed to retrieve any rows to validate account in database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  int exists = sqlite3_column_int(res, 0);
-
-  sqlite3_finalize(res);
-
-  return exists == 1 ? 0 : -1;
-}
 
 /**
  * Retrieves a command via it's name
@@ -253,12 +25,6 @@ int db_account_exists(sqlite3* db, const char* username) {
 **/
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
-
-  // uuid TEXT PRIMARY KEY,
-  // name TEXT NOT NULL,
-  // function TEXT NOT NULL,
-  // script_uuid TEXT NOT NULL,
-  // FOREIGN KEY(script_uuid) REFERENCES script(uuid)
 
   const char* sql = "SELECT uuid, name, function, script_uuid FROM command WHERE name = ?";
 
@@ -630,4 +396,66 @@ int db_state_load_by_name(sqlite3* db, const char* name, state_t* state) {
   sqlite3_finalize(res);
 
   return 1;
+}
+
+
+/**
+ * Checks for the existence of a user matching a given username and password_hash.
+ * 
+ * Parameters
+ *   db - pointer to sqlite3 database
+ *   username - username to query for
+ *   password_hash - password_hash to query for
+ * 
+ * Returns 1 if we have a match, 0 if we do not or -1 on error
+**/
+int db_user_authenticate(sqlite3* db, const char* username, const char* password_hash) {
+  assert(db);
+  assert(username);
+  assert(password_hash);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT EXISTS(SELECT 1 FROM user WHERE username=? AND password_hash=?)";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, username, (int)strlen(username), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind name to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 2, password_hash, (int)strlen(password_hash), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind password hash to authenticate user from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  } 
+
+  int rc = 0;
+
+  if ((rc = sqlite3_step(res)) != SQLITE_ROW) {
+    if (rc == SQLITE_DONE) {
+      return 0;
+    }
+
+    LOG(ERROR, "Failed to authenticate user from database: [%s]", sqlite3_errmsg(db));
+
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int authenticated = sqlite3_column_int(res, 0);
+
+  sqlite3_finalize(res);
+
+  return authenticated;
 }

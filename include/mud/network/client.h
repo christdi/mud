@@ -20,8 +20,8 @@ typedef struct client {
   int fd;
   unsigned int hungup;
   time_t last_active;
+  void* userdata;
 
-  mud_uuid_t uuid;
   char input[INPUT_BUFFER_SIZE];
 } client_t;
 

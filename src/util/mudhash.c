@@ -5,7 +5,7 @@
 
 #include "mud/util/mudhash.h"
 
-void string_to_sha256(char* input, char* output) {
+void mudhash_sha256(const char* input, char* output) {
   assert(input);
   assert(output);
 

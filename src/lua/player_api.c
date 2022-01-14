@@ -12,6 +12,7 @@
 
 #define PLAYER_DATA_TABLE_NAME "_players"
 
+static int lua_authenticate(lua_State *l);
 static int lua_get_player_data(lua_State *l);
 static int lua_save_player_data(lua_State *l);
 static int lua_change_state(lua_State *l);
@@ -19,6 +20,7 @@ static int lua_send_to_player(lua_State *l);
 static int lua_disconnect(lua_State *l);
 
 static const struct luaL_Reg player_lib [] = {
+  {"authenticate", lua_authenticate},
   {"get_data", lua_get_player_data},
   {"save_data", lua_save_player_data},
   {"change_state", lua_change_state},
@@ -42,6 +44,36 @@ int lua_player_register_api(lua_State* l) {
   return 0;
 }
 
+/**
+ * API function which authenticates the player as a particular user given a username and password.
+ * 
+ * Parameters
+ *   l - THe current Lua state
+ * 
+ * Returns 0 on success or calls LuaL_Error on failure.
+**/
+static int lua_authenticate(lua_State *l) {
+  lua_common_assert_n_arguments(l, 3);
+
+  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
+  player_t* player = lua_touserdata(l, 1);
+  const char* username = luaL_checkstring(l, 2);
+  const char* password = luaL_checkstring(l, 3);
+
+  game_t* game = lua_common_get_game(l);
+
+  if (player_authenticate(player, game, username, password) == -1) {
+    lua_settop(l, 0);
+    lua_pushboolean(l, 0);
+
+    return 1;
+  }
+
+  lua_settop(l, 0);
+  lua_pushboolean(l, 1);
+
+  return 1;
+}
 /**
  * API function which copies a table for player specific data from the master Lua state into the
  * current Lua state.  We can't keep persistent data in script Lua states as they can be unloaded.

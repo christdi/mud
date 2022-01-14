@@ -22,7 +22,7 @@ client_t* create_client_t() {
   client->fd = 0;
   client->hungup = 0;
   client->last_active = time(NULL);
-  client->uuid = new_uuid();
+  client->userdata = NULL;
 
   return client;
 }
@@ -166,7 +166,7 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
 
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
-        LOG(ERROR, "Unable to extract input from client [%s], supplied dest buffer was too small at [%ld], needed [%ld]", client->uuid, dest_len, i);
+        LOG(ERROR, "Unable to extract input from client fd [%d], supplied dest buffer was too small at [%ld], needed [%ld]", client->fd, dest_len, i);
         send_to_client(client, "Your input was discarded as it was too long.\n\r");
       } else {
         strncpy(dest, client->input, i);
