@@ -18,7 +18,10 @@ typedef struct client client_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct state state_t;
+typedef struct event event_t;
+typedef struct narrator narrator_t;
 typedef struct linked_list linked_list_t;
+
 /**
  * Structs
 **/
@@ -30,6 +33,7 @@ typedef struct player {
   client_t* client;
   entity_t* entity;
   state_t* state;
+  narrator_t* narrator;
 } player_t;
 
 /**
@@ -43,9 +47,11 @@ void player_connected(client_t* client, void* context);
 void player_disconnected(client_t* client, void* context);
 void player_input(client_t* client, void* context);
 void player_on_tick(player_t* player, game_t* game);
+void player_on_event(player_t* player, game_t* game, event_t* event);
 
-int player_change_state(player_t* player, game_t* game, const char* state);
+int player_change_state(player_t* player, game_t* game, state_t* state);
 int player_authenticate(player_t* player, game_t* game, const char* username, const char* password);
+int player_narrate(player_t* player, game_t* game, event_t* event);
 
 void send_to_player(player_t* player, const char* fmt, ...);
 void send_to_players(linked_list_t* players, const char* fmt, ...);
