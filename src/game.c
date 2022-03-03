@@ -10,6 +10,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
+#include "mud/event/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/command_api.h"
@@ -22,7 +23,6 @@
 #include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
-#include "mud/narrator/narrator.h"
 #include "mud/network/network.h"
 #include "mud/player.h"
 #include "mud/task/task.h"
@@ -59,6 +59,7 @@ game_t* create_game_t(void) {
   game->entities->deallocator = deallocate_entity;
 
   game->scripts = create_script_repository_t();
+  game->event_broker = event_new_event_broker_t();
 
   game->components = create_linked_list_t();
   game->components->deallocator = deallocate_component_t;
@@ -69,7 +70,6 @@ game_t* create_game_t(void) {
   game->events = create_linked_list_t();
 
   game->network = create_network_t();
-  game->narrator = create_narrator_t();
 
   game->lua_state = NULL;
 
@@ -84,7 +84,6 @@ void free_game_t(game_t* game) {
   assert(game->players);
   assert(game->network);
   assert(game->components);
-  assert(game->narrator);
 
   config_free(game->config);
 
@@ -93,13 +92,13 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->entities);
 
   free_script_repository_t(game->scripts);
+  event_free_event_broker_t(game->event_broker);
 
   free_linked_list_t(game->components);
   free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
   free_network_t(game->network);
-  free_narrator_t(game->narrator);
 
   if (game->lua_state != NULL) {
     lua_close(game->lua_state);
@@ -166,8 +165,8 @@ int start_game(int argc, char* argv[]) {
     poll_network(game->network);
     update_systems(game);
     task_execute(game->tasks, game);
-    narrate_events(game);
     script_repository_update(game->scripts);
+    event_dispatch_events(game->event_broker, game, game->entities, game->players);
     game_sleep_until_tick(game, game->config->ticks_per_second);
   }
 
@@ -266,11 +265,6 @@ int initialise_lua(game_t* game, config_t* config) {
 
   if (lua_common_initialise_state(game->lua_state, game) == -1) {
     LOG(ERROR, "Failed to initialise Lua state");
-    return -1;
-  }
-
-  if (lua_common_create_player_table(game->lua_state) == -1) {
-    LOG(ERROR, "Failed to create global player table");
     return -1;
   }
 

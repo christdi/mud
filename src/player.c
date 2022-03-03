@@ -2,6 +2,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
+#include "mud/event/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
@@ -18,8 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int call_state_exit_function(state_t* state, player_t* player, game_t* game);
-static int call_state_enter_function(state_t* state, player_t* player, game_t* game);
 static void write_to_player(player_t* player, char* output);
 
 /**
@@ -48,10 +47,6 @@ void free_player_t(player_t* player) {
     free(player->username);
   }
 
-  if (player->state != NULL) {
-    free_state_t(player->state);
-  }
-
   free(player);
 }
 
@@ -78,8 +73,8 @@ void player_connected(client_t* client, void* context) {
   client->userdata = player;
 
   hash_table_insert(game->players, uuid_str(&player->uuid), player);
+
   lua_hook_on_player_connected(game->lua_state, player);
-  player_change_state(player, game, "login");
 }
 
 /**
@@ -105,24 +100,7 @@ void player_input(client_t* client, void* context) {
   while (extract_from_input(client, command, sizeof(command), "\r\n") != -1) {
     if (strnlen(command, sizeof(command) - 1) > 0) {
       lua_hook_on_player_input(game->lua_state, player, command);
-
-      if (player->state != NULL && player->state->on_input != NULL) {
-        const char* script_uuid = uuid_str(&player->state->script);
-
-        script_t* script = NULL;
-
-        if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
-          LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
-
-          return;
-        }
-
-        if (script_call_state_input(script, player->state, player, command) == -1) {
-          LOG(ERROR, "Error calling state script with uuid [%s] on_input function", script_uuid);
-
-          return;
-        }
-      }
+      lua_hook_on_state_input(game->lua_state, player, player->state, command);
     }
   }
 }
@@ -135,103 +113,19 @@ void player_input(client_t* client, void* context) {
  *   game - the game struct
  *   state - the name of the state to be found
 **/
-int player_change_state(player_t* player, game_t* game, const char* state) {
-  state_t* new_state = create_state_t();
-
-  if (db_state_load_by_name(game->database, state, new_state) != 1) {
-    LOG(ERROR, "Unable to change player state to [%s] as it was not in database", state);
-
-    free_state_t(new_state);
-
-    return -1;
-  }
+int player_change_state(player_t* player, game_t* game, state_t* state) {
+  assert(player);
+  assert(game);
+  assert(state);
 
   state_t* old_state = player->state;
-  player->state = new_state;
-
-  if (call_state_exit_function(old_state, player, game) == -1) {
-    LOG(WARN, "Error encountered while running on_exit for state [%s]", old_state->name);
-  }
-
-  if (call_state_enter_function(player->state, player, game) == -1) {
-    LOG(WARN, "Error encountered while running on_enter for state [%s]", player->state->name);
-  }
+  player->state = state;
 
   if (old_state != NULL) {
-    free_state_t(old_state);
+    lua_hook_on_state_exit(game->lua_state, player, old_state);
   }
 
-  return 0;
-}
-
-/**
- * Attempts to load and run the on_exit method of a state.
- * 
- * Parameters
- *   state - state for which to run on_exit
- *   player - the player whose state it is
- *   game - general game data
- * 
- * Returns 0 on success or -1 on failure
-**/
-static int call_state_exit_function(state_t* state, player_t* player, game_t* game) {
-  assert(player);
-  assert(game);
-
-  if (state == NULL || state->on_exit == NULL) {
-    return 0;
-  }
-
-  const char* script_uuid = uuid_str(&state->script);
-  script_t* script = NULL;
-
-  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
-    LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
-
-    return -1;
-  }
-
-  if (script_call_state_exit(script, state, player) == -1) {
-    LOG(ERROR, "Error calling state script with uuid [%s] on_exit function", script_uuid);
-
-    return -1;
-  }
-
-  return 0;
-}
-
-/**
- * Attempts to load and run the on_enter method of a state.
- * 
- * Parameters
- *   state - state for which to run on_exit
- *   player - the player whose state it is
- *   game - general game data
- * 
- * Returns 0 on success or -1 on failure
-**/
-static int call_state_enter_function(state_t* state, player_t* player, game_t* game) {
-  assert(player);
-  assert(game);
-
-  if (state == NULL || state->on_enter == NULL) {
-    return 0;
-  }
-
-  const char* script_uuid = uuid_str(&state->script);
-  script_t* script = NULL;
-
-  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
-    LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
-
-    return -1;
-  }
-
-  if (script_call_state_enter(script, state, player) == -1) {
-    LOG(ERROR, "Error calling state script with uuid [%s] on_enter function", script_uuid);
-
-    return -1;
-  }
+  lua_hook_on_state_enter(game->lua_state, player, player->state);
 
   return 0;
 }
@@ -245,28 +139,33 @@ static int call_state_enter_function(state_t* state, player_t* player, game_t* g
  *  game - game object containing all necessary game data
 **/
 void player_on_tick(player_t* player, game_t* game) {
-  if (player->state != NULL && player->state->on_tick != NULL) {
-    const char* script_uuid = uuid_str(&player->state->script);
+  assert(player);
+  assert(game);
 
-    script_t* script = NULL;
+  lua_hook_on_state_tick(game->lua_state, player, player->state);
+}
 
-    if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
-      LOG(ERROR, "Unable to load script uuid [%s]", script_uuid);
+/**
+ * Called when an event occurs so that the players narrator can evaluate the event and
+ * send output to the player if relevant.
+ *
+ * Parameters
+ *  player - the player who is receiving the event
+ *  game - instance of game_t containing data required by downstream calls
+ *  event - the event that has occurred
+**/
+void player_on_event(player_t* player, game_t* game, event_t* event) {
+  assert(player);
+  assert(game);
+  assert(event);
 
-      return;
-    }
-
-    if (script_call_state_tick(script, player->state, player) == -1) {
-      LOG(ERROR, "Error calling state script with uuid [%s] on_tick function", script_uuid);
-
-      return;
-    }
-  }
+  lua_hook_on_state_event(game->lua_state, player, player->state, event);
 }
 
 /**
  * Authenticates a player by hashing their password and comparing the supplied username
- * and password hash against users in the database.
+ * and password hash against users in the database.  If authentication is successful,
+ * the player struct is populated with user details.
  * 
  * Parameters
  *   player - the player to be authenticated
@@ -287,7 +186,36 @@ int player_authenticate(player_t* player, game_t* game, const char* username, co
     return -1;
   }
 
-  player->username = strdup(username);
+  if (db_user_load_by_username(game->database, username, player) != 1) {
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Narrates events that have occurred in the world if they are relevant to the player.
+ *
+ * Parameters
+ *   player - The player whom should be narrated to
+ *   game - instance of game_t containing data required by downstream calls
+ *   event - The event that has occurred
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int player_narrate(player_t* player, game_t* game, event_t* event) {
+  assert(player);
+  assert(game);
+  assert(event);
+
+  switch (event->type) {
+  case LUA_EVENT:
+    lua_hook_on_narrate_event(game->lua_state, player, player->narrator, event->data);
+    break;
+  default:
+    send_to_player(player, "Something happened but you're not sure how to describe it.\n\r");
+    break;
+  }
 
   return 0;
 }

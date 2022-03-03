@@ -1,18 +1,33 @@
 #include <assert.h>
 
+#include "lauxlib.h"
 #include "lua.h"
 
 #include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
+#include "mud/lua/common.h"
+#include "mud/lua/event.h"
 #include "mud/lua/hooks.h"
+#include "mud/narrator.h"
 #include "mud/player.h"
+#include "mud/state/state.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
+
 #define ON_ENTITIES_LOADED_HOOK_FUNCTION "entities_loaded"
+
 #define ON_PLAYER_CONNECTED_HOOK_FUNCTION "player_connected"
 #define ON_PLAYER_DISCONNECTED_HOOK_FUNCTION "player_disconnected"
 #define ON_PLAYER_INPUT_HOOK_FUNCTION "player_input"
+
+#define NARRATE_EVENT_HOOK_FUNCTION "narrate"
+
+#define STATE_ENTER_HOOK_FUNCTION "on_enter"
+#define STATE_EXIT_HOOK_FUNCTION "on_exit"
+#define STATE_INPUT_HOOK_FUNCTION "on_input"
+#define STATE_TICK_HOOK_FUNCTION "on_tick"
+#define STATE_EVENT_HOOK_FUNCTION "on_event"
 
 /**
  * TODO(Chris I)
@@ -144,6 +159,230 @@ int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) 
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling player input hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the narrate method associated with the provided Lua narrator module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player who is being narrated to
+ *   narrator - Narrator struct containing ref to Lua module
+ *   event - The event to be narrated
+**/
+int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event) {
+  assert(l);
+  assert(player);
+  assert(narrator);
+  assert(event);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, narrator->ref); // 1 - narrator module table
+  lua_pushstring(l, NARRATE_EVENT_HOOK_FUNCTION); // 1 - narrator module, table, 2 = "narrate"
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 - narrator module, 2 = narrate function
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = narrate function
+  lua_pushlightuserdata(l, player); // 1 = narrate function, 2 = player pointer
+  lua_rawgeti(l, LUA_REGISTRYINDEX, event->ref); // 1 = narrate function, 2 = player pointer, 3 = event data table
+
+  if (lua_pcall(l, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling narrate hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_enter method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
+  assert(l);
+  assert(player);
+  assert(state);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_pushstring(l, STATE_ENTER_HOOK_FUNCTION); // 1 = state module table, 2 = on_enter method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_enter method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_enter method
+  lua_pushlightuserdata(l, player); // 1 = on_enter method, 2 = player pointer
+
+  if (lua_pcall(l, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state enter hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_exit method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
+  assert(l);
+  assert(player);
+  assert(state);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+
+  lua_pushstring(l, STATE_EXIT_HOOK_FUNCTION); // 1 = state module table, 2 = on_exit method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_exit method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_exit method
+  lua_pushlightuserdata(l, player); // 1 = on_exit method, 2 = player pointer
+
+  if (lua_pcall(l, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state exit hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_input method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *   input - The input being passed to the state
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, const char* input) {
+  assert(l);
+  assert(player);
+  assert(state);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_pushstring(l, STATE_INPUT_HOOK_FUNCTION); // 1 = state module table, 2 = on_input method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_input method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_input method
+  lua_pushlightuserdata(l, player); // 1 = on_input method, 2 = player pointer
+  lua_pushstring(l, input);
+
+  if (lua_pcall(l, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state input hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_tick method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
+  assert(l);
+  assert(player);
+  assert(state);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_pushstring(l, STATE_TICK_HOOK_FUNCTION); // 1 = state module table, 2 = on_tick method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_tick method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_tick method
+  lua_pushlightuserdata(l, player); // 1 = on_tick method, 2 = player pointer
+
+  if (lua_pcall(l, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state tick hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_event method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *   event - The event that has occurred
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event) {
+  assert(l);
+  assert(player);
+  assert(state);
+  assert(event);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_pushstring(l, STATE_EVENT_HOOK_FUNCTION); // 1 = state module table, 2 = on_event method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_event method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_event method
+
+  lua_pushlightuserdata(l, player); // 1 = on_event method, 2 = player pointer
+  lua_pushlightuserdata(l, event); // 1 = on_event method, 2 = player pointer, 3 = event pointer
+
+  if (lua_pcall(l, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state event hook [%s]", lua_tostring(l, -1));
 
     return -1;
   }
