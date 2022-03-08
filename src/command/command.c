@@ -8,7 +8,6 @@
 #include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/player.h"
 
@@ -33,10 +32,6 @@ void free_command_t(command_t* command) {
 
   if (command->name != NULL) {
     free(command->name);
-  }
-
-  if (command->function != NULL) {
-    free(command->function);
   }
 
   free(command);
@@ -68,18 +63,8 @@ int execute_command(game_t* game, player_t* player, const char* command, const c
 
   const char* script_uuid = uuid_str(&cmd->script);
 
-  script_t* script = NULL;
-
-  if (script_repository_load(game->scripts, game, script_uuid, &script) == -1) {
+  if (script_run_command_script(game, script_uuid, player, arguments) == -1) {
     LOG(ERROR, "Failed to load script with uuid [%s]", script_uuid);
-
-    free_command_t(cmd);
-
-    return -1;
-  }
-
-  if (script_call_command(script, cmd, player, arguments) == -1) {
-    LOG(ERROR, "Failed to call command function for command [%s]", cmd->name);
 
     free_command_t(cmd);
 
@@ -124,7 +109,6 @@ static int get_command(game_t* game, const char* name, command_t* command) {
   }
 
   command->name = strdup(list_cmd->name);
-  command->function = strdup(list_cmd->function);
   command->script = list_cmd->script;
 
   free_linked_list_t(commands);

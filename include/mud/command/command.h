@@ -14,7 +14,6 @@ typedef struct game game_t;
 typedef struct command {
   mud_uuid_t uuid;
   char* name;
-  char* function;
   mud_uuid_t script;
 } command_t;
 

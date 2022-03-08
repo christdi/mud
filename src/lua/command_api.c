@@ -51,14 +51,14 @@ static int lua_execute_command(lua_State* l) {
 
   game_t* game = lua_common_get_game(l);
 
+  lua_settop(l, 0);
+
   if (execute_command(game, player, command, arguments) == -1) {
-    lua_settop(l, 0);
     lua_pushboolean(l, 0);
 
     return 1;
   }
 
-  lua_settop(l, 0);
   lua_pushboolean(l, 1);
 
   return 1;

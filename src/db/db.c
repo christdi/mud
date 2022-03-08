@@ -26,7 +26,7 @@
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, name, function, script_uuid FROM command WHERE name = ?";
+  const char* sql = "SELECT uuid, name, script_uuid FROM command WHERE name = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
@@ -58,8 +58,7 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
 
     command->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
     command->name = strdup((char*)sqlite3_column_text(res, 1));
-    command->function = strdup((char*)sqlite3_column_text(res, 2));
-    command->script = str_uuid((char*)sqlite3_column_text(res, 3));
+    command->script = str_uuid((char*)sqlite3_column_text(res, 2));
 
     list_add(results, (void*)command);
 
@@ -199,7 +198,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api, allow_command_api FROM script WHERE uuid = ?";
+  const char* sql = "SELECT uuid, filepath FROM script WHERE uuid = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve script from database: [%s]", sqlite3_errmsg(db));
@@ -232,14 +231,6 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
   script->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
   script->filepath = strdup((char*)sqlite3_column_text(res, 1));
 
-  script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
-  script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
-  script_set_permission(script, ALLOW_GAME_API, sqlite3_column_int(res, 4));
-  script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
-  script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
-  script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
-  script_set_permission(script, ALLOW_COMMAND_API, sqlite3_column_int(res, 8)); // NOLINT(readability-magic-numbers)
-
   sqlite3_finalize(res);
 
   return 0;
@@ -254,7 +245,7 @@ int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, filepath, allow_std_lib, allow_db_api, allow_game_api, allow_log_api, allow_player_api, allow_script_api, allow_command_api FROM script";
+  const char* sql = "SELECT uuid, filepath FROM script";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve scripts from database: [%s]", sqlite3_errmsg(db));
@@ -279,15 +270,124 @@ int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
     script->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
     script->filepath = strdup((char*)sqlite3_column_text(res, 1));
 
-    script_set_permission(script, ALLOW_STD_LIB, sqlite3_column_int(res, 2));
-    script_set_permission(script, ALLOW_DB_API, sqlite3_column_int(res, 3));
-    script_set_permission(script, ALLOW_GAME_API, sqlite3_column_int(res, 4));
-    script_set_permission(script, ALLOW_LOG_API, sqlite3_column_int(res, 5)); // NOLINT(readability-magic-numbers)
-    script_set_permission(script, ALLOW_PLAYER_API, sqlite3_column_int(res, 6)); // NOLINT(readability-magic-numbers)
-    script_set_permission(script, ALLOW_SCRIPT_API, sqlite3_column_int(res, 7)); // NOLINT(readability-magic-numbers)
-    script_set_permission(script, ALLOW_COMMAND_API, sqlite3_column_int(res, 8)); // NOLINT(readability-magic-numbers)
-
     list_add(scripts, script);
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Retrieves permissions of a script.
+ *
+ * Parameters
+ *   db - Pointer to sqlite3 database
+ *   uuid - UUID of the script access
+ *   results - Out parameter for results
+ *
+ * Returns amount of results or -1 on failure
+**/
+int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
+  assert(db);
+  assert(uuid);
+  assert(results);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT module, method FROM script_sandbox_permission p INNER JOIN script_sandbox_group_permission gp on gp.permission_uuid = p.uuid INNER JOIN script_group g on g.group_uuid = gp.group_uuid WHERE g.script_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve script permissions from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve script permissions from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive script permissions from from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    char* module = sqlite3_column_type(res, 0) == SQLITE_NULL ? NULL : (char*) sqlite3_column_text(res, 0);
+    char* method = (char*) sqlite3_column_text(res, 1);
+
+
+    script_permission_t* script_permission = script_new_script_permission_t(module, method);
+
+    list_add(results, script_permission);
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Retrieves the script groups associated with a script.
+ *
+ * db - sqlite3 db instance
+ * uuid - uuid of script to retrieve groups for
+ * results - out parameter for results
+ *
+ * Returns number of results or -1 on error.
+**/
+int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
+  assert(db);
+  assert(uuid);
+  assert(results);
+
+  sqlite3_stmt* res = NULL;
+
+  LOG(INFO, "Groups by UUID: [%s]", uuid);
+
+  const char* sql = "SELECT name FROM script_sandbox_group ssg INNER JOIN script_group sg on ssg.uuid = sg.group_uuid WHERE sg.script_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve script group from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve script group from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive script group from from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    char* name = (char*) sqlite3_column_text(res, 0);
+
+    LOG(INFO, "Script result name: [%s]", name);
+
+    script_group_t* script_group = script_new_script_group_t(name);
+
+    list_add(results, script_group);
   }
 
   sqlite3_finalize(res);

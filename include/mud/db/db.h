@@ -22,6 +22,9 @@ int db_entity_save(sqlite3* db, entity_t* entity);
 int db_script_load(sqlite3* db, const char* uuid, script_t* script);
 int db_script_load_all(sqlite3* db, linked_list_t* scripts);
 
+int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results);
+int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results);
+
 int db_user_authenticate(sqlite3* db, const char* username, const char* password_hash);
 int db_user_load_by_username(sqlite3* db, const char* username, player_t* player);
 

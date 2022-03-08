@@ -20,7 +20,6 @@
 #include "mud/lua/hooks.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
-#include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
 #include "mud/network/network.h"
@@ -58,7 +57,6 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = deallocate_entity;
 
-  game->scripts = create_script_repository_t();
   game->event_broker = event_new_event_broker_t();
 
   game->components = create_linked_list_t();
@@ -91,7 +89,6 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
 
-  free_script_repository_t(game->scripts);
   event_free_event_broker_t(game->event_broker);
 
   free_linked_list_t(game->components);
@@ -165,7 +162,6 @@ int start_game(int argc, char* argv[]) {
     poll_network(game->network);
     update_systems(game);
     task_execute(game->tasks, game);
-    script_repository_update(game->scripts);
     event_dispatch_events(game->event_broker, game, game->entities, game->players);
     game_sleep_until_tick(game, game->config->ticks_per_second);
   }

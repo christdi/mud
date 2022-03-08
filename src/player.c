@@ -6,7 +6,6 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
-#include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/network/client.h"
 #include "mud/state/state.h"

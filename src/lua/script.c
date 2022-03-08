@@ -1,28 +1,122 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
 
-#include "mud/command/command.h"
-#include "mud/config.h"
-#include "mud/data/hash_table.h"
+#include "mud/data/linked_list.h"
 #include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/lua/command_api.h"
-#include "mud/lua/common.h"
-#include "mud/lua/db_api.h"
-#include "mud/lua/game_api.h"
-#include "mud/lua/log_api.h"
-#include "mud/lua/player_api.h"
 #include "mud/lua/script.h"
-#include "mud/lua/script_api.h"
-#include "mud/state/state.h"
+
+static int build_environment_table(game_t* game, const char* script_uuid);
 
 /**
- * TODO(Chris I)
+ * Allocates a new instance of script_group_t.
+ *
+ * name - name of the script group
+ *
+ * Returns the allocated instance of script_group_t.
+**/
+script_group_t* script_new_script_group_t(const char* name) {
+  assert(name);
+
+  script_group_t* script_group = calloc(1, sizeof(script_group_t));
+
+  script_group->name = strdup(name);
+
+  return script_group;
+}
+
+/**
+ * Frees an allocated instance of script_group_t.
+ *
+ * script_group - script_group_t instance to be freed.
+**/
+void script_free_script_group_t(script_group_t* script_group) {
+  assert(script_group);
+
+  if (script_group->name != NULL) {
+    free(script_group->name);
+  }
+
+  free(script_group);
+}
+
+/**
+ * Deallocates a void pointer to script_group_t.
+ *
+ * value - void pointer to script_group_t
+**/
+void script_deallocate_script_group_t(void* value) {
+  assert(value);
+
+  script_free_script_group_t(value);
+}
+
+/**
+ * Allocates a new instance of script_permission_t.
+ *
+ * Parameters
+ *   name - name to populate in the instance
+ *   code - code to populate in the instance
+ *
+ * Returns the newly allocated instance.
+**/
+script_permission_t* script_new_script_permission_t(const char* module, const char* method) {
+  assert(method);
+
+  script_permission_t* script_permission = calloc(1, sizeof(script_permission_t));
+
+
+  if (module != NULL) {
+    script_permission->module = strdup(module);
+  }
+  
+  script_permission->method = strdup(method);
+
+  return script_permission;
+}
+
+/**
+ * Frees an allocated instance of script_permission_t.
+ *
+ * Parameters
+ *   script_permisiont - The instance to be freed
+**/
+void script_free_script_permission_t(script_permission_t* script_permission) {
+  assert(script_permission);
+
+  if (script_permission->module != NULL) {
+    free(script_permission->module);
+  }
+
+  if (script_permission->method != NULL) {
+    free(script_permission->method);
+  }
+
+  free(script_permission);
+}
+
+/**
+ * Deallocates a void pointer to script_permission.
+ *
+ * Parameters
+ *   value - a void pointer to an instance of script_permission_t.
+**/
+void script_deallocate_script_permission_t(void* value) {
+  assert(value);
+
+  script_free_script_permission_t(value);
+}
+
+/**
+ * Allocates a new instance of script_t.
+ *
+ * Returns the newly allocated script_t.
 **/
 script_t* create_script_t() {
   script_t* script = calloc(1, sizeof(*script));
@@ -31,7 +125,10 @@ script_t* create_script_t() {
 }
 
 /**
- * TODO(Chris I)
+ * Frees an allocated instance of script_t.
+ *
+ * Paramters
+ *   script - The script_t instance to be freed.
 **/
 void free_script_t(script_t* script) {
   assert(script);
@@ -40,15 +137,14 @@ void free_script_t(script_t* script) {
     free(script->filepath);
   }
 
-  if (script->state != NULL) {
-    lua_close(script->state);
-  }
-
   free(script);
 }
 
 /**
- * TODO(Chris I)
+ * Deallocates a script_t stored in a void*
+ *
+ * Paramters
+ *   value - void* pointing towards a script_t
 **/
 void deallocate_script(void* value) {
   assert(value);
@@ -57,29 +153,12 @@ void deallocate_script(void* value) {
 }
 
 /**
- * TODO(Chris I)
-**/
-void script_set_permission(script_t* script, permission_t flag, int permitted) {
-  assert(script);
-
-  if (permitted) {
-    script->permission |= flag;
-  } else {
-    script->permission &= ~flag;
-  }
-}
-
-/**
- * TODO(Chris I)
-**/
-int script_has_permission(script_t* script, permission_t flag) {
-  assert(script);
-
-  return script->permission & flag;
-}
-
-/**
- * TODO(Chris I)
+ * Looks up a script via it's UUID in the database and runs it if found.
+ *
+ * Parameters
+ *   game - Instance of game_t containing necessary data structures.
+ *   uuid - UUID of the script to be ran
+ *   script_out - Out parameter which returns the loaded script
 **/
 int script_load(game_t* game, const char* uuid, script_t** script_out) {
   assert(game);
@@ -90,63 +169,15 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
   if (db_script_load(game->database, uuid, script) != 0) {
     LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
 
+    free_script_t(script);
+
     return -1;
   }
 
-  if ((script->state = luaL_newstate()) == NULL) {
-    LOG(ERROR, "Failed to initialise Lua state");
-    return -1;
-  }
+  if (luaL_dofile(game->lua_state, script->filepath) != 0) {
+    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
-  if ((lua_common_initialise_state(script->state, game)) == -1) {
-    LOG(ERROR, "Failed to initialise Lua state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_STD_LIB)) {
-    luaL_openlibs(script->state);
-  }
-
-  if (game->config->lua_common_script != NULL) {
-    if (luaL_dofile(script->state, game->config->lua_common_script) != 0) {
-      LOG(ERROR, "Error while loading Lua common script [%s].\n\r", lua_tostring(script->state, -1));
-
-      return -1;
-    }
-  }
-
-  if (script_has_permission(script, ALLOW_GAME_API) && lua_game_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua API with state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_DB_API) && lua_db_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua DB API with state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_PLAYER_API) && lua_player_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua player API with state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_LOG_API) && lua_log_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua log API with state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_SCRIPT_API) && lua_script_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua script API with state");
-    return -1;
-  }
-
-  if (script_has_permission(script, ALLOW_COMMAND_API) && lua_command_register_api(script->state) == -1) {
-    LOG(ERROR, "Failed to register Lua script API with state");
-    return -1;
-  }
-
-  if (luaL_dofile(script->state, script->filepath) != 0) {
-    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(script->state, -1));
+    free_script_t(script);
 
     return -1;
   }
@@ -159,52 +190,145 @@ int script_load(game_t* game, const char* uuid, script_t** script_out) {
 }
 
 /**
- * TODO(Chris I)
+ * Runs a command script.  The file is loaded and compiled and then a sandbox environment table is built
+ * based on the access level of the script limiting the methods it may call in Lua.  Player and arguments
+ * are exposed to the script via the environment table as "p" and "arg".
+ *
+ * uuid - UUID of the script to run
+ * player - Player running the command
+ * argument - Argument sprovided for the command
+ *
+ * Returns 0 on success or -1 on failure.
 **/
-int script_unload(hash_table_t* scripts, const char* uuid) {
-  assert(scripts);
+int script_run_command_script(game_t* game, const char* uuid, player_t* player, const char* arguments) {
+  assert(game);
   assert(uuid);
+  assert(player);
+  assert(arguments);
 
-  if (hash_table_has(scripts, uuid) != 1) {
-    LOG(WARN, "Request to unload script uuid [%s] which was not loaded", uuid);
+  script_t* script = create_script_t();
+
+  if (db_script_load(game->database, uuid, script) != 0) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+
+    free_script_t(script);
 
     return -1;
   }
 
-  hash_table_delete(scripts, uuid);
+  if (luaL_loadfile(game->lua_state, script->filepath) != 0) {
+    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
+
+    free_script_t(script);
+
+    return -1;
+  }
+
+  if (build_environment_table(game, uuid_str(&script->uuid)) != 0) {
+    LOG(ERROR, "Error building script white list environment");
+
+    free_script_t(script);
+
+    return -1;
+  }
+
+  lua_pushstring(game->lua_state, "p");
+  lua_pushlightuserdata(game->lua_state, player);
+  lua_settable(game->lua_state, -3);
+
+  lua_pushstring(game->lua_state, "arg");
+  lua_pushstring(game->lua_state, arguments);
+  lua_settable(game->lua_state, -3);
+
+  lua_setupvalue(game->lua_state, 1, 1);
+
+  if (lua_pcall(game->lua_state, 0, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling command script [%s]", lua_tostring(game->lua_state, -1));
+
+    free_script_t(script);
+
+    return -1;
+  }
+
+  free_script_t(script);
+
+  lua_pop(game->lua_state, 1);
 
   return 0;
 }
 
 /**
- * TODO(Chris I))
+ * Constructs the _ENV table to be used by a user script with appropriate permissions
+ *
+ * game - Game struct containing Lua state and database
+ * script_uuid - UUID of scritt
+ *
+ * Returns 0 on success or -1 on failure
 **/
-int script_call_command(script_t* script, command_t* command, player_t* player, const char* arguments) {
-  assert(script);
-  assert(command);
-  assert(player);
-  assert(arguments);
+static int build_environment_table(game_t* game, const char* script_uuid) {
+  linked_list_t* permissions = create_linked_list_t();
+  permissions->deallocator = script_deallocate_script_permission_t;
 
-  if (command->function == NULL) {
-    LOG(ERROR, "No function specified for command [%s] with script [%s]", command->name, script->filepath);
+  if (db_script_sandbox_permission_by_script_id(game->database, script_uuid, permissions) < 0) {
+    LOG(ERROR, "Error retrieving script permissions");
 
-    return -1;
-  }
-
-  if (lua_getglobal(script->state, command->function) != LUA_TFUNCTION) {
-    LOG(ERROR, "Function [%s] specified for command [%s] with script [%s] was not defined", command->function, command->name, script->filepath);
+    free_linked_list_t(permissions);
 
     return -1;
   }
 
-  lua_pushlightuserdata(script->state, player);
-  lua_pushstring(script->state, arguments);
+  lua_newtable(game->lua_state);
 
-  if (lua_pcall(script->state, 2, 0, 0) != 0) {
-    LOG(ERROR, "Error when calling function [%s] for script [%s]", lua_tostring(script->state, -1), script->filepath);
+  it_t it = list_begin(permissions);
+  script_permission_t* script_permission = NULL;
 
-    return -1;
+  while ((script_permission = it_get(it)) != NULL) {
+    
+  if (script_permission->module != NULL) {
+      lua_pushstring(game->lua_state, script_permission->module);
+      
+      if (lua_gettable(game->lua_state, -2) != LUA_TTABLE) {
+        lua_pop(game->lua_state, 1);
+        lua_newtable(game->lua_state);
+      }
+
+      if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
+        LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
+
+        return -1;
+      }
+
+      lua_pushstring(game->lua_state, script_permission->method);
+
+      if (lua_gettable(game->lua_state, -2) != LUA_TFUNCTION) {
+        LOG(ERROR, "Unable to obtain method [%s] from API module [%s] when building script environment table", script_permission->method, script_permission->module);
+
+        return -1;
+      }
+
+      lua_pushstring(game->lua_state, script_permission->method);
+      lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
+      lua_settable(game->lua_state, -4);
+      lua_pop(game->lua_state, 1);
+      lua_pushstring(game->lua_state, script_permission->module);
+      lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
+      lua_settable(game->lua_state, -3);
+    } else {
+      lua_pushstring(game->lua_state, script_permission->method);
+
+      if (lua_getglobal(game->lua_state, script_permission->method) != LUA_TFUNCTION) {
+        LOG(ERROR, "Unable to retrieve method [%s] when building script environment table", script_permission->method);
+
+        return -1;
+      }
+
+      lua_settable(game->lua_state, -3);
+    }
+
+    it = it_next(it);
   }
+
+  free_linked_list_t(permissions);
 
   return 0;
 }
