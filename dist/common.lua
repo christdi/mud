@@ -11,6 +11,30 @@ function one_argument(str)
   return subcommand, str
 end
 
+function join(tbl, sep)
+   if tbl == nil then
+      return ""
+   end
+
+   if sep == null then
+      sep = " "
+   end
+   
+   local str = ""
+
+   for k, v in pairs(tbl) do
+      local last = tbl[#tbl] == v
+
+      if last then
+         str = str .. v
+      else
+         str = str .. v .. sep
+      end
+   end
+
+   return str
+end
+
 function dump(o)
    if type(o) == 'table' then
       local s = '{ '

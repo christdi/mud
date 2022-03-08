@@ -20,7 +20,6 @@ function main()
   game.states.login = game.register_state(login_state_module)
   game.states.play = game.register_state(play_state_module)
   game.states.lua = game.register_state(lua_state_module)
-
 end
 
 function entities_loaded(entities)
@@ -31,7 +30,7 @@ function player_connected(p)
   game.players[player.uuid(p)] = {}
 
   player.set_narrator(p, game.narrators.default)
-  player.set_state(p, game.states.login)
+  player.set_state(p, game.states.play)
 end
 
 

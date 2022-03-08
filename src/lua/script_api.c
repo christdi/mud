@@ -6,22 +6,13 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
-#include "mud/lua/repository.h"
 #include "mud/lua/script.h"
 #include "mud/lua/script_api.h"
 #include "mud/util/muduuid.h"
 
-static int lua_script_load(lua_State* l);
-static int lua_script_loaded(lua_State* l);
 static int lua_script_available(lua_State* l);
-static int lua_script_unload(lua_State* l);
-static int lua_script_reload(lua_State* l);
 
 static const struct luaL_Reg script_lib[] = {
-  { "load", lua_script_load },
-  { "unload", lua_script_unload },
-  { "reload", lua_script_reload },
-  { "loaded", lua_script_loaded },
   { "available", lua_script_available },
   { NULL, NULL }
 };
@@ -34,101 +25,6 @@ int lua_script_register_api(lua_State* l) {
   lua_setglobal(l, "script");
 
   return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_script_load(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  game_t* game = lua_common_get_game(l);
-
-  const char* uuid = luaL_checkstring(l, 1);
-
-  script_t* script = NULL;
-
-  if (script_repository_load(game->scripts, game, uuid, &script) == -1) {
-    return luaL_error(l, "Failed to add script with uuid [%s] to repository", uuid);
-  }
-
-  lua_pop(l, 1);
-
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_script_unload(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  game_t* game = lua_common_get_game(l);
-
-  const char* uuid = luaL_checkstring(l, 1);
-
-  if (script_repository_delete(game->scripts, uuid) == -1) {
-    return luaL_error(l, "Failed to schedule script with uuid [%s] for removal", uuid);
-  }
-
-  lua_pop(l, 1);
-
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_script_reload(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  game_t* game = lua_common_get_game(l);
-
-  const char* uuid = luaL_checkstring(l, 1);
-
-  if (script_repository_reload(game->scripts, game, uuid, NULL) == -1) {
-    return luaL_error(l, "Failed to reload script with uuid [%s]", uuid);
-  }
-
-  lua_pop(l, 1);
-
-  return 0;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_script_loaded(lua_State* l) {
-  lua_common_assert_n_arguments(l, 0);
-
-  game_t* game = lua_common_get_game(l);
-
-  h_it_t it = hash_table_iterator(game->scripts->scripts);
-
-  script_t* script = NULL;
-  int index = 1;
-
-  lua_newtable(l); // stack = 1 table
-
-  while ((script = h_it_get(it)) != NULL) {
-    lua_pushnumber(l, index); // stack = 1 table, 2 index
-    lua_newtable(l); // stack = 1 table, 2 index, 3 table
-
-    lua_pushstring(l, "uuid"); // stack = 1 table, 2 index, 3 table, 4 uuid key
-    lua_pushstring(l, uuid_str(&script->uuid)); // stack = 1 table, 2 index, 3 table, 4 uuid key, 5 uuid value
-    lua_rawset(l, 3); // stack = 1 table, 2 index, 3 table
-
-    lua_pushstring(l, "path"); // stack = 1 table, 2 index, 3 table, 4 path key
-    lua_pushstring(l, script->filepath); // stack = 1 table, 2 index, 3 table, 4 path key, 5 path value
-    lua_rawset(l, 3); // stack = 1 table, 2 index, 3 table
-
-    lua_rawset(l, 1); // stack = 1 table
-
-    it = h_it_next(it);
-    index++;
-  }
-
-  return 1;
 }
 
 /**
@@ -155,6 +51,13 @@ static int lua_script_available(lua_State* l) {
   lua_newtable(l); // stack = 1 table
 
   while ((script = it_get(it)) != NULL) {
+    linked_list_t* groups = create_linked_list_t();
+    groups->deallocator = script_deallocate_script_group_t;
+
+    if (db_script_script_group_by_script_id(game->database, uuid_str(&script->uuid), groups) == -1) {
+      LOG(ERROR, "Error retrieving script groups for script uuid [%s]", uuid_str(&script->uuid));
+    }
+
     lua_pushnumber(l, index); // stack = 1 table, 2 index
     lua_newtable(l); // stack = 1 table, 2 index, 3 table
 
@@ -166,10 +69,30 @@ static int lua_script_available(lua_State* l) {
     lua_pushstring(l, script->filepath); // stack = 1 table, 2 index, 3 table, 4 path key, 5 path value
     lua_rawset(l, 3); // stack = 1 table, 2 index, 3 table
 
+    lua_pushstring(l, "groups"); // stack = 1 table, 2 index, 3 table, 4 groups
+    lua_newtable(l); // stack = 1 table, 2 index, 3 table, 4 groups, 5 table
+
+    script_group_t* script_group = NULL;
+    it_t group_it = list_begin(groups);
+    
+    int group_index = 1;
+
+    while ((script_group = it_get(group_it)) != NULL) {
+      lua_pushnumber(l, group_index); // 1 table, 2 index, 3 table, 4 "groups", 5 table, 6 group_index
+      lua_pushstring(l, script_group->name); // 1 table, 2 index, 3 table, 4 "groups", 5 table, 6 group_index, 7 group name
+      lua_rawset(l, 5);
+
+      group_it = it_next(group_it);
+      group_index++;
+    }
+
+    lua_rawset(l, 3); // 1 table, 2 index, 3 table, 4 "groups", 5 table
     lua_rawset(l, 1); // stack = 1 table
 
     it = it_next(it);
     index++;
+
+    free_linked_list_t(groups);
   }
 
   free_linked_list_t(scripts);
