@@ -28,6 +28,7 @@ int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrat
 int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state);
 int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state);
 int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, const char* input);
+int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output);
 int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state);
 int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event);
 

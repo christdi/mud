@@ -9,8 +9,8 @@
 /**
  * Definitions
 **/
-#define INPUT_BUFFER_SIZE 1025 // 1 KB + null terminator
-#define INPUT_BUFFER_LENGTH INPUT_BUFFER_SIZE - 1 // 1 KB
+#define CLIENT_BUFFER_SIZE 1025 // 1 KB + null terminator
+#define CLIENT_BUFFER_LENGTH CLIENT_BUFFER_SIZE - 1 // 1 KB
 #define DELIM_SIZE 2
 
 /**
@@ -22,7 +22,9 @@ typedef struct client {
   time_t last_active;
   void* userdata;
 
-  char input[INPUT_BUFFER_SIZE];
+  char input[CLIENT_BUFFER_SIZE];
+  char output[CLIENT_BUFFER_SIZE];
+  size_t output_length;
 } client_t;
 
 /**
@@ -31,7 +33,8 @@ typedef struct client {
 client_t* create_client_t(void);
 void free_client_t(client_t* client);
 
-int send_to_client(client_t* client, char* data);
+int send_to_client(client_t* client, char* data, size_t len);
+int flush_output(client_t* client);
 int receive_from_client(client_t* client);
 int close_client(client_t* client);
 int client_get_idle_seconds(const client_t* const client);

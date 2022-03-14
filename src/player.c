@@ -105,6 +105,18 @@ void player_input(client_t* client, void* context) {
 }
 
 /**
+ * Callback from the network module to indicate this client is about to be flushed.
+**/
+void player_output(client_t* client, void* context) {
+  game_t* game = (game_t*)context;
+  player_t* player = client->userdata;
+
+  if (lua_hook_on_state_output(game->lua_state, player, player->state, client->output) == -1) {
+    LOG(ERROR, "Error calling state output hook");
+  };
+}
+
+/**
  * Function which attempts to find a state from persistence and assign it to the player.
  *
  * Parameters
@@ -324,7 +336,9 @@ static void write_to_player(player_t* player, char* output) {
     chosen_output = ansi_output;
   }
 
-  if (send_to_client(player->client, chosen_output) != 0) {
+  size_t len = strnlen(chosen_output, SEND_SIZE);
+
+  if (send_to_client(player->client, chosen_output, len) != 0) {
     LOG(WARN, "Send to player failed, unable to write to client [%s]", player->uuid);
 
     return;

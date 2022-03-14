@@ -23,6 +23,7 @@ client_t* create_client_t() {
   client->hungup = 0;
   client->last_active = time(NULL);
   client->userdata = NULL;
+  client->output_length = 0;
 
   return client;
 }
@@ -43,17 +44,52 @@ void free_client_t(client_t* client) {
  *
  * Returns 0 on success or -1 on failure.
 **/
-int send_to_client(client_t* client, char* data) {
+int send_to_client(client_t* client, char* data, size_t len) {
   assert(client);
   assert(data);
 
-  unsigned long len = strlen(data);
+  if ((client->output_length + len) > CLIENT_BUFFER_LENGTH) {
+    LOG(ERROR, "Send to client for fd [%d] would fail as data is too big to append to buffer", client->fd);
+
+    return -1;
+  }
+
+  char* current = data;
+  char* dest = client->output + client->output_length;
+  size_t count = len;
+
+  while(count > 0) {
+    *dest++ = *current++;
+    count--;
+  }
+
+  client->output_length += len;
+
+  return 0;
+}
+
+/**
+ * Flushes the contents of the output buffer and attempts to send it the remote endpoint.
+ *
+ * client - client_t instance whose output is being flushed
+ * 
+ * Returns 0 on success or -1 on error.
+**/
+int flush_output(client_t* client) {
+  assert(client);
+  
+  if (client->output_length == 0) {
+    return 0;
+  }
+
   long bytes_sent = 0;
 
-  while (bytes_sent < (long)len) {
+  char* data = client->output;
+
+  while (bytes_sent < client->output_length) {
     data = data + bytes_sent;
 
-    bytes_sent = send(client->fd, data, len, 0);
+    bytes_sent = send(client->fd, data, client->output_length, 0);
 
     if (bytes_sent == -1L) {
       LOG(ERROR, "%s", strerror(errno));
@@ -64,7 +100,11 @@ int send_to_client(client_t* client, char* data) {
     if (bytes_sent == 0) {
       return -1;
     }
+
+    client->output_length = client->output_length - bytes_sent;
   }
+
+  memset(client->output, 0, sizeof(client->output));
 
   return 0;
 }
@@ -80,17 +120,16 @@ int receive_from_client(client_t* client) {
   assert(client);
 
   ssize_t len = 0;
-  size_t existing = strnlen(client->input, INPUT_BUFFER_LENGTH);
+  size_t existing = strnlen(client->input, CLIENT_BUFFER_LENGTH);
 
-  if (existing == INPUT_BUFFER_LENGTH) {
+  if (existing == CLIENT_BUFFER_LENGTH) {
     LOG(ERROR, "Disconnecting client fd [%d] as their input buffer is full.", client->fd);
-    send_to_client(client, "Your input buffer is full.  Disconnecting.\n\r");
     client->hungup = 1;
 
     return -1;
   }
 
-  size_t remaining = (INPUT_BUFFER_SIZE)-existing;
+  size_t remaining = (CLIENT_BUFFER_SIZE)-existing;
 
   if ((len = recv(client->fd, client->input + existing, remaining - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -157,7 +196,7 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
   size_t delim_len = strnlen(delim, DELIM_SIZE);
 
   size_t i = 0;
-  size_t len = strnlen(client->input, INPUT_BUFFER_SIZE);
+  size_t len = strnlen(client->input, CLIENT_BUFFER_SIZE);
 
   int ret = -1;
 
@@ -167,7 +206,6 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
     if (strncmp(delim, current, delim_len) == 0) {
       if (i > dest_len) {
         LOG(ERROR, "Unable to extract input from client fd [%d], supplied dest buffer was too small at [%ld], needed [%ld]", client->fd, dest_len, i);
-        send_to_client(client, "Your input was discarded as it was too long.\n\r");
       } else {
         strncpy(dest, client->input, i);
         dest[i] = '\0';

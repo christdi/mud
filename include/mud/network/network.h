@@ -26,6 +26,7 @@ typedef struct network {
   callback_t* connection_callback;
   callback_t* disconnection_callback;
   callback_t* input_callback;
+  callback_t* flush_callback;
 
   linked_list_t* servers;
   linked_list_t* clients;
@@ -46,5 +47,6 @@ void disconnect_clients(network_t* network);
 void register_connection_callback(network_t* network, callback_func func, void* context);
 void register_disconnection_callback(network_t* network, callback_func func, void* context);
 void register_input_callback(network_t* network, callback_func func, void* context);
+void register_flush_callback(network_t* network, callback_func func, void* context);
 
 #endif
