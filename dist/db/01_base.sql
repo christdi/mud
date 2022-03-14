@@ -18,6 +18,9 @@ INSERT INTO script_sandbox_permission VALUES('d8cf45ed-3991-466e-b4d3-618b64c108
 INSERT INTO script_sandbox_permission VALUES('922e1784-a6a0-4453-b918-4d4768fde2f9', NULL, 'join');
 INSERT INTO script_sandbox_permission VALUES('49f313d5-f1fd-472a-8c7b-2fbc26884a0f', 'player', 'send');
 INSERT INTO script_sandbox_permission VALUES('98c80490-0735-47a0-a7b9-bf43a85c297b', 'player', 'disconnect');
+INSERT INTO script_sandbox_permission VALUES('98c3cc04-4096-4ff4-9b06-5c59efe8fc5c', 'player', 'get_entities');
+INSERT INTO script_sandbox_permission VALUES('e6457e13-94d6-4cd5-98d6-69a8301df2a9', 'player', 'set_entity');
+INSERT INTO script_sandbox_permission VALUES('60d7a4b5-0db0-4fe2-8db1-4d9544384c6a', 'game', 'get_entity');
 INSERT INTO script_sandbox_permission VALUES('13014295-405a-4d28-bab9-235f26ae40eb', 'game', 'shutdown');
 INSERT INTO script_sandbox_permission VALUES('2aa20983-6781-4700-84bb-9f57462d14e5', 'log', 'trace');
 INSERT INTO script_sandbox_permission VALUES('313cb8fb-b357-4046-a32b-ed8660a84c31', 'log', 'debug');
@@ -39,6 +42,9 @@ INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'd8cf45ed-3991-466e-b4d3-618b64c108fa');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '922e1784-a6a0-4453-b918-4d4768fde2f9');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '49f313d5-f1fd-472a-8c7b-2fbc26884a0f');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '98c3cc04-4096-4ff4-9b06-5c59efe8fc5c');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e6457e13-94d6-4cd5-98d6-69a8301df2a9');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '60d7a4b5-0db0-4fe2-8db1-4d9544384c6a');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '98c80490-0735-47a0-a7b9-bf43a85c297b');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '13014295-405a-4d28-bab9-235f26ae40eb');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2aa20983-6781-4700-84bb-9f57462d14e5');

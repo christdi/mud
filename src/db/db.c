@@ -123,6 +123,57 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
 }
 
 /**
+ * Retrieves the entity ids associated with a given user.
+ *
+ * db - sqlite database instance
+ * uuid - uuid of the user to retrieve entity ids for
+ * results - out parameters to place results
+**/
+int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* results) {
+  assert(db);
+  assert(uuid);
+  assert(results);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT entity_uuid FROM user_entity WHERE user_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve entity ids from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to retrieve entity ids from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+  int count = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive entity ids from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return 0;
+    }
+
+    list_add(results, strdup((char*)sqlite3_column_text(res, 0)));
+    count++;
+  }
+
+  sqlite3_finalize(res);
+
+  return count;
+}
+
+/**
  * Persists an entity to the database.  If the entity exists already it will be updated.
  *
  * Parameters
@@ -471,7 +522,7 @@ int db_user_load_by_username(sqlite3* db, const char* username, player_t* player
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT username FROM user WHERE username = ?";
+  const char* sql = "SELECT uuid, username FROM user WHERE username = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve state from database: [%s]", sqlite3_errmsg(db));
@@ -501,7 +552,8 @@ int db_user_load_by_username(sqlite3* db, const char* username, player_t* player
     return -1;
   }
 
-  player->username = strdup((char*)sqlite3_column_text(res, 0));
+  player->user_uuid = str_uuid((char*)sqlite3_column_text(res, 0));
+  player->username = strdup((char*)sqlite3_column_text(res, 1));
 
   sqlite3_finalize(res);
 

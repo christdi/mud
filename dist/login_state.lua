@@ -1,77 +1,184 @@
-local substate = {
-   GET_USERNAME = 1,
-   GET_PASSWORD = 2,
-   GET_ENTITY_NAME = 3,
-   GET_ENTITY_DESCRIPTION = 4
-}
+local on_enter
+local on_exit
+local on_input
+local populate_characters
+local display_characters
+local get_username
+local get_password
+local get_entity_choice
+local get_entity_name
+local get_entity_description
 
-local function get_username(p, arg, data)
-   data.login.username = arg
 
-   player.send(p, "\n\rPlease enter your password: ")
-
-   data.login.substate = substate.GET_PASSWORD
-end
-
-local function get_password(p, arg, data)
-   if player.authenticate(p, data.login.username, arg) then
-      player.send(p, "\n\rAuthentication success\n\n\rPlease enter an entity name: ")
-
-      data.login.substate = substate.GET_ENTITY_NAME
-   else
-      player.send(p, "\n\rAuthentication failed\n\n\rPlease enter your username: ")
-
-      data.login.substate = substate.GET_USERNAME
-   end
-end
-
-local function get_entity_name(p, arg, data)
-   data.login.entity_name = arg
-
-   player.send(p, "Please enter an entity description: ")
-
-   data.login.substate = substate.GET_ENTITY_DESCRIPTION
-end
-
-local function get_entity_description(p, arg, data)
-   data.login.entity_description = arg
-
-   game.new_entity(data.login.entity_name, data.login.entity_description)
-
-   player.set_state(p, game.states.play)
-end
-
-local function on_enter(p)
+-- State hook for when state is entered
+--
+-- p - instance of player userdata
+on_enter = function(p)
    player.send(p, "Welcome to [bred]DEMO[reset] MUD!\n\n\r")
    player.send(p, "Please enter your username: ")
 
    local data = game.players[player.uuid(p)];
-   data.login = { substate = substate.GET_USERNAME };
+
+   data.login = { substate = get_username }
 end
 
-local function on_exit(p)
-end
 
-local function on_input(p, arg)
+-- State hook for when state is exited
+--
+-- p - instance of player userdata
+on_exit = function(p)
    local data = game.players[player.uuid(p)];
 
-   if data.login.substate == substate.GET_USERNAME then
-      return get_username(p, arg, data)
+   data.login = nil;
+end
+
+
+-- State hook for when state receives input
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+on_input = function(p, arg)
+   local data = game.players[player.uuid(p)];
+
+   if data.login.substate == nil then
+      log.error("Player did not have a substate")
+
+      return;
    end
 
-   if data.login.substate == substate.GET_PASSWORD then
-      return get_password(p, arg, data)
-   end
+   data.login.substate(p, arg, data)
+end
 
-   if data.login.substate == substate.GET_ENTITY_NAME then
-      return get_entity_name(p, arg, data)
-   end
 
-   if data.login.substate == substate.GET_ENTITY_DESCRIPTION then
-      return get_entity_description(p, arg, data)
+-- Populate player data with entities available to them
+--
+-- p - instance of player userdata
+-- data - reference to player data
+populate_characters = function(p, data)
+   local entities = player.get_entities(p)
+
+   if #entities > 0 then
+      data.entity = {};
+
+      for k, v in ipairs(entities) do
+         local entity = game.get_entity(v);
+         data.entity[entity.name] = entity;
+      end
    end
 end
 
+
+-- Display player characters to player
+--
+-- p - instance of player userdata
+-- data - reference to player data
+display_characters = function(p, data)
+   if data.entity ~= nil then
+      player.send(p, "\n\rCharacter Selection\n\r");
+
+      for k, v in pairs(data.entity) do
+         player.send(p, "\n\r[bcyan]" .. v.name .. "[reset] - " .. v.description .. "\n\r");
+      end
+   end
+end
+
+
+-- Substate method to read player username
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+-- data - reference to player data
+get_username = function(p, arg, data)
+   data.login.username = arg
+
+   player.send(p, "\n\rPlease enter your password: ")
+
+   data.login.substate = get_password;
+end
+
+
+-- Substate method to read player password
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+-- data - reference to player data
+get_password = function(p, arg, data)
+   if player.authenticate(p, data.login.username, arg) then
+      player.send(p, "\n\r[bgreen]Authentication successful![reset]\n\r")
+
+      populate_characters(p, data)
+      display_characters(p, data)
+
+      player.send(p, "\n\rPlease enter the name of the character to play or 'new' to create one: ");
+
+      data.login.substate = get_entity_choice;
+   else
+      player.send(p, "\n\r[bred]Authentication failed[reset]\n\n\rPlease enter your username: ")
+
+      data.login.substate = get_username
+   end
+end
+
+
+-- Substate method to read character selection
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+-- data - reference to player data
+get_entity_choice = function(p, arg, data)
+   if arg == "new" then
+      player.send(p, "Please enter a name: ")
+
+      data.login.substate = get_entity_name
+   else
+      if data.entity ~= nil then
+         for _, v in pairs(data.entity) do
+            if v.name:lower() == arg:lower() then
+               player.set_entity(p, v.uuid);
+               player.set_state(p, game.states.play)
+
+               return
+            end
+         end
+      end
+
+      display_characters(p, data)
+
+      player.send(p, "\n\rPlease enter the name of the character to play or 'new' to create one: ");
+   end
+end
+
+
+-- Substate method to read name of new character
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+-- data - reference to player data
+get_entity_name = function(p, arg, data)
+   data.login.entity_name = arg
+
+   player.send(p, "Please enter a description: ")
+
+   data.login.substate = get_entity_description
+end
+
+
+-- Substate method to read description of new character
+--
+-- p - instance of player userdata
+-- arg - arguments passed in by player
+-- data - reference to player data
+get_entity_description = function(p, arg, data)
+   data.login.entity_description = arg
+
+   local entity = game.new_entity(data.login.entity_name, data.login.entity_description)
+
+   player.set_entity(p, entity.uuid)
+   player.set_state(p, game.states.play)
+end
+
+
+-- Returns module interface for requires
 return {
    on_enter = on_enter,
    on_exit = on_exit,

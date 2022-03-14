@@ -30,7 +30,7 @@ function player_connected(p)
   game.players[player.uuid(p)] = {}
 
   player.set_narrator(p, game.narrators.default)
-  player.set_state(p, game.states.play)
+  player.set_state(p, game.states.login)
 end
 
 

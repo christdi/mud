@@ -27,6 +27,7 @@ typedef struct linked_list linked_list_t;
 **/
 typedef struct player {
   mud_uuid_t uuid;
+  mud_uuid_t user_uuid;
 
   char* username;
 

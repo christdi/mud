@@ -68,7 +68,18 @@ static int lua_new_entity(lua_State* l) {
 
   lua_settop(l, 0);
 
-  lua_pushlightuserdata(l, entity);
+  lua_newtable(l);
+  lua_pushstring(l, "uuid");
+  lua_pushstring(l, uuid_str(&entity->id));
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, "name");
+  lua_pushstring(l, entity->name);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, "description");
+  lua_pushstring(l, entity->description);
+  lua_rawset(l, -3);
 
   return 1;
 }
@@ -82,6 +93,7 @@ static int lua_get_entity(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
   const char* uuid = luaL_checkstring(l, 1);
+  lua_pop(l, 1);
 
   entity_t* entity = get_entity(game, uuid);
 
@@ -89,9 +101,18 @@ static int lua_get_entity(lua_State* l) {
     return luaL_error(l, "No entity found for UUID [%s]", uuid);
   }
 
-  lua_pop(l, 1);
+  lua_newtable(l);
+  lua_pushstring(l, "uuid");
+  lua_pushstring(l, uuid);
+  lua_rawset(l, -3);
 
-  lua_pushlightuserdata(l, entity);
+  lua_pushstring(l, "name");
+  lua_pushstring(l, entity->name);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, "description");
+  lua_pushstring(l, entity->description);
+  lua_rawset(l, -3);
 
   return 1;
 }
