@@ -125,7 +125,8 @@ int start_game(int argc, char* argv[]) {
   register_connection_callback(game->network, player_connected, game);
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
-
+  register_flush_callback(game->network, player_output, game);
+  
   if (template_load_from_file(game->templates, "template.properties") != 0) {
     LOG(ERROR, "Failed to load templates");
 

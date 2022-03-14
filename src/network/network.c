@@ -31,6 +31,7 @@ network_t* create_network_t(void) {
   network->connection_callback = create_callback_t();
   network->disconnection_callback = create_callback_t();
   network->input_callback = create_callback_t();
+  network->flush_callback = create_callback_t();
 
   network->servers = create_linked_list_t();
   network->clients = create_linked_list_t();
@@ -49,6 +50,7 @@ void free_network_t(network_t* network) {
   free_callback_t(network->connection_callback);
   free_callback_t(network->disconnection_callback);
   free_callback_t(network->input_callback);
+  free_callback_t(network->flush_callback);
 
   client_t* client = NULL;
   it_t it = list_begin(network->clients);
@@ -141,6 +143,23 @@ void register_input_callback(network_t* network, callback_func func, void* conte
   network->input_callback->context = context;
 }
 
+
+/**
+ * Sets a callback to be called on client flush.
+ *
+ * network - instance of network_t.
+ * func - callback function to be called on flush
+ * context - void pointer to context that will be included in callback
+**/
+void register_flush_callback(network_t* network, callback_func func, void* context) {
+  assert(network);
+  assert(func);
+  assert(context);
+
+  network->flush_callback->func = func;
+  network->flush_callback->context = context;
+}
+
 /**
  * Internal method which contains the logic to poll the network for activity.
  * Uses select to determine if we have read activity on a server or client and
@@ -204,6 +223,7 @@ void poll_network(network_t* network) {
     client_t* client;
 
     while ((client = (client_t*)it_get(client_it)) != NULL) {
+
       if (FD_ISSET(client->fd, &read_set)) {
         if (receive_from_client(client) != 0) {
           LOG(ERROR, "Failed to read from client fd [%d]", client->fd);
@@ -212,6 +232,14 @@ void poll_network(network_t* network) {
             network->input_callback->func(client, network->input_callback->context);
           }
         }
+      }
+
+      if (client->output_length > 0) {
+        if (network->flush_callback->func) {
+          network->flush_callback->func(client, network->flush_callback->context);
+        }
+
+        flush_output(client);
       }
 
       client_it = it_next(client_it);

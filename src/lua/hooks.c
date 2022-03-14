@@ -26,6 +26,7 @@
 #define STATE_ENTER_HOOK_FUNCTION "on_enter"
 #define STATE_EXIT_HOOK_FUNCTION "on_exit"
 #define STATE_INPUT_HOOK_FUNCTION "on_input"
+#define STATE_OUTPUT_HOOK_FUNCTION "on_output"
 #define STATE_TICK_HOOK_FUNCTION "on_tick"
 #define STATE_EVENT_HOOK_FUNCTION "on_event"
 
@@ -307,6 +308,43 @@ int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, cons
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state input hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the on_output method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *
+ * Returns 0 on success or returns luaL_error on error.
+**/
+int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output) {
+  assert(l);
+  assert(player);
+  assert(state);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_pushstring(l, STATE_OUTPUT_HOOK_FUNCTION); // 1 = state module table, 2 = on_input method name
+
+  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_input method
+    lua_settop(l, 0);
+
+    return 0;
+  }
+
+  lua_remove(l, 1); // 1 = on_input method
+  lua_pushlightuserdata(l, player); // 1 = on_input method, 2 = player pointer
+  lua_pushstring(l, output); // on_input method, 2 = player pointer, 3 = output string
+
+  if (lua_pcall(l, 2, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state output hook [%s]", lua_tostring(l, -1));
 
     return -1;
   }

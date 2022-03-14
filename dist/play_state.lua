@@ -14,6 +14,10 @@ local function on_input(p, arg)
    end
 end
 
+local function on_output(p, output)
+  player.send(p, "> ")
+end
+
 local function on_event(p, event)
   player.narrate(p, event);
 end
@@ -22,5 +26,6 @@ return {
   on_enter = on_enter,
   on_exit = on_exit,
   on_input = on_input,
+  on_output = on_output,
   on_event = on_event
 }
