@@ -44,10 +44,9 @@ game_t* lua_common_get_game(lua_State* l) {
   assert(l);
 
   lua_getglobal(l, GLOBAL_GAME_FIELD_NAME);
-  int top = lua_gettop(l);
 
-  luaL_checktype(l, top, LUA_TLIGHTUSERDATA);
-  game_t* game = lua_touserdata(l, top);
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  game_t* game = lua_touserdata(l, -1);
 
   lua_pop(l, 1);
 

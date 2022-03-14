@@ -11,6 +11,7 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
+#include "mud/lua/struct.h"
 
 static int build_environment_table(game_t* game, const char* script_uuid);
 
@@ -153,43 +154,6 @@ void deallocate_script(void* value) {
 }
 
 /**
- * Looks up a script via it's UUID in the database and runs it if found.
- *
- * Parameters
- *   game - Instance of game_t containing necessary data structures.
- *   uuid - UUID of the script to be ran
- *   script_out - Out parameter which returns the loaded script
-**/
-int script_load(game_t* game, const char* uuid, script_t** script_out) {
-  assert(game);
-  assert(uuid);
-
-  script_t* script = create_script_t();
-
-  if (db_script_load(game->database, uuid, script) != 0) {
-    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
-
-    free_script_t(script);
-
-    return -1;
-  }
-
-  if (luaL_dofile(game->lua_state, script->filepath) != 0) {
-    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
-
-    free_script_t(script);
-
-    return -1;
-  }
-
-  if (script_out != NULL) {
-    *script_out = script;
-  }
-
-  return 0;
-}
-
-/**
  * Runs a command script.  The file is loaded and compiled and then a sandbox environment table is built
  * based on the access level of the script limiting the methods it may call in Lua.  Player and arguments
  * are exposed to the script via the environment table as "p" and "arg".
@@ -233,7 +197,7 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
   }
 
   lua_pushstring(game->lua_state, "p");
-  lua_pushlightuserdata(game->lua_state, player);
+  lua_push_player(game->lua_state, player);
   lua_settable(game->lua_state, -3);
 
   lua_pushstring(game->lua_state, "arg");

@@ -403,8 +403,6 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
 
   sqlite3_stmt* res = NULL;
 
-  LOG(INFO, "Groups by UUID: [%s]", uuid);
-
   const char* sql = "SELECT name FROM script_sandbox_group ssg INNER JOIN script_group sg on ssg.uuid = sg.group_uuid WHERE sg.script_uuid = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
@@ -433,8 +431,6 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
     }
 
     char* name = (char*) sqlite3_column_text(res, 0);
-
-    LOG(INFO, "Script result name: [%s]", name);
 
     script_group_t* script_group = script_new_script_group_t(name);
 

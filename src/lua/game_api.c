@@ -11,6 +11,7 @@
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
+#include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/state/state.h"
 
@@ -18,7 +19,6 @@
 
 static int lua_new_entity(lua_State* l);
 static int lua_get_entity(lua_State* l);
-static int lua_get_entity_id(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_register_state(lua_State* l);
 static int lua_register_narrator(lua_State* l);
@@ -31,7 +31,6 @@ static int lua_shutdown(lua_State* l);
 static const struct luaL_Reg game_lib[] = {
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
-  { "get_entity_id", lua_get_entity_id },
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
   { "register_narrator", lua_register_narrator },
@@ -44,7 +43,11 @@ static const struct luaL_Reg game_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Register the game API with Lua
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
 **/
 int lua_game_register_api(lua_State* l) {
   luaL_newlib(l, game_lib);
@@ -54,82 +57,43 @@ int lua_game_register_api(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method that creates a new entity and returns a table representing it.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
 **/
 static int lua_new_entity(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
+  const char* description = luaL_checkstring(l, -1);
+  const char* name = luaL_checkstring(l, -2);
 
-  const char* name = luaL_checkstring(l, 1);
-  const char* description = luaL_checkstring(l, 2);
+  lua_pop(l, 2);
 
   game_t* game = lua_common_get_game(l);
-
   entity_t* entity = new_entity(game, name, description);
 
-  lua_settop(l, 0);
-
-  lua_newtable(l);
-  lua_pushstring(l, "uuid");
-  lua_pushstring(l, uuid_str(&entity->id));
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, "name");
-  lua_pushstring(l, entity->name);
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, "description");
-  lua_pushstring(l, entity->description);
-  lua_rawset(l, -3);
+  lua_push_entity(l, entity);
 
   return 1;
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method which allows an entity to be retrieved via uuid
+ *
+ * l - Lua state instance
 **/
 static int lua_get_entity(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  game_t* game = lua_common_get_game(l);
-
-  const char* uuid = luaL_checkstring(l, 1);
+  const char* uuid = luaL_checkstring(l, -1);
   lua_pop(l, 1);
 
+  game_t* game = lua_common_get_game(l);
   entity_t* entity = get_entity(game, uuid);
 
   if (entity == NULL) {
     return luaL_error(l, "No entity found for UUID [%s]", uuid);
   }
 
-  lua_newtable(l);
-  lua_pushstring(l, "uuid");
-  lua_pushstring(l, uuid);
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, "name");
-  lua_pushstring(l, entity->name);
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, "description");
-  lua_pushstring(l, entity->description);
-  lua_rawset(l, -3);
-
-  return 1;
-}
-
-/**
- * TODO(Chris I)
-**/
-static int lua_get_entity_id(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-
-  entity_t* entity = lua_touserdata(l, 1);
-
-  lua_pushstring(l, entity->id.raw);
-
-  lua_pop(l, 1);
+  lua_push_entity(l, entity);
 
   return 1;
 }
@@ -160,8 +124,7 @@ static int lua_register_component(lua_State* l) {
  * Returns 0 on success or luaL_error on error.
 **/
 static int lua_register_state(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-  luaL_checktype(l, 1, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TTABLE);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -180,8 +143,7 @@ static int lua_register_state(lua_State* l) {
  * Returns 0 on success or luaL_error on error.
 **/
 static int lua_register_narrator(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-  luaL_checktype(l, 1, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TTABLE);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -269,8 +231,6 @@ static int lua_get_component(lua_State* l) {
  * Returns 0 on success or calls luaL_error on failure
 **/
 static int lua_event(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
   game_t* game = lua_common_get_game(l);
 
   lua_event_data_t* lua_event_data = lua_new_lua_event_data_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
@@ -281,7 +241,11 @@ static int lua_event(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to shut down the game
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
 **/
 static int lua_shutdown(lua_State* l) {
   game_t* game = lua_common_get_game(l);

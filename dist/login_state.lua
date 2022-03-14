@@ -17,7 +17,7 @@ on_enter = function(p)
    player.send(p, "Welcome to [bred]DEMO[reset] MUD!\n\n\r")
    player.send(p, "Please enter your username: ")
 
-   local data = game.players[player.uuid(p)];
+   local data = game.players[p.uuid];
 
    data.login = { substate = get_username }
 end
@@ -27,7 +27,7 @@ end
 --
 -- p - instance of player userdata
 on_exit = function(p)
-   local data = game.players[player.uuid(p)];
+   local data = game.players[p.uuid];
 
    data.login = nil;
 end
@@ -38,7 +38,7 @@ end
 -- p - instance of player userdata
 -- arg - arguments passed in by player
 on_input = function(p, arg)
-   local data = game.players[player.uuid(p)];
+   local data = game.players[p.uuid];
 
    if data.login.substate == nil then
       log.error("Player did not have a substate")
@@ -60,8 +60,7 @@ populate_characters = function(p, data)
    if #entities > 0 then
       data.entity = {};
 
-      for k, v in ipairs(entities) do
-         local entity = game.get_entity(v);
+      for _, entity in ipairs(entities) do
          data.entity[entity.name] = entity;
       end
    end
@@ -132,9 +131,9 @@ get_entity_choice = function(p, arg, data)
       data.login.substate = get_entity_name
    else
       if data.entity ~= nil then
-         for _, v in pairs(data.entity) do
-            if v.name:lower() == arg:lower() then
-               player.set_entity(p, v.uuid);
+         for _, entity in pairs(data.entity) do
+            if entity.name:lower() == arg:lower() then
+               player.set_entity(p, entity);
                player.set_state(p, game.states.play)
 
                return
@@ -173,7 +172,7 @@ get_entity_description = function(p, arg, data)
 
    local entity = game.new_entity(data.login.entity_name, data.login.entity_description)
 
-   player.set_entity(p, entity.uuid)
+   player.set_entity(p, entity)
    player.set_state(p, game.states.play)
 end
 

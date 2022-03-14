@@ -9,9 +9,11 @@
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/player.h"
 #include "mud/state/state.h"
+#include "mud/util/muduuid.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
 
@@ -31,7 +33,11 @@
 #define STATE_EVENT_HOOK_FUNCTION "on_event"
 
 /**
- * TODO(Chris I)
+ * Hook method called when the Lua state has been successfully initialised.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or -1 on error
 **/
 int lua_hook_on_startup(lua_State* l) {
   assert(l);
@@ -52,12 +58,12 @@ int lua_hook_on_startup(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Hook method called when the engine has loaded all entities from persistence.
  *
- * 4/-1 value
- * 3/-2 key
- * 2/-3 table
- * 1/-4 on_entities_loaded
+ * l - Lua state instance
+ * entities - A linked list of entity_t structs
+ *
+ * Returns 0 on success or -1 on failure
 **/
 int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
   assert(l);
@@ -71,15 +77,16 @@ int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
 
   lua_newtable(l);
 
-  it_t it = list_begin(entities);
   entity_t* entity = NULL;
   int index = 1;
 
+  it_t it = list_begin(entities);
+
   while ((entity = (entity_t*)it_get(it)) != NULL) {
     lua_pushnumber(l, index);
-    lua_pushstring(l, entity->id.raw);
+    lua_push_entity(l, entity);
 
-    lua_rawset(l, 2);
+    lua_rawset(l, -3);
 
     it = it_next(it);
     index++;
@@ -94,7 +101,12 @@ int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
 }
 
 /**
- * TODO(Chris I)
+ * Hook method called when the engine has accepted a connection and created a new player.
+ *
+ * l - Lua state instance
+ * player - New player instance
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int lua_hook_on_player_connected(lua_State* l, player_t* player) {
   assert(l);
@@ -106,7 +118,7 @@ int lua_hook_on_player_connected(lua_State* l, player_t* player) {
     return 0;
   }
 
-  lua_pushlightuserdata(l, player);
+  lua_push_player(l, player);
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling player connected hook [%s]", lua_tostring(l, -1));
@@ -118,7 +130,12 @@ int lua_hook_on_player_connected(lua_State* l, player_t* player) {
 }
 
 /**
- * TODO(Chris I)
+ * Hook method called when the engine has detected that a player has disconnected.
+ *
+ * l - Lua state instance
+ * player - New player instance
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
   assert(l);
@@ -130,7 +147,7 @@ int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
     return 0;
   }
 
-  lua_pushlightuserdata(l, player);
+  lua_push_player(l, player);
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling player disconnected hook [%s]", lua_tostring(l, -1));
@@ -219,17 +236,17 @@ int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
   assert(player);
   assert(state);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
-  lua_pushstring(l, STATE_ENTER_HOOK_FUNCTION); // 1 = state module table, 2 = on_enter method name
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_ENTER_HOOK_FUNCTION); // -2 = state module table, -1 = on_enter method name
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_enter method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_enter method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_enter method
-  lua_pushlightuserdata(l, player); // 1 = on_enter method, 2 = player pointer
+  lua_remove(l, -2); // 1 = on_enter method
+  lua_push_player(l, player); // 1 = on_enter method, 2 = player table
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state enter hook [%s]", lua_tostring(l, -1));
@@ -255,18 +272,17 @@ int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
   assert(player);
   assert(state);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_EXIT_HOOK_FUNCTION); // -2 = state module table, -1 = on_exit method name
 
-  lua_pushstring(l, STATE_EXIT_HOOK_FUNCTION); // 1 = state module table, 2 = on_exit method name
-
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_exit method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_exit method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_exit method
-  lua_pushlightuserdata(l, player); // 1 = on_exit method, 2 = player pointer
+  lua_remove(l, -2); // -1 = on_exit method
+  lua_push_player(l, player); // -2 = on_exit method, -1 = player table
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state exit hook [%s]", lua_tostring(l, -1));
@@ -293,18 +309,18 @@ int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, cons
   assert(player);
   assert(state);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
-  lua_pushstring(l, STATE_INPUT_HOOK_FUNCTION); // 1 = state module table, 2 = on_input method name
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_INPUT_HOOK_FUNCTION); // -2 = state module table, -1 = on_input method name
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_input method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_input method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_input method
-  lua_pushlightuserdata(l, player); // 1 = on_input method, 2 = player pointer
-  lua_pushstring(l, input);
+  lua_remove(l, -2); // -1 = on_input method
+  lua_push_player(l, player); // -2 = on_input method, -1 = player table
+  lua_pushstring(l, input); // -3 = on_input method, -2 = player ptable, -1 = input
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state input hook [%s]", lua_tostring(l, -1));
@@ -330,18 +346,18 @@ int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, con
   assert(player);
   assert(state);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
-  lua_pushstring(l, STATE_OUTPUT_HOOK_FUNCTION); // 1 = state module table, 2 = on_input method name
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_OUTPUT_HOOK_FUNCTION); // -2 = state module table, -1 = on_input method name
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_input method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_input method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_input method
-  lua_pushlightuserdata(l, player); // 1 = on_input method, 2 = player pointer
-  lua_pushstring(l, output); // on_input method, 2 = player pointer, 3 = output string
+  lua_remove(l, -2); // -1 = on_input method
+  lua_push_player(l, player); // -2 = on_input method, -1 = player table
+  lua_pushstring(l, output); // -3 = on_input method, -2 = player table, -1 = output string
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state output hook [%s]", lua_tostring(l, -1));
@@ -367,17 +383,17 @@ int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
   assert(player);
   assert(state);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
-  lua_pushstring(l, STATE_TICK_HOOK_FUNCTION); // 1 = state module table, 2 = on_tick method name
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_TICK_HOOK_FUNCTION); // -2 = state module table, -1 = on_tick method name
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_tick method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_tick method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_tick method
-  lua_pushlightuserdata(l, player); // 1 = on_tick method, 2 = player pointer
+  lua_remove(l, -2); // -1 = on_tick method
+  lua_push_player(l, player); // -2 = on_tick method, -1 = player table
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state tick hook [%s]", lua_tostring(l, -1));
@@ -405,19 +421,19 @@ int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, even
   assert(state);
   assert(event);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // 1 = state module table
-  lua_pushstring(l, STATE_EVENT_HOOK_FUNCTION); // 1 = state module table, 2 = on_event method name
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_EVENT_HOOK_FUNCTION); // -2 = state module table, -1 = on_event method name
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 = state module table, 2 = on_event method
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_event method
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = on_event method
+  lua_remove(l, -2); // -1 = on_event method
 
-  lua_pushlightuserdata(l, player); // 1 = on_event method, 2 = player pointer
-  lua_pushlightuserdata(l, event); // 1 = on_event method, 2 = player pointer, 3 = event pointer
+  lua_push_player(l, player); // -2 = on_event method, -1 = player table
+  lua_pushlightuserdata(l, event); // -3 = on_event method, -2 = player table, -1 = event pointer
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state event hook [%s]", lua_tostring(l, -1));
