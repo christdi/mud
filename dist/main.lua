@@ -1,6 +1,6 @@
-login_state_module = require('login_state')
-play_state_module = require('play_state')
-lua_state_module = require('lua_state')
+login_state_module = require('state/login_state')
+play_state_module = require('state/play_state')
+lua_state_module = require('state/lua_state')
 narrator_module = require('narrator')
 event_module = require('event')
 
