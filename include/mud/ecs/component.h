@@ -23,14 +23,16 @@ typedef struct component_data {
 /**
  * Functions
 **/
-component_t* create_component_t();
-void free_component_t(component_t* component);
-void deallocate_component_t(void* value);
+component_t* ecs_create_component_t();
+void ecs_free_component_t(component_t* component);
+void ecs_deallocate_component_t(void* value);
 
-component_data_t* create_component_data_t();
-void free_component_data_t(component_data_t* component_data);
-void deallocate_component_data_t(void* value);
+component_data_t* ecs_create_component_data_t();
+void ecs_free_component_data_t(component_data_t* component_data);
+void ecs_deallocate_component_data_t(void* value);
 
-bool component_has_entity(component_t* component, entity_t* entity);
+void ecs_add_entity_to_component(component_t* component, component_data_t* data, linked_list_t* archetypes, entity_t* entity);
+void ecs_remove_entity_from_component(component_t* component, linked_list_t* archetypes, entity_t* entity);
+bool ecs_component_has_entity(component_t* component, entity_t* entity);
 
 #endif

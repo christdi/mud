@@ -55,15 +55,15 @@ game_t* create_game_t(void) {
   game->players->deallocator = deallocate_player;
 
   game->entities = create_hash_table_t();
-  game->entities->deallocator = deallocate_entity;
+  game->entities->deallocator = ecs_deallocate_entity;
 
   game->event_broker = event_new_event_broker_t();
 
   game->components = create_linked_list_t();
-  game->components->deallocator = deallocate_component_t;
+  game->components->deallocator = ecs_deallocate_component_t;
 
   game->archetypes = create_linked_list_t();
-  game->archetypes->deallocator = archetype_deallocate_archetype_t;
+  game->archetypes->deallocator = ecs_deallocate_archetype_t;
 
   game->tasks = create_linked_list_t();
   game->tasks->deallocator = deallocate_task_t;
@@ -149,7 +149,7 @@ int start_game(int argc, char* argv[]) {
     return -1;
   }
 
-  if (load_entities(game) == -1) {
+  if (ecs_load_entities(game) == -1) {
     LOG(ERROR, "Failed to load entities");
 
     return -1;
@@ -166,7 +166,7 @@ int start_game(int argc, char* argv[]) {
   while (!game->shutdown) {
     event_dispatch_events(game->event_broker, game, game->entities, game->players);
     task_execute(game->tasks, game);
-    update_systems(game);
+    ecs_update_systems(game);
     poll_network(game->network);
     game_sleep_until_tick(game, game->config->ticks_per_second);
   }

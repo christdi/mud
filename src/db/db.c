@@ -106,7 +106,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
       return 0;
     }
 
-    entity_t* entity = create_entity_t();
+    entity_t* entity = ecs_create_entity_t();
 
     strlcpy(entity->id.raw, (char*)sqlite3_column_text(res, 0), sizeof(entity->id.raw));
     entity->name = strdup((char*)sqlite3_column_text(res, 1));

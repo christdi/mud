@@ -233,7 +233,7 @@ static int lua_get_entities(lua_State* l) {
   int count = 1;
 
   while ((uuid = it_get(it)) != NULL) {
-    entity_t* entity = get_entity(game, uuid);
+    entity_t* entity = ecs_get_entity(game, uuid);
 
     lua_pushnumber(l, count); // -1 = count (index), -2 = table
     lua_push_entity(l, entity); // -1 = uuid, -2 = count (index), -3 = table

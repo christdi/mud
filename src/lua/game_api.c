@@ -71,7 +71,7 @@ static int lua_new_entity(lua_State* l) {
   lua_pop(l, 2);
 
   game_t* game = lua_common_get_game(l);
-  entity_t* entity = new_entity(game, name, description);
+  entity_t* entity = ecs_new_entity(game, name, description);
 
   lua_push_entity(l, entity);
 
@@ -88,7 +88,7 @@ static int lua_get_entity(lua_State* l) {
   lua_pop(l, 1);
 
   game_t* game = lua_common_get_game(l);
-  entity_t* entity = get_entity(game, uuid);
+  entity_t* entity = ecs_get_entity(game, uuid);
 
   if (entity == NULL) {
     return luaL_error(l, "No entity found for UUID [%s]", uuid);
@@ -105,7 +105,7 @@ static int lua_get_entity(lua_State* l) {
 static int lua_register_component(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
-  component_t* component = create_component_t();
+  component_t* component = ecs_create_component_t();
 
   if (list_add(game->components, component) != 0) {
     return luaL_error(l, "Unable to add component to entity");
@@ -165,12 +165,12 @@ static int lua_register_archetype(lua_State* l) {
   int top = 0 - lua_gettop(l);
   int index = -1;
 
-  archetype_t* archetype = archetype_new_archetype_t();
+  archetype_t* archetype = ecs_new_archetype_t();
 
   while (index > top) {
     luaL_checktype(l, index, LUA_TLIGHTUSERDATA);
     component_t* component = lua_touserdata(l, index);
-    archetype_add_component(archetype, component);
+    ecs_add_archetype_component(archetype, component);
 
     index--;
   }
@@ -225,7 +225,7 @@ static int lua_add_component(lua_State* l) {
 
   lua_pop(l, 2);
 
-  component_data_t* component_data = create_component_data_t();
+  component_data_t* component_data = ecs_create_component_data_t();
   component_data->ref = ref;
 
   hash_table_insert(component->entities, entity->id.raw, component_data);

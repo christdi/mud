@@ -22,14 +22,16 @@ typedef struct archetype {
 /**
  * Function prototypes
 **/
-archetype_t* archetype_new_archetype_t();
-void archetype_free_archetype_t(archetype_t* archetype);
-void archetype_deallocate_archetype_t(void* value);
+archetype_t* ecs_new_archetype_t();
+void ecs_free_archetype_t(archetype_t* archetype);
+void ecs_deallocate_archetype_t(void* value);
 
-void archetype_add_component(archetype_t* archetype, component_t* component);
-void archetype_remove_component(archetype_t* archetype, component_t* component);
-bool archetype_entity_matches(archetype_t* archetype, entity_t* entity);
-void archetype_add_entity(archetype_t* archetype, entity_t* entity);
-void archetype_remove_entity(archetype_t* archetype, entity_t* entity);
+void ecs_add_archetype_component(archetype_t* archetype, component_t* component);
+void ecs_remove_archetype_component(archetype_t* archetype, component_t* component);
+bool ecs_entity_matches_archetype(archetype_t* archetype, entity_t* entity);
+void ecs_add_entity_to_archetype(archetype_t* archetype, entity_t* entity);
+void ecs_remove_entity_from_archetype(archetype_t* archetype, entity_t* entity);
+bool ecs_archetype_has_entity(archetype_t* archetype, entity_t* entity);
+void ecs_update_entity_archetypes(linked_list_t* archetypes, entity_t* entity);
 
 #endif
