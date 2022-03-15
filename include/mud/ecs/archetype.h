@@ -1,11 +1,14 @@
 #ifndef MUD_ECS_ARCHETYPE_H
 #define MUD_ECS_ARCHETYPE_H
 
+#include <stdbool.h>
+
 /**
  * Typedefs
 **/
 typedef struct linked_list linked_list_t;
 typedef struct hash_table hash_table_t;
+typedef struct component component_t;
 typedef struct entity entity_t;
 
 /**
@@ -23,7 +26,9 @@ archetype_t* archetype_new_archetype_t();
 void archetype_free_archetype_t(archetype_t* archetype);
 void archetype_deallocate_archetype_t(void* value);
 
-void archetype_entity_matches(archetype_t* archetype, entity_t* entity);
+void archetype_add_component(archetype_t* archetype, component_t* component);
+void archetype_remove_component(archetype_t* archetype, component_t* component);
+bool archetype_entity_matches(archetype_t* archetype, entity_t* entity);
 void archetype_add_entity(archetype_t* archetype, entity_t* entity);
 void archetype_remove_entity(archetype_t* archetype, entity_t* entity);
 

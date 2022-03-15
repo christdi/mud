@@ -188,10 +188,6 @@ void poll_network(network_t* network) {
     return;
   }
 
-  if (results == 0) {
-    return;
-  }
-
   if (results > 0) {
     server_t* server;
     it_t server_it = list_begin(network->servers);
@@ -234,16 +230,23 @@ void poll_network(network_t* network) {
         }
       }
 
-      if (client->output_length > 0) {
-        if (network->flush_callback->func) {
-          network->flush_callback->func(client, network->flush_callback->context);
-        }
-
-        flush_output(client);
-      }
-
       client_it = it_next(client_it);
     }
+  }
+
+  it_t client_it = list_begin(network->clients);
+  client_t* client = NULL;
+
+  while ((client = it_get(client_it)) != NULL) {
+    if (client->output_length > 0) {
+      if (network->flush_callback->func) {
+        network->flush_callback->func(client, network->flush_callback->context);
+      }
+
+      flush_output(client);
+    }
+
+    client_it = it_next(client_it);
   }
 }
 

@@ -7,7 +7,6 @@ local get_username
 local get_password
 local get_entity_choice
 local get_entity_name
-local get_entity_description
 
 
 -- State hook for when state is entered
@@ -156,23 +155,10 @@ end
 get_entity_name = function(p, arg, data)
    data.login.entity_name = arg
 
-   player.send(p, "Please enter a description: ")
+   local character = character_module.new(data.login.entity_name)
+   character_module.set_room(character, room_module.new("Valhalla"));
 
-   data.login.substate = get_entity_description
-end
-
-
--- Substate method to read description of new character
---
--- p - instance of player userdata
--- arg - arguments passed in by player
--- data - reference to player data
-get_entity_description = function(p, arg, data)
-   data.login.entity_description = arg
-
-   local entity = game.new_entity(data.login.entity_name, data.login.entity_description)
-
-   player.set_entity(p, entity)
+   player.set_entity(p, character)
    player.set_state(p, game.states.play)
 end
 

@@ -20,6 +20,7 @@
 
 static int lua_authenticate(lua_State* l);
 static int lua_narrate(lua_State* l);
+static int lua_get_entity(lua_State* l);
 static int lua_set_entity(lua_State* l);
 static int lua_set_state(lua_State* l);
 static int lua_set_narrator(lua_State* l);
@@ -30,6 +31,7 @@ static int lua_disconnect(lua_State* l);
 static const struct luaL_Reg player_lib[] = {
   { "authenticate", lua_authenticate },
   { "narrate", lua_narrate },
+  { "get_entity", lua_get_entity },
   { "set_entity", lua_set_entity },
   { "set_state", lua_set_state },
   { "set_narrator", lua_set_narrator },
@@ -109,6 +111,27 @@ static int lua_narrate(lua_State* l) {
   }
 
   return 0;
+}
+
+/**
+ * API function which retrieves the entity of a player
+ *
+ * l - Current Lua state
+ *
+ * Returns 0 on success or calls luaL_error on failure
+**/
+static int lua_get_entity(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  player_t* player = lua_to_player(l, -1);
+  lua_pop(l, 1);
+
+  if (player->entity == NULL) {
+    lua_pushnil(l);
+  } else {
+    lua_push_entity(l, player->entity);
+  }
+
+  return 1;
 }
 
 /**

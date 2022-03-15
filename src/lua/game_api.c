@@ -3,8 +3,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/ecs/component.h"
-#include "mud/ecs/entity.h"
+#include "mud/ecs/ecs.h"
 #include "mud/event/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -22,6 +21,7 @@ static int lua_get_entity(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_register_state(lua_State* l);
 static int lua_register_narrator(lua_State* l);
+static int lua_register_archetype(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
@@ -34,6 +34,7 @@ static const struct luaL_Reg game_lib[] = {
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
   { "register_narrator", lua_register_narrator },
+  { "register_archetype", lua_register_archetype },
   { "has_component", lua_has_component },
   { "add_component", lua_add_component },
   { "get_component", lua_get_component },
@@ -154,16 +155,49 @@ static int lua_register_narrator(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * API method that adds a new archetype to the engine.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or luaL_error on error
+**/
+static int lua_register_archetype(lua_State* l) {
+  int top = 0 - lua_gettop(l);
+  int index = -1;
+
+  archetype_t* archetype = archetype_new_archetype_t();
+
+  while (index > top) {
+    luaL_checktype(l, index, LUA_TLIGHTUSERDATA);
+    component_t* component = lua_touserdata(l, index);
+    archetype_add_component(archetype, component);
+
+    index--;
+  }
+
+  lua_settop(l, 0);
+
+  game_t* game = lua_common_get_game(l);
+  list_add(game->archetypes, archetype);
+
+  lua_pushlightuserdata(l, archetype);
+
+  return 1;
+}
+
+/**
+ * API method that returns if an entity has a given component.
+ *
+ * l - The Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
 **/
 static int lua_has_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
-
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  component_t* component = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
 
   lua_pop(l, 2);
 
@@ -173,51 +207,55 @@ static int lua_has_component(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * API method that adds a component to a given entity
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
 **/
 static int lua_add_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 3);
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -3, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 3, LUA_TTABLE);
+  entity_t* entity = lua_to_entity(l, -3);
+  component_t* component = lua_touserdata(l, -2);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  lua_pop(l, 2);
 
   component_data_t* component_data = create_component_data_t();
   component_data->ref = ref;
 
   hash_table_insert(component->entities, entity->id.raw, component_data);
 
-  lua_pop(l, 2);
-
   return 0;
 }
 
 /**
- * TODO(Chris I)
+ * API method that retrieves a component for a given entity
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
 **/
 static int lua_get_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
+  component_t* component = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
 
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  lua_pop(l, 2);
 
   component_data_t* component_data = hash_table_get(component->entities, entity->id.raw);
 
   if (component_data == NULL) {
-    return 0;
+    lua_pushnil(l);
+  } else {
+    lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
   }
-
-  lua_pop(l, 2);
-
-  lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
 
   return 1;
 }

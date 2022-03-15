@@ -1,9 +1,12 @@
 #ifndef MUD_ECS_COMPONENT_H
 #define MUD_ECS_COMPONENT_H
 
+#include <stdbool.h>
+
 /**
  * Forward declrations
 **/
+typedef struct entity entity_t;
 typedef struct hash_table hash_table_t;
 
 /**
@@ -27,5 +30,7 @@ void deallocate_component_t(void* value);
 component_data_t* create_component_data_t();
 void free_component_data_t(component_data_t* component_data);
 void deallocate_component_data_t(void* value);
+
+bool component_has_entity(component_t* component, entity_t* entity);
 
 #endif

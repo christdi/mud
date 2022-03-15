@@ -36,6 +36,7 @@ typedef struct game {
   event_broker_t* event_broker;
 
   linked_list_t* components;
+  linked_list_t* archetypes;
   linked_list_t* tasks;
   linked_list_t* events;
 

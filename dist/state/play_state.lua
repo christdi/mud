@@ -15,7 +15,7 @@ local function on_input(p, arg)
 end
 
 local function on_output(p, output)
-  player.send(p, "> ")
+  player.send(p, "\n\r> ")
 end
 
 local function on_event(p, event)

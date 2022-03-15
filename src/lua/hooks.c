@@ -202,15 +202,15 @@ int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrat
   lua_rawgeti(l, LUA_REGISTRYINDEX, narrator->ref); // 1 - narrator module table
   lua_pushstring(l, NARRATE_EVENT_HOOK_FUNCTION); // 1 - narrator module, table, 2 = "narrate"
 
-  if (lua_gettable(l, 1) != LUA_TFUNCTION) { // 1 - narrator module, 2 = narrate function
-    lua_settop(l, 0);
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // 1 - narrator module, 2 = narrate function
+    lua_pop(l, 2);
 
     return 0;
   }
 
-  lua_remove(l, 1); // 1 = narrate function
-  lua_pushlightuserdata(l, player); // 1 = narrate function, 2 = player pointer
-  lua_rawgeti(l, LUA_REGISTRYINDEX, event->ref); // 1 = narrate function, 2 = player pointer, 3 = event data table
+  lua_remove(l, -2); // 1 = narrate function
+  lua_push_player(l, player); // 1 = narrate function, 2 = player table
+  lua_rawgeti(l, LUA_REGISTRYINDEX, event->ref); // 1 = narrate function, 2 = player table, 3 = event data table
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling narrate hook [%s]", lua_tostring(l, -1));

@@ -1,19 +1,24 @@
 login_state_module = require('state/login_state')
 play_state_module = require('state/play_state')
 lua_state_module = require('state/lua_state')
-narrator_module = require('narrator')
+character_module = require ('entity/character')
+room_module = require('entity/room')
 event_module = require('event')
+narrator_module = require('narrator')
 
 function main()
   game.players = {}
   game.components = {}
+  game.archetypes = {}
   game.narrators = {}
   game.states = {}
 
   log.info("Demo MUD initialising")
 
-  game.components.location = game.register_component();
-  game.components.has_inventory = game.register_component()
+  game.components.location = game.register_component()
+  game.components.inventory = game.register_component()
+
+  game.archetypes.room = game.register_archetype(game.components.location, game.components.inventory)
 
   game.narrators.default = game.register_narrator(narrator_module)
 

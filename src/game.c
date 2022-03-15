@@ -62,6 +62,9 @@ game_t* create_game_t(void) {
   game->components = create_linked_list_t();
   game->components->deallocator = deallocate_component_t;
 
+  game->archetypes = create_linked_list_t();
+  game->archetypes->deallocator = archetype_deallocate_archetype_t;
+
   game->tasks = create_linked_list_t();
   game->tasks->deallocator = deallocate_task_t;
 
@@ -92,6 +95,7 @@ void free_game_t(game_t* game) {
   event_free_event_broker_t(game->event_broker);
 
   free_linked_list_t(game->components);
+  free_linked_list_t(game->archetypes);
   free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
@@ -160,10 +164,10 @@ int start_game(int argc, char* argv[]) {
   task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
 
   while (!game->shutdown) {
-    poll_network(game->network);
-    update_systems(game);
-    task_execute(game->tasks, game);
     event_dispatch_events(game->event_broker, game, game->entities, game->players);
+    task_execute(game->tasks, game);
+    update_systems(game);
+    poll_network(game->network);
     game_sleep_until_tick(game, game->config->ticks_per_second);
   }
 
