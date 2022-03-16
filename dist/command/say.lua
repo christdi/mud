@@ -6,4 +6,4 @@ end
 
 local character = player.get_entity(p)
 
-event_module.dispatch(communicate_event.new(character, arg, communicate_event.scope.ROOM))
+events.dispatch(communicate_event.new(character, arg, communicate_event.scope.ROOM))

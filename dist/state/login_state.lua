@@ -1,3 +1,7 @@
+local register
+local use
+local interface
+
 local on_enter
 local on_exit
 local on_input
@@ -8,6 +12,19 @@ local get_password
 local get_entity_choice
 local get_entity_name
 
+local state
+
+-- Register this state
+register = function()
+   state = game.register_state(interface)
+end
+
+-- Switches a player to this state
+--
+-- p - instance of player userdata
+use = function(p)
+   player.set_state(p, state)
+end
 
 -- State hook for when state is entered
 --
@@ -133,7 +150,8 @@ get_entity_choice = function(p, arg, data)
          for _, entity in pairs(data.entity) do
             if entity.name:lower() == arg:lower() then
                player.set_entity(p, entity);
-               player.set_state(p, game.states.play)
+
+               play_state.use(p)
 
                return
             end
@@ -155,17 +173,21 @@ end
 get_entity_name = function(p, arg, data)
    data.login.entity_name = arg
 
-   local character = character_module.new(data.login.entity_name, data.login.entity_name, "A generic looking individual")
-   character_module.set_room(character, game.config.default_room);
+   local character = character_entity.new(data.login.entity_name, data.login.entity_name, "A generic looking individual")
+   character_entity.set_room(character, game.config.default_room);
 
    player.set_entity(p, character)
-   player.set_state(p, game.states.play)
+
+   play_state.use(p);
 end
 
 
--- Returns module interface for requires
-return {
+interface = {
+   register = register,
+   use = use,
    on_enter = on_enter,
    on_exit = on_exit,
    on_input = on_input
 }
+
+return interface

@@ -1,8 +1,8 @@
 local character = player.get_entity(p)
-local room = character_module.get_room(character)
+local room = character_entity.get_room(character)
 local room_description = description_component.get(room)
 
-local entities = archetypes_module.get_entities_can_describe_in_room()
+local entities = archetypes.get_entities_can_describe_in_room()
 local descriptions = {}
 
 for _, v in ipairs(entities) do
@@ -23,4 +23,4 @@ for _, v in ipairs(descriptions) do
   end
 end
 
-event_module.dispatch(character_looked_event.new(character))
+events.dispatch(character_looked_event.new(character))

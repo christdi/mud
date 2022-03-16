@@ -253,7 +253,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
         lua_pushstring(game->lua_state, script_permission->module);
 
         if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
-          LOG(ERROR, "Unable to find API module [%S[ when building script environment table", script_permission->module);
+          LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
 
           return -1;
         }
