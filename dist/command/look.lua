@@ -19,8 +19,8 @@ player.send(p, room_description.long .. "\n\n\r")
 
 for _, v in ipairs(descriptions) do
   if (v.entity ~= character.uuid) then
-    player.send(p, v.short .. ", " .. v.long .. "\n\r")
+    player.send(p, v.long .. " [[bcyan]" .. v.short .. "[reset]]\n\r")
   end
 end
 
-event_module.character_looked(character)
+event_module.dispatch(character_looked_event.new(character))

@@ -34,6 +34,9 @@ INSERT INTO script_sandbox_permission VALUES('51bfe9e5-9c51-43fe-8624-28d307ad0c
 INSERT INTO script_sandbox_permission VALUES('5e1f3800-b418-4893-8536-13de35746588', 'event_module', NULL);
 INSERT INTO script_sandbox_permission VALUES('df14283a-83c8-4911-bc39-b40d6b1ac576', 'components_module', NULL);
 INSERT INTO script_sandbox_permission VALUES('e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5', 'archetypes_module', NULL);
+INSERT INTO script_sandbox_permission VALUES('6b2bc1fc-70eb-4392-9181-fd68fe6b739a', 'character_looked_event', NULL);
+INSERT INTO script_sandbox_permission VALUES('2660099c-4bd7-4cda-8f6c-05dce4189ef4', 'communicate_event', NULL);
+INSERT INTO script_sandbox_permission VALUES('88bfe985-bd17-4f20-8950-70c6503df8fc', 'player_connected_event', NULL);
 
 
 CREATE TABLE IF NOT EXISTS script_sandbox_group_permission (
@@ -66,6 +69,9 @@ INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '5e1f3800-b418-4893-8536-13de35746588');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'df14283a-83c8-4911-bc39-b40d6b1ac576');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '6b2bc1fc-70eb-4392-9181-fd68fe6b739a');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2660099c-4bd7-4cda-8f6c-05dce4189ef4');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '88bfe985-bd17-4f20-8950-70c6503df8fc');
 
 
 CREATE TABLE IF NOT EXISTS script (
@@ -77,6 +83,7 @@ INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './command/qui
 INSERT INTO script VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', './command/shutdown.lua');
 INSERT INTO script VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', './command/script.lua');
 INSERT INTO script VALUES('ff1b46dd-79aa-4a46-a767-46d281d5c5d0', './command/look.lua');
+INSERT INTO script VALUES('d755f666-29e1-458d-8a7d-c6f0439bd3d4', './command/say.lua');
 
 CREATE TABLE IF NOT EXISTS script_group (
   script_uuid TEXT NOT NULL,
@@ -90,6 +97,7 @@ INSERT INTO script_group VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', '85438e9
 INSERT INTO script_group VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', '85438e94-2d7c-437f-aa73-872b844df1cd');
 INSERT INTO script_group VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', '85438e94-2d7c-437f-aa73-872b844df1cd');
 INSERT INTO script_group VALUES('ff1b46dd-79aa-4a46-a767-46d281d5c5d0', '85438e94-2d7c-437f-aa73-872b844df1cd');
+INSERT INTO script_group VALUES('d755f666-29e1-458d-8a7d-c6f0439bd3d4', '85438e94-2d7c-437f-aa73-872b844df1cd');
 
 CREATE TABLE IF NOT EXISTS command (
   uuid TEXT PRIMARY KEY,
@@ -102,6 +110,8 @@ INSERT INTO command VALUES('1f8b5793-298f-4794-8557-4b851d668eb8', 'quit', '9f12
 INSERT INTO command VALUES('9456c374-81b6-49f7-8295-579001d629c0', 'shutdown', '37554136-dc8a-4424-a931-c2c92ae5f38a');
 INSERT INTO command VALUES('fa479582-6465-44bd-8847-2b0971655706', 'script', '0e7c30fd-e4ef-40e9-8024-1e94814b215e');
 INSERT INTO command VALUES('9b96a8e3-95d6-4a85-ac0d-a10fe134b112', 'look', 'ff1b46dd-79aa-4a46-a767-46d281d5c5d0');
+INSERT INTO command VALUES('5895c644-50f1-4c16-ab61-1ad7c3d694f3', 'l', 'ff1b46dd-79aa-4a46-a767-46d281d5c5d0');
+INSERT INTO command VALUES('fd6d43d9-ae97-454c-984a-66939c94617e', 'say', 'd755f666-29e1-458d-8a7d-c6f0439bd3d4');
 
 CREATE TABLE IF NOT EXISTS entity (
   uuid TEXT PRIMARY KEY,

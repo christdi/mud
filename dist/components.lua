@@ -1,12 +1,16 @@
 local components = {}
 
 local register
+
 local add_location
 local get_location
 local has_location
+local get_location_entities
+
 local add_inventory
 local get_inventory
 local has_inventory
+
 local add_inventory
 local get_description
 local has_description
@@ -29,6 +33,16 @@ end
 
 has_location = function(entity)
   return game.has_component(entity, components.location)
+end
+
+get_location_entities = function(filter)
+  local entities = game.get_component_entities(components.location)
+
+  if filter ~= nil then
+    entities = filter(entities)
+  end
+
+  return entities
 end
 
 add_inventory = function(entity, data)

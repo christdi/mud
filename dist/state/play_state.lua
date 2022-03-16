@@ -15,7 +15,9 @@ local function on_input(p, arg)
 end
 
 local function on_output(p, output)
-  player.send(p, "\n\r> ")
+  local entity = player.get_entity(p)
+
+  player.send(p, "\n\r" .. entity.name .. " > ")
 end
 
 local function on_event(p, event)
