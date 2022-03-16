@@ -4,9 +4,9 @@ local set_room;
 new = function(name, short_description, long_description)
   local character = game.new_entity(name, "character");
 
-  components_module.add_location(character, {})
-  components_module.add_inventory(character, {})
-  components_module.add_description(character, {
+  location_component.add(character, {})
+  inventory_component.add(character, {})
+  description_component.add(character, {
     short = short_description,
     long = long_description
   })
@@ -15,25 +15,25 @@ new = function(name, short_description, long_description)
 end
 
 set_room = function(character, room)
-  if not components_module.has_location(character) then
+  if not location_component.has(character) then
     log.error("Attempt to set room for character [" .. character.name .. "] failed as they do not have location component")
 
     return
   end
 
-  local location = components_module.get_location(character)
+  local location = location_component.get(character)
 
   location.room_uuid = room.uuid
 end
 
 get_room = function(character)
-  if not components_module.has_location(character) then
+  if not location_component.has(character) then
     log.error("Attempt to get room for character [" .. character.name .. "] failed as they do not have location component")
 
     return
   end
 
-  local location = components_module.get_location(character);
+  local location = location_component.get(character);
 
   return game.get_entity(location.room_uuid)
 end

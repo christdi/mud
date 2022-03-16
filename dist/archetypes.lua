@@ -4,7 +4,7 @@ local register
 local get_entities_can_describe_in_room
 
 register = function()
-  archetypes.can_describe_in_room = game.register_archetype(components_module.components.location, components_module.components.description)
+  archetypes.can_describe_in_room = game.register_archetype(location_component.component(), description_component.component())
 end
 
 get_entities_can_describe_in_room = function()
