@@ -6,6 +6,7 @@ local narrate
 local player_connected
 local character_looked
 local communicate
+local moved
 
 local narrator
 
@@ -21,7 +22,8 @@ narrate = function(plr, event)
   local handlers = {
     { event = player_connected_event.TYPE, handler = player_connected },
     { event = character_looked_event.TYPE, handler = character_looked },
-    { event = communicate_event.TYPE, handler = communicate }
+    { event = communicate_event.TYPE, handler = communicate },
+    { event = moved_event.TYPE, handler = moved }
   }
 
   for _, v in ipairs(handlers) do
@@ -37,10 +39,9 @@ player_connected = function(plr, event)
 end
 
 character_looked = function(plr, event)
-  local player_character = player.get_entity(plr)
-  local source_character = event.character
+  local ch = event.character
 
-  player.send(plr, "\n\r" .. source_character.name  .. " looks around.\n\r")
+  player.send(plr, "\n\r" .. ch.name  .. " looks around.\n\r")
 end
 
 communicate = function(plr, event)
@@ -59,6 +60,38 @@ communicate = function(plr, event)
 
       if (origin_room_uuid == player_entity_room_uuid) then
         player.send(plr, "\n\r" .. event.origin.name .. " says '" .. event.what .. "'.\n\r")
+      end
+    end
+  end
+end
+
+moved = function(plr, event)
+  local player_entity = player.get_entity(plr)
+
+  if location_component.has(player_entity) then
+    local player_location = location_component.get(player_entity);
+
+    if not description_component.has(event.portal) then
+      log.error("Couldn't narrate as moved event portal did not have a description")
+
+      return
+    end
+
+    local portal_description = description_component.get(event.portal)
+
+    if location_component.has(event.portal) then
+      local from_location = location_component.get(event.portal)
+
+      if from_location.room_uuid == player_location.room_uuid then
+        player.send(plr, event.entity.name .. " leaves via " .. portal_description.short)
+      end
+    end
+
+    if room_ref_component.has(event.portal) then
+      local to_location = room_ref_component.get(event.portal)
+
+      if to_location.ref == player_location.room_uuid then
+        player.send(plr, event.entity.name .. " arrives from " .. portal_description.short)
       end
     end
   end

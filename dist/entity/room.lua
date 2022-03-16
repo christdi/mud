@@ -1,4 +1,5 @@
 local new;
+local get;
 
 new = function(name, short_description, long_description)
   local room = game.new_entity(name, "room");
@@ -13,6 +14,11 @@ new = function(name, short_description, long_description)
   return room
 end
 
+get = function(uuid)
+  return game.get_entity(uuid)
+end
+
 return {
-  new = new
+  new = new,
+  get = get
 }
