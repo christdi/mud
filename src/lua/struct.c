@@ -14,8 +14,6 @@
 #define UUID_FIELD "uuid"
 
 #define ENTITY_TYPE_VALUE "entity"
-#define ENTITY_NAME_FIELD "name"
-#define ENTITY_DESCRIPTION_FIELD "description"
 
 #define PLAYER_TYPE_VALUE "player"
 #define PLAYER_USER_UUID_FIELD "user_uuid"
@@ -45,14 +43,6 @@ void lua_push_entity(lua_State* l, entity_t* entity) {
 
   lua_pushstring(l, UUID_FIELD);
   lua_pushstring(l, uuid_str(&entity->id));
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, ENTITY_NAME_FIELD);
-  lua_pushstring(l, entity->name);
-  lua_rawset(l, -3);
-
-  lua_pushstring(l, ENTITY_DESCRIPTION_FIELD);
-  lua_pushstring(l, entity->description);
   lua_rawset(l, -3);
 }
 

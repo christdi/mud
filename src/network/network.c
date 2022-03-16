@@ -233,20 +233,27 @@ void poll_network(network_t* network) {
       client_it = it_next(client_it);
     }
   }
+}
 
-  it_t client_it = list_begin(network->clients);
+/**
+ * Checks all clients for pending output and flushes their buffers.
+ *
+ * network - network_t containing network context
+**/
+void flush_output(network_t* network) {
+  it_t it = list_begin(network->clients);
   client_t* client = NULL;
 
-  while ((client = it_get(client_it)) != NULL) {
+  while ((client = it_get(it)) != NULL) {
     if (client->output_length > 0) {
       if (network->flush_callback->func) {
         network->flush_callback->func(client, network->flush_callback->context);
       }
 
-      flush_output(client);
+      flush_client_output(client);
     }
 
-    client_it = it_next(client_it);
+    it = it_next(it);
   }
 }
 

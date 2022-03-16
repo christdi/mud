@@ -32,14 +32,6 @@ entity_t* ecs_create_entity_t() {
 void ecs_free_entity_t(entity_t* entity) {
   assert(entity);
 
-  if (entity->name != NULL) {
-    free(entity->name);
-  }
-
-  if (entity->description != NULL) {
-    free(entity->description);
-  }
-
   free(entity);
 }
 
@@ -118,19 +110,16 @@ entity_t* ecs_get_entity(game_t* game, const char* uuid) {
  *
  * This function takes the following parameters:
  *   game - a pointer to a game struct containing components
- *   name - the name to use for the new entity
- *   description - the description to use for the new entity
  *
  * Returns a pointer to an entity struct representing the new entity
 **/
-entity_t* ecs_new_entity(game_t* game, const char* name, const char* description) {
+entity_t* ecs_new_entity(game_t* game) {
   entity_t* entity = ecs_create_entity_t();
   entity->id = new_uuid();
-  entity->name = strdup(name);
-  entity->description = strdup(description);
+
   hash_table_insert(game->entities, entity->id.raw, entity);
 
-  LOG(INFO, "New entity created uuid: [%s], name: [%s], description: [%s]", uuid_str(&entity->id), name, description);
+  LOG(INFO, "New entity created uuid: [%s]", uuid_str(&entity->id));
 
   return entity;
 }

@@ -14,7 +14,7 @@ player.send(p, room_description.long .. "\n\n\r")
 for _, entity in ipairs(entities) do
   local description = description_component.get(entity)
 
-  player.send(p, description.long .. " [[bcyan]" .. description.short .. "[reset]]\n\r")
+  player.send(p, description.long .. " [[bcyan]" .. description.short .. ", " .. entity.uuid .. "[reset]]\n\r")
 end
 
 events.dispatch(character_looked_event.new(character))

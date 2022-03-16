@@ -75,7 +75,7 @@ int send_to_client(client_t* client, char* data, size_t len) {
  * 
  * Returns 0 on success or -1 on error.
 **/
-int flush_output(client_t* client) {
+int flush_client_output(client_t* client) {
   assert(client);
   
   if (client->output_length == 0) {

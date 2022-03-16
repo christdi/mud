@@ -9,8 +9,8 @@
 /**
  * Definitions
 **/
-#define CLIENT_BUFFER_SIZE 1025 // 1 KB + null terminator
-#define CLIENT_BUFFER_LENGTH CLIENT_BUFFER_SIZE - 1 // 1 KB
+#define CLIENT_BUFFER_SIZE (1024 * 5) + 1 // 5 KB + null terminator
+#define CLIENT_BUFFER_LENGTH CLIENT_BUFFER_SIZE - 1 // 5 KB
 #define DELIM_SIZE 2
 
 /**
@@ -34,7 +34,7 @@ client_t* create_client_t(void);
 void free_client_t(client_t* client);
 
 int send_to_client(client_t* client, char* data, size_t len);
-int flush_output(client_t* client);
+int flush_client_output(client_t* client);
 int receive_from_client(client_t* client);
 int close_client(client_t* client);
 int client_get_idle_seconds(const client_t* const client);

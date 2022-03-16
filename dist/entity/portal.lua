@@ -1,7 +1,7 @@
 local new;
 
 new = function(name, origin, destination, short_description, long_description, tags)
-  local portal = game.new_entity(name, "portal");
+  local portal = game.new_entity();
 
   location_component.add(portal, {
     room_uuid = origin.uuid

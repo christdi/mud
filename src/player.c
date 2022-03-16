@@ -10,6 +10,7 @@
 #include "mud/network/client.h"
 #include "mud/state/state.h"
 #include "mud/util/mudhash.h"
+#include "mud/util/muduuid.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -339,7 +340,7 @@ static void write_to_player(player_t* player, char* output) {
   size_t len = strnlen(chosen_output, SEND_SIZE);
 
   if (send_to_client(player->client, chosen_output, len) != 0) {
-    LOG(WARN, "Send to player failed, unable to write to client [%s]", player->uuid);
+    LOG(WARN, "Send to player failed, unable to write to client [%s]", uuid_str(&player->uuid));
 
     return;
   }

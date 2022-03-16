@@ -39,13 +39,13 @@ INSERT INTO script_sandbox_permission VALUES('df14283a-83c8-4911-bc39-b40d6b1ac5
 INSERT INTO script_sandbox_permission VALUES('e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5', 'archetypes', NULL);
 INSERT INTO script_sandbox_permission VALUES('6b2bc1fc-70eb-4392-9181-fd68fe6b739a', 'character_looked_event', NULL);
 INSERT INTO script_sandbox_permission VALUES('2660099c-4bd7-4cda-8f6c-05dce4189ef4', 'communicate_event', NULL);
-INSERT INTO script_sandbox_permission VALUES('88bfe985-bd17-4f20-8950-70c6503df8fc', 'player_connected_event', NULL);
 INSERT INTO script_sandbox_permission VALUES('491c0a33-272b-447c-bf1d-1421a71205ea', 'moved_event', NULL);
 INSERT INTO script_sandbox_permission VALUES('fcebfac1-a82c-41f5-b739-cc182865e14e', 'description_component', NULL);
 INSERT INTO script_sandbox_permission VALUES('b136fea1-f68c-49da-b8af-1357e8708005', 'inventory_component', NULL);
 INSERT INTO script_sandbox_permission VALUES('a7117f0a-e823-4d6d-bec5-da8d1103091b', 'location_component', NULL);
 INSERT INTO script_sandbox_permission VALUES('f7814eb4-de10-4ee3-a6aa-7f73d779c0c0', 'tag_component', NULL);
 INSERT INTO script_sandbox_permission VALUES('72c27730-27da-4abf-af94-598ce1bf571b', 'room_ref_component', NULL);
+INSERT INTO script_sandbox_permission VALUES('69fdb888-7f63-4bbd-b0c1-4f22e4a75ff0', 'name_component', NULL);
 INSERT INTO script_sandbox_permission VALUES('c9f39e8b-f82e-44c5-87ca-7f18fa94fa17', 'observable_archetype', NULL);
 INSERT INTO script_sandbox_permission VALUES('4da6d6b3-26ac-4b47-bd5b-4beb95dc3147', 'goable_archetype', NULL);
 
@@ -83,14 +83,14 @@ INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'df14283a-83c8-4911-bc39-b40d6b1ac576');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '6b2bc1fc-70eb-4392-9181-fd68fe6b739a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2660099c-4bd7-4cda-8f6c-05dce4189ef4');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '88bfe985-bd17-4f20-8950-70c6503df8fc');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2660099c-4bd7-4cda-8f6c-05dce4189ef4');;
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '491c0a33-272b-447c-bf1d-1421a71205ea');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'fcebfac1-a82c-41f5-b739-cc182865e14e');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'b136fea1-f68c-49da-b8af-1357e8708005');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'a7117f0a-e823-4d6d-bec5-da8d1103091b');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'f7814eb4-de10-4ee3-a6aa-7f73d779c0c0');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '72c27730-27da-4abf-af94-598ce1bf571b');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '69fdb888-7f63-4bbd-b0c1-4f22e4a75ff0');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'c9f39e8b-f82e-44c5-87ca-7f18fa94fa17');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '4da6d6b3-26ac-4b47-bd5b-4beb95dc3147');
 

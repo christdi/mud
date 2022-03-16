@@ -23,7 +23,7 @@ use = function(p)
 end
 
 on_enter = function(p)
-  player.send(p, "You are now playing!\n\n\r")
+  player.send(p, "You are now playing!\n\r")
 end
 
 on_exit = function(p)
@@ -41,7 +41,11 @@ end
 on_output = function(p, output)
   local entity = player.get_entity(p)
 
-  player.send(p, "\n\r[bgreen]" .. entity.name .. " >[reset] ")
+  if name_component.has(entity) then
+    local name = name_component.get(entity)
+
+    player.send(p, "\n\n\r[bgreen]" .. name.name .. " >[reset] ")
+  end
 end
 
 on_event = function(p, event)

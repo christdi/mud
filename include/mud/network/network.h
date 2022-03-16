@@ -42,6 +42,7 @@ int start_game_server(network_t* network, unsigned int port);
 int stop_game_server(network_t* network, unsigned int port);
 
 void poll_network(network_t* network);
+void flush_output(network_t* network);
 void disconnect_clients(network_t* network);
 
 void register_connection_callback(network_t* network, callback_func func, void* context);

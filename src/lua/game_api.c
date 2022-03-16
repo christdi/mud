@@ -28,6 +28,7 @@ static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
 static int lua_get_component_entities(lua_State* l);
 static int lua_get_archetype_entities(lua_State* l);
+static int lua_matches_archetype(lua_State* l);
 static int lua_event(lua_State* l);
 static int lua_shutdown(lua_State* l);
 
@@ -44,6 +45,7 @@ static const struct luaL_Reg game_lib[] = {
   { "get_component", lua_get_component },
   { "get_component_entities", lua_get_component_entities },
   { "get_archetype_entities", lua_get_archetype_entities },
+  { "matches_archetype", lua_matches_archetype },
   { "event", lua_event },
   { "shutdown", lua_shutdown },
   { NULL, NULL }
@@ -99,13 +101,9 @@ static int lua_get_entities(lua_State* l) {
  * Returns 0 on success
 **/
 static int lua_new_entity(lua_State* l) {
-  const char* description = luaL_checkstring(l, -1);
-  const char* name = luaL_checkstring(l, -2);
-
-  lua_pop(l, 2);
-
   game_t* game = lua_common_get_game(l);
-  entity_t* entity = ecs_new_entity(game, name, description);
+
+  entity_t* entity = ecs_new_entity(game);
 
   lua_push_entity(l, entity);
 
@@ -353,6 +351,27 @@ static int lua_get_archetype_entities(lua_State* l) {
     count++;
   }
     
+  return 1;
+}
+
+/**
+ * API method that returns if a given entity matches an archetype
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.*
+**/
+static int lua_matches_archetype(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  archetype_t* archetype = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
+
+  lua_pop(l, 2);
+
+  lua_pushboolean(l, ecs_archetype_has_entity(archetype, entity));
+
   return 1;
 }
 

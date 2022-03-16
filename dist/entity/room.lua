@@ -2,7 +2,7 @@ local new;
 local get;
 
 new = function(name, short_description, long_description)
-  local room = game.new_entity(name, "room");
+  local room = game.new_entity();
 
   inventory_component.add(room, {})
 

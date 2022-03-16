@@ -164,11 +164,12 @@ int start_game(int argc, char* argv[]) {
   task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
 
   while (!game->shutdown) {
+    poll_network(game->network);
     event_dispatch_events(game->event_broker, game, game->entities, game->players);
     task_execute(game->tasks, game);
     ecs_update_systems(game);
-    poll_network(game->network);
     game_sleep_until_tick(game, game->config->ticks_per_second);
+    flush_output(game->network);
   }
 
   if (stop_game_server(game->network, game->config->game_port) == -1) {

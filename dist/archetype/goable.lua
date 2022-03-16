@@ -1,5 +1,6 @@
 local register
 local entities
+local matches
 
 local a
 
@@ -27,7 +28,12 @@ entities = function(filter)
   return entities
 end
 
+matches = function(entity)
+  return game.matches_archetype(entity, a)
+end
+
 return {
   register = register,
-  entities = entities
+  entities = entities,
+  matches = matches
 }

@@ -142,7 +142,7 @@ end
 -- data - reference to player data
 get_entity_choice = function(p, arg, data)
    if arg == "new" then
-      player.send(p, "Please enter a name: ")
+      player.send(p, "\n\rPlease enter a name: ")
 
       data.login.substate = get_entity_name
    else
@@ -171,9 +171,9 @@ end
 -- arg - arguments passed in by player
 -- data - reference to player data
 get_entity_name = function(p, arg, data)
-   data.login.entity_name = arg
+   data.login.name = arg
 
-   local character = character_entity.new(data.login.entity_name, data.login.entity_name, "A generic looking individual")
+   local character = character_entity.new(arg, arg, "A generic looking individual")
    character_entity.set_room(character, game.config.default_room);
 
    player.set_entity(p, character)
