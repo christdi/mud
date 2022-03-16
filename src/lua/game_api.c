@@ -25,6 +25,8 @@ static int lua_register_archetype(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
+static int lua_get_component_entities(lua_State* l);
+static int lua_get_archetype_entities(lua_State* l);
 static int lua_event(lua_State* l);
 static int lua_shutdown(lua_State* l);
 
@@ -38,6 +40,8 @@ static const struct luaL_Reg game_lib[] = {
   { "has_component", lua_has_component },
   { "add_component", lua_add_component },
   { "get_component", lua_get_component },
+  { "get_component_entities", lua_get_component_entities },
+  { "get_archetype_entities", lua_get_archetype_entities },
   { "event", lua_event },
   { "shutdown", lua_shutdown },
   { NULL, NULL }
@@ -167,7 +171,7 @@ static int lua_register_archetype(lua_State* l) {
 
   archetype_t* archetype = ecs_new_archetype_t();
 
-  while (index > top) {
+  while (index >= top) {
     luaL_checktype(l, index, LUA_TLIGHTUSERDATA);
     component_t* component = lua_touserdata(l, index);
     ecs_add_archetype_component(archetype, component);
@@ -228,7 +232,9 @@ static int lua_add_component(lua_State* l) {
   component_data_t* component_data = ecs_create_component_data_t();
   component_data->ref = ref;
 
-  hash_table_insert(component->entities, entity->id.raw, component_data);
+  game_t* game = lua_common_get_game(l);
+
+  ecs_add_entity_to_component(component, component_data, game->archetypes, entity);
 
   return 0;
 }
@@ -257,6 +263,66 @@ static int lua_get_component(lua_State* l) {
     lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
   }
 
+  return 1;
+}
+
+/**
+ * API method that returns the entities associated with a component
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.
+**/
+static int lua_get_component_entities(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  component_t* component = lua_touserdata(l, -1);
+  lua_pop(l, 1);  
+
+  h_it_t it = hash_table_iterator(component->entities);
+  entity_t* entity = NULL;
+
+  lua_newtable(l);
+  int count = 1;
+
+  while ((entity = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, entity);
+    lua_rawset(l, -3);
+      
+    it = h_it_next(it);
+    count++;
+  }
+    
+  return 1;
+}
+
+/**
+ * API method that returns the entities associated with an archetype
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.
+**/
+static int lua_get_archetype_entities(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  archetype_t* archetype = lua_touserdata(l, -1);
+  lua_pop(l, 1); 
+
+  h_it_t it = hash_table_iterator(archetype->entities);
+  entity_t* entity = NULL;
+
+  lua_newtable(l);
+  int count = 1;
+
+  while ((entity = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, entity);
+    lua_rawset(l, -3);
+      
+    it = h_it_next(it);
+    count++;
+  }
+    
   return 1;
 }
 

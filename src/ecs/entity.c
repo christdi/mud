@@ -130,7 +130,7 @@ entity_t* ecs_new_entity(game_t* game, const char* name, const char* description
   entity->description = strdup(description);
   hash_table_insert(game->entities, entity->id.raw, entity);
 
-  LOG(INFO, "New entity created [%s], [%s]", name, description);
+  LOG(INFO, "New entity created uuid: [%s], name: [%s], description: [%s]", uuid_str(&entity->id), name, description);
 
   return entity;
 }

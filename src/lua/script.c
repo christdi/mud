@@ -10,6 +10,7 @@
 #include "mud/db/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/common.h"
 #include "mud/lua/script.h"
 #include "mud/lua/struct.h"
 
@@ -68,16 +69,15 @@ void script_deallocate_script_group_t(void* value) {
  * Returns the newly allocated instance.
 **/
 script_permission_t* script_new_script_permission_t(const char* module, const char* method) {
-  assert(method);
-
   script_permission_t* script_permission = calloc(1, sizeof(script_permission_t));
-
 
   if (module != NULL) {
     script_permission->module = strdup(module);
   }
   
-  script_permission->method = strdup(method);
+  if (method != NULL) {
+    script_permission->method = strdup(method);
+  }
 
   return script_permission;
 }
@@ -247,36 +247,48 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
   script_permission_t* script_permission = NULL;
 
   while ((script_permission = it_get(it)) != NULL) {
-    
+
   if (script_permission->module != NULL) {
-      lua_pushstring(game->lua_state, script_permission->module);
-      
-      if (lua_gettable(game->lua_state, -2) != LUA_TTABLE) {
+      if (script_permission->method == NULL) { // copy entire module
+        lua_pushstring(game->lua_state, script_permission->module);
+
+        if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
+          LOG(ERROR, "Unable to find API module [%S[ when building script environment table", script_permission->module);
+
+          return -1;
+        }
+
+        lua_settable(game->lua_state, -3);
+      } else { // copy specific method
+        lua_pushstring(game->lua_state, script_permission->module);
+        
+        if (lua_gettable(game->lua_state, -2) != LUA_TTABLE) {
+          lua_pop(game->lua_state, 1);
+          lua_newtable(game->lua_state);
+        }
+
+        if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
+          LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
+
+          return -1;
+        }
+
+        lua_pushstring(game->lua_state, script_permission->method);
+
+        if (lua_gettable(game->lua_state, -2) != LUA_TFUNCTION) {
+          LOG(ERROR, "Unable to obtain method [%s] from API module [%s] when building script environment table", script_permission->method, script_permission->module);
+
+          return -1;
+        }
+
+        lua_pushstring(game->lua_state, script_permission->method);
+        lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
+        lua_settable(game->lua_state, -4);
         lua_pop(game->lua_state, 1);
-        lua_newtable(game->lua_state);
+        lua_pushstring(game->lua_state, script_permission->module);
+        lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
+        lua_settable(game->lua_state, -3);
       }
-
-      if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
-        LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
-
-        return -1;
-      }
-
-      lua_pushstring(game->lua_state, script_permission->method);
-
-      if (lua_gettable(game->lua_state, -2) != LUA_TFUNCTION) {
-        LOG(ERROR, "Unable to obtain method [%s] from API module [%s] when building script environment table", script_permission->method, script_permission->module);
-
-        return -1;
-      }
-
-      lua_pushstring(game->lua_state, script_permission->method);
-      lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
-      lua_settable(game->lua_state, -4);
-      lua_pop(game->lua_state, 1);
-      lua_pushstring(game->lua_state, script_permission->module);
-      lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
-      lua_settable(game->lua_state, -3);
     } else {
       lua_pushstring(game->lua_state, script_permission->method);
 

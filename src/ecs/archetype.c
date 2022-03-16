@@ -6,6 +6,7 @@
 #include "mud/ecs/archetype.h"
 #include "mud/ecs/component.h"
 #include "mud/ecs/entity.h"
+#include "mud/log.h"
 #include "mud/util/muduuid.h"
 
 /**

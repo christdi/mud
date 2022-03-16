@@ -155,8 +155,8 @@ end
 get_entity_name = function(p, arg, data)
    data.login.entity_name = arg
 
-   local character = character_module.new(data.login.entity_name)
-   character_module.set_room(character, room_module.new("Valhalla"));
+   local character = character_module.new(data.login.entity_name, data.login.entity_name, "A generic looking individual")
+   character_module.set_room(character, game.config.default_room);
 
    player.set_entity(p, character)
    player.set_state(p, game.states.play)

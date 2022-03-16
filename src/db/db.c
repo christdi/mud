@@ -374,7 +374,7 @@ int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, lin
     }
 
     char* module = sqlite3_column_type(res, 0) == SQLITE_NULL ? NULL : (char*) sqlite3_column_text(res, 0);
-    char* method = (char*) sqlite3_column_text(res, 1);
+    char* method = sqlite3_column_type(res, 1) == SQLITE_NULL ? NULL : (char*) sqlite3_column_text(res, 1);
 
 
     script_permission_t* script_permission = script_new_script_permission_t(module, method);
