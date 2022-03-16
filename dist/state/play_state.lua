@@ -41,7 +41,7 @@ end
 on_output = function(p, output)
   local entity = player.get_entity(p)
 
-  player.send(p, "\n\r" .. entity.name .. " > ")
+  player.send(p, "\n\r[bgreen]" .. entity.name .. " >[reset] ")
 end
 
 on_event = function(p, event)

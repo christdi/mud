@@ -16,6 +16,7 @@
 
 #define API_TABLE_NAME "game"
 
+static int lua_get_entities(lua_State *l);
 static int lua_new_entity(lua_State* l);
 static int lua_get_entity(lua_State* l);
 static int lua_register_component(lua_State* l);
@@ -31,6 +32,7 @@ static int lua_event(lua_State* l);
 static int lua_shutdown(lua_State* l);
 
 static const struct luaL_Reg game_lib[] = {
+  { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
   { "register_component", lua_register_component },
@@ -59,6 +61,34 @@ int lua_game_register_api(lua_State* l) {
   lua_setglobal(l, API_TABLE_NAME);
 
   return 0;
+}
+
+/**
+ * Lua API method which returns all entities registered with the game
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
+**/
+static int lua_get_entities(lua_State* l) {
+  game_t* game = lua_common_get_game(l);
+
+  lua_newtable(l);
+
+  h_it_t it = hash_table_iterator(game->entities);
+  entity_t* entity = NULL;
+  int count = 1;
+
+  while ((entity = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, entity);
+    lua_settable(l, -3);
+
+    it = h_it_next(it);
+    count++;
+  }
+
+  return 1;
 }
 
 /**

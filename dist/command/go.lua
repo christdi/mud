@@ -24,6 +24,7 @@ for _, goable in ipairs(entities) do
 
       character_entity.set_room(entity, new_room)
 
+      command.execute(p, "look", "")
       events.dispatch(moved_event.new(entity, goable))
 
       return
