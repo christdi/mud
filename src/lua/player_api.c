@@ -43,12 +43,12 @@ static const struct luaL_Reg player_lib[] = {
 
 /**
  * Registers the player API into a Lua state.
- * 
+ *
  * Parameters
  *   l - The Lua state to register the API with
- * 
+ *
  * Returns 0 on success.
-**/
+ **/
 int lua_player_register_api(lua_State* l) {
   luaL_newlib(l, player_lib);
   lua_setglobal(l, "player");
@@ -58,12 +58,12 @@ int lua_player_register_api(lua_State* l) {
 
 /**
  * API function which authenticates the player as a particular user given a username and password.
- * 
+ *
  * Parameters
  *   l - THe current Lua state
- * 
+ *
  * Returns 0 on success or calls LuaL_Error on failure.
-**/
+ **/
 static int lua_authenticate(lua_State* l) {
   luaL_checktype(l, -3, LUA_TTABLE);
   player_t* player = lua_to_player(l, -3);
@@ -95,7 +95,7 @@ static int lua_authenticate(lua_State* l) {
  *   l - The current Lua state
  *
  * Returns 0 on success or calls LuaL_Error on failure
-**/
+ **/
 static int lua_narrate(lua_State* l) {
   luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
   luaL_checktype(l, -2, LUA_TTABLE);
@@ -103,7 +103,7 @@ static int lua_narrate(lua_State* l) {
   player_t* player = lua_to_player(l, -2);
   event_t* event = lua_touserdata(l, -1);
   lua_pop(l, 2);
-  
+
   game_t* game = lua_common_get_game(l);
 
   if (player_narrate(player, game, event) != 0) {
@@ -119,7 +119,7 @@ static int lua_narrate(lua_State* l) {
  * l - Current Lua state
  *
  * Returns 0 on success or calls luaL_error on failure
-**/
+ **/
 static int lua_get_entity(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
   player_t* player = lua_to_player(l, -1);
@@ -140,11 +140,11 @@ static int lua_get_entity(lua_State* l) {
  * l - Current Lua state
  *
  * Returns 0 on success or calls LuaL_error on failure
-**/
+ **/
 static int lua_set_entity(lua_State* l) {
   luaL_checktype(l, -2, LUA_TTABLE);
   player_t* player = lua_to_player(l, -2);
-  
+
   luaL_checktype(l, -1, LUA_TTABLE);
   entity_t* entity = lua_to_entity(l, -1);
 
@@ -162,7 +162,7 @@ static int lua_set_entity(lua_State* l) {
  *   l - The current Lua state
  *
  * Returns 0 on success or calls luaL_error on failure.
-**/
+ **/
 static int lua_set_state(lua_State* l) {
   luaL_checktype(l, -1, LUA_TUSERDATA);
   luaL_checktype(l, -2, LUA_TTABLE);
@@ -187,7 +187,7 @@ static int lua_set_state(lua_State* l) {
  *   l - The current Lua state
  *
  * Returns 0 on success or luaL_error on failure.
-**/
+ **/
 static int lua_set_narrator(lua_State* l) {
   luaL_checktype(l, -1, LUA_TUSERDATA);
   luaL_checktype(l, -2, LUA_TTABLE);
@@ -208,7 +208,7 @@ static int lua_set_narrator(lua_State* l) {
  * l - current Lua state
  *
  * Returns 0 on success or luaL_error on failure.
-**/
+ **/
 static int lua_get_entities(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
   player_t* player = lua_to_player(l, -1);
@@ -255,7 +255,7 @@ static int lua_get_entities(lua_State* l) {
  *   l - The current Lua state.
  *
  * Returns 0 on success or calls luaL_error on failure.
-**/
+ **/
 static int lua_send_to_player(lua_State* l) {
   luaL_checktype(l, -1, LUA_TSTRING);
   luaL_checktype(l, -2, LUA_TTABLE);
@@ -278,7 +278,7 @@ static int lua_send_to_player(lua_State* l) {
  *   l - The current Lua state.
  *
  * Returns 0 on success or calls luaL_error on failure.
-**/
+ **/
 static int lua_disconnect(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
   player_t* player = lua_to_player(l, -1);
@@ -288,4 +288,3 @@ static int lua_disconnect(lua_State* l) {
 
   return 0;
 }
-

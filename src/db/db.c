@@ -22,7 +22,7 @@
  *   results - Linked list to be populated with matching commands
  *
  * Returns number of results on success or -1 on failure.
-**/
+ **/
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
@@ -78,7 +78,7 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
  *   entities - Linked list to be populated with entities
  *
  * Returns number of results on success or -1 on failure.
-**/
+ **/
 int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
   assert(db);
   assert(entities);
@@ -126,7 +126,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
  * db - sqlite database instance
  * uuid - uuid of the user to retrieve entity ids for
  * results - out parameters to place results
-**/
+ **/
 int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* results) {
   assert(db);
   assert(uuid);
@@ -179,7 +179,7 @@ int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* resu
  *   entity - Entity to be saved
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int db_entity_save(sqlite3* db, entity_t* entity) {
   assert(db);
   assert(entity);
@@ -217,14 +217,14 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
 /**
  * Retrieves an entry from the script table based on the UUID and populates the
  * provided script_t struct.
- * 
+ *
  * Parameters
  *   db - sqlite3 handle
  *   uuid - uuid of the script to find
  *   script - script_t to be populated
- * 
+ *
  * Returns 0 on success or -1 on faiilure
-**/
+ **/
 int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
   assert(db);
   assert(uuid);
@@ -272,7 +272,7 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
   assert(db);
   assert(scripts);
@@ -321,7 +321,7 @@ int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
  *   results - Out parameter for results
  *
  * Returns amount of results or -1 on failure
-**/
+ **/
 int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
   assert(db);
   assert(uuid);
@@ -356,9 +356,8 @@ int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, lin
       return -1;
     }
 
-    char* module = sqlite3_column_type(res, 0) == SQLITE_NULL ? NULL : (char*) sqlite3_column_text(res, 0);
-    char* method = sqlite3_column_type(res, 1) == SQLITE_NULL ? NULL : (char*) sqlite3_column_text(res, 1);
-
+    char* module = sqlite3_column_type(res, 0) == SQLITE_NULL ? NULL : (char*)sqlite3_column_text(res, 0);
+    char* method = sqlite3_column_type(res, 1) == SQLITE_NULL ? NULL : (char*)sqlite3_column_text(res, 1);
 
     script_permission_t* script_permission = script_new_script_permission_t(module, method);
 
@@ -378,7 +377,7 @@ int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, lin
  * results - out parameter for results
  *
  * Returns number of results or -1 on error.
-**/
+ **/
 int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
   assert(db);
   assert(uuid);
@@ -413,7 +412,7 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
       return -1;
     }
 
-    char* name = (char*) sqlite3_column_text(res, 0);
+    char* name = (char*)sqlite3_column_text(res, 0);
 
     script_group_t* script_group = script_new_script_group_t(name);
 
@@ -427,14 +426,14 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
 
 /**
  * Checks for the existence of a user matching a given username and password_hash.
- * 
+ *
  * Parameters
  *   db - pointer to sqlite3 database
  *   username - username to query for
  *   password_hash - password_hash to query for
- * 
+ *
  * Returns 1 if we have a match, 0 if we do not or -1 on error
-**/
+ **/
 int db_user_authenticate(sqlite3* db, const char* username, const char* password_hash) {
   assert(db);
   assert(username);
@@ -492,8 +491,8 @@ int db_user_authenticate(sqlite3* db, const char* username, const char* password
  * Parameters
  *   db - pointer to Sqlite3 instance
  *   username - username to be used for lookup
- *   player - the player to be populated 
-**/
+ *   player - the player to be populated
+ **/
 int db_user_load_by_username(sqlite3* db, const char* username, player_t* player) {
   assert(db);
   assert(username);

@@ -5,7 +5,7 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct linked_list linked_list_t;
 typedef struct hash_table hash_table_t;
 typedef struct component component_t;
@@ -13,7 +13,7 @@ typedef struct entity entity_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct archetype {
   hash_table_t* entities;
   linked_list_t* components;
@@ -21,7 +21,7 @@ typedef struct archetype {
 
 /**
  * Function prototypes
-**/
+ **/
 archetype_t* ecs_new_archetype_t();
 void ecs_free_archetype_t(archetype_t* archetype);
 void ecs_deallocate_archetype_t(void* value);

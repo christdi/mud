@@ -8,17 +8,17 @@
 
 /**
  * Definitions
-**/
+ **/
 #define BACKLOG 10
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct linked_list linked_list_t;
 
 /**
  * Sturcts
-**/
+ **/
 typedef struct network {
   fd_set master_set;
   int max_fd;
@@ -34,7 +34,7 @@ typedef struct network {
 
 /**
  * Functions prototypes
-**/
+ **/
 network_t* create_network_t(void);
 void free_network_t(network_t* network);
 

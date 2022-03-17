@@ -5,13 +5,13 @@
 
 /**
  * Forward declrations
-**/
+ **/
 typedef struct entity entity_t;
 typedef struct hash_table hash_table_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct component {
   hash_table_t* entities;
 } component_t;
@@ -23,7 +23,7 @@ typedef struct component_data {
 
 /**
  * Functions
-**/
+ **/
 component_t* ecs_create_component_t();
 void ecs_free_component_t(component_t* component);
 void ecs_deallocate_component_t(void* value);

@@ -38,7 +38,7 @@
  * l - Lua state instance
  *
  * Returns 0 on success or -1 on error
-**/
+ **/
 int lua_hook_on_startup(lua_State* l) {
   assert(l);
 
@@ -64,7 +64,7 @@ int lua_hook_on_startup(lua_State* l) {
  * entities - A linked list of entity_t structs
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
   assert(l);
   assert(entities);
@@ -107,7 +107,7 @@ int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
  * player - New player instance
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int lua_hook_on_player_connected(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
@@ -136,7 +136,7 @@ int lua_hook_on_player_connected(lua_State* l, player_t* player) {
  * player - New player instance
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
@@ -160,7 +160,7 @@ int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) {
   assert(l);
   assert(player);
@@ -192,7 +192,7 @@ int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) 
  *   player - The player who is being narrated to
  *   narrator - Narrator struct containing ref to Lua module
  *   event - The event to be narrated
-**/
+ **/
 int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event) {
   assert(l);
   assert(player);
@@ -230,7 +230,7 @@ int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrat
  *   state - The state we're calling
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
   assert(l);
   assert(player);
@@ -266,7 +266,7 @@ int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
  *   state - The state we're calling
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
   assert(l);
   assert(player);
@@ -303,7 +303,7 @@ int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
  *   input - The input being passed to the state
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, const char* input) {
   assert(l);
   assert(player);
@@ -340,7 +340,7 @@ int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, cons
  *   state - The state we're calling
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output) {
   assert(l);
   assert(player);
@@ -377,7 +377,7 @@ int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, con
  *   state - The state we're calling
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
   assert(l);
   assert(player);
@@ -414,7 +414,7 @@ int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
  *   event - The event that has occurred
  *
  * Returns 0 on success or returns luaL_error on error.
-**/
+ **/
 int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event) {
   assert(l);
   assert(player);

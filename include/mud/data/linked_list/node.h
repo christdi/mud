@@ -3,13 +3,13 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct node node_t;
 typedef void (*deallocate_func)(void*);
 
 /**
  * Structs
-**/
+ **/
 struct node {
   void* data;
   node_t* next;
@@ -19,7 +19,7 @@ struct node {
 
 /**
  * Function prototypes
-**/
+ **/
 node_t* node_new(void);
 void node_free(node_t* node);
 

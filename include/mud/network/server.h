@@ -7,17 +7,17 @@
 
 /**
  * Defines
-**/
+ **/
 #define PORT_SIZE 15
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct client client_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct server {
   unsigned int fd;
   unsigned int port;
@@ -26,7 +26,7 @@ typedef struct server {
 
 /**
  * Function prototypes
-**/
+ **/
 server_t* create_server_t(void);
 void free_server_t(server_t* server);
 

@@ -15,7 +15,7 @@
  * Allocates memory for and initialises a new client_t struct.
  *
  * Returns the allocated client_t struct.
-**/
+ **/
 client_t* create_client_t() {
   client_t* client = calloc(1, sizeof *client);
 
@@ -30,7 +30,7 @@ client_t* create_client_t() {
 
 /**
  * Frees a client_t struct.
-**/
+ **/
 void free_client_t(client_t* client) {
   assert(client);
 
@@ -43,7 +43,7 @@ void free_client_t(client_t* client) {
  * Attempts to write output to the remote client represented by the client parameter.
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int send_to_client(client_t* client, char* data, size_t len) {
   assert(client);
   assert(data);
@@ -58,7 +58,7 @@ int send_to_client(client_t* client, char* data, size_t len) {
   char* dest = client->output + client->output_length;
   size_t count = len;
 
-  while(count > 0) {
+  while (count > 0) {
     *dest++ = *current++;
     count--;
   }
@@ -72,12 +72,12 @@ int send_to_client(client_t* client, char* data, size_t len) {
  * Flushes the contents of the output buffer and attempts to send it the remote endpoint.
  *
  * client - client_t instance whose output is being flushed
- * 
+ *
  * Returns 0 on success or -1 on error.
-**/
+ **/
 int flush_client_output(client_t* client) {
   assert(client);
-  
+
   if (client->output_length == 0) {
     return 0;
   }
@@ -115,7 +115,7 @@ int flush_client_output(client_t* client) {
  * for appending to the client input buffer.
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int receive_from_client(client_t* client) {
   assert(client);
 
@@ -155,7 +155,7 @@ int receive_from_client(client_t* client) {
  * Attempts to close the client.
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int close_client(client_t* client) {
   assert(client);
 
@@ -172,10 +172,10 @@ int close_client(client_t* client) {
 
 /**
  * Calculates how many seconds have passed since the client last sent data.
- * 
+ *
  * Parameters
- *  - client - client_t structure whose data will be used to determine idle time; 
-**/
+ *  - client - client_t structure whose data will be used to determine idle time;
+ **/
 int client_get_idle_seconds(const client_t* const client) {
   assert(client);
 
@@ -183,12 +183,12 @@ int client_get_idle_seconds(const client_t* const client) {
 }
 
 /**
- * Attempts to extract text from the input buffer.  The buffer is read character by character.  
- * If the delim is encountered, we take all characters up to and including the delim and move 
+ * Attempts to extract text from the input buffer.  The buffer is read character by character.
+ * If the delim is encountered, we take all characters up to and including the delim and move
  * them into the character buffer referenced by dest and then append with a null character.
  *
  * Returns -1 if delim is not found.  Returns 0 if successful.
-**/
+ **/
 int extract_from_input(client_t* client, char* dest, size_t dest_len, const char* delim) {
   assert(client);
   assert(dest);

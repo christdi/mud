@@ -26,7 +26,7 @@ static const struct luaL_Reg db_lib[] = {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int lua_db_register_api(lua_State* l) {
   luaL_newlib(l, db_lib);
   lua_setglobal(l, "db");
@@ -36,7 +36,7 @@ int lua_db_register_api(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_db_prepare_statement(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -59,7 +59,7 @@ static int lua_db_prepare_statement(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_db_bind(lua_State* l) {
   lua_common_assert_n_arguments(l, 3);
 
@@ -97,7 +97,7 @@ static int lua_db_bind(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_db_step(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -130,7 +130,7 @@ static int lua_db_step(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_db_column_text(lua_State* l) {
   lua_common_assert_n_arguments(l, 2);
 
@@ -147,7 +147,7 @@ static int lua_db_column_text(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_db_finalize(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 

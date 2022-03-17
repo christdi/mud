@@ -9,7 +9,7 @@
 
 /**
  * Structs
-**/
+ **/
 typedef struct config {
   char* game_script_file;
   char* lua_common_script;
@@ -21,7 +21,7 @@ typedef struct config {
 
 /**
  * Function prototypes
-**/
+ **/
 config_t* config_new(void);
 void config_free(config_t* config);
 

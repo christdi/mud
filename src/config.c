@@ -25,7 +25,7 @@ int set_ticks_per_second(const char* value, config_t* config);
  * Allocates a new config_t structure.
  *
  * Returns the allocated and default populated config_t.
-**/
+ **/
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
   config->game_script_file = strdup("main.lua");
@@ -40,7 +40,7 @@ config_t* config_new(void) {
 
 /**
  * Frees a config_t struct.
-**/
+ **/
 void config_free(config_t* config) {
   assert(config);
 
@@ -65,7 +65,7 @@ void config_free(config_t* config) {
 
 /**
  * Parses command line arguments into the configuration.
-**/
+ **/
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
@@ -134,7 +134,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
  *   config - The config struct to be populated
  *
  * Returns 0 on success or -1 on error.
-**/
+ **/
 int load_configuration(const char* filename, config_t* config) {
   assert(filename);
   assert(config);
@@ -210,7 +210,7 @@ int load_configuration(const char* filename, config_t* config) {
  * Sets the filename of the game script file in the configuration.
  *
  * Returns 0 on success.
-**/
+ **/
 int set_game_script_file(const char* value, config_t* config) {
   if (config->game_script_file != NULL) {
     free(config->game_script_file);
@@ -235,7 +235,7 @@ int set_lua_common_script(const char* value, config_t* config) {
  * Sets the filename of the log configuration file in the configuration.
  *
  * Returns 0 on success.
-**/
+ **/
 int set_log_config_file(const char* value, config_t* config) {
   if (config->log_config_file != NULL) {
     free(config->log_config_file);
@@ -250,7 +250,7 @@ int set_log_config_file(const char* value, config_t* config) {
  * Sets the filename of the SQLite database in the configuration.
  *
  * Returns 0 on success.
-**/
+ **/
 int set_database_file(const char* value, config_t* config) {
   if (config->database_file != NULL) {
     free(config->database_file);
@@ -267,7 +267,7 @@ int set_database_file(const char* value, config_t* config) {
  * Returns 0 on success.
  *
  * Returns -1 if the port isn't numeric or is greater than 1024.
-**/
+ **/
 int set_game_port(const char* value, config_t* config) {
   if ((config->game_port = strtol(value, NULL, BASE_10)) < MINIMUM_PORT) {
     printf("Invalid value for port [%s], valid values are 1024 or higher.\n\r", value);
@@ -284,7 +284,7 @@ int set_game_port(const char* value, config_t* config) {
  * Returns 0 on success.
  *
  * Returns -1 if the value isn't numeric or is equal to or less than 0.
-**/
+ **/
 int set_ticks_per_second(const char* value, config_t* config) {
   if ((config->ticks_per_second = strtol(value, NULL, BASE_10)) == 0) {
     printf("Invalid value for ticks per second [%s], valid values are 1 or higher.\n\r", value);

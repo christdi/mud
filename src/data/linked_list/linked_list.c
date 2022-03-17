@@ -13,7 +13,7 @@ void remove_node(linked_list_t* list, node_t* node);
  * Allocates a new empty linked list.
  *
  * Returns the allocated list.
-**/
+ **/
 linked_list_t* create_linked_list_t(void) {
   linked_list_t* list = calloc(1, sizeof *list);
 
@@ -31,8 +31,8 @@ void init_linked_list(linked_list_t* list) {
 
 /**
  * Frees a list.  The list must be empty before it can be successfully
- * freed as it doesn't know how to deallocate node data.  
-**/
+ * freed as it doesn't know how to deallocate node data.
+ **/
 void free_linked_list_t(linked_list_t* list) {
   assert(list);
 
@@ -54,7 +54,7 @@ void free_linked_list_t(linked_list_t* list) {
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
  * to cast to the actual type and pass it to the relevant free function.
-**/
+ **/
 void deallocate_linked_list_t(void* value) {
   assert(value);
 
@@ -64,8 +64,8 @@ void deallocate_linked_list_t(void* value) {
 }
 
 /**
- * Add a node to the end of the linked list.  
-**/
+ * Add a node to the end of the linked list.
+ **/
 int list_add(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
@@ -103,7 +103,7 @@ int list_add(linked_list_t* list, void* value) {
  * Removes a node pointing to a given value from the linked list.
  *
  * Returns an iterator to the node after the one removed.
-**/
+ **/
 it_t list_remove(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
@@ -142,7 +142,7 @@ it_t list_remove(linked_list_t* list, void* value) {
  * Removes a node pointing to a given value from the linked list without calling deallocator.
  *
  * Returns an iterator to the node after the one removed.
-**/
+ **/
 it_t list_steal(linked_list_t* list, void* value) {
   assert(list);
   assert(value);
@@ -182,12 +182,12 @@ it_t list_steal(linked_list_t* list, void* value) {
  * Searches linked list src and removes values which return true for predicate and adds them
  * to dst.  Note that if a deallocator has been configured for the list that it will be explicitly
  * removed as the new linked list (or it's owner) is now responsible for management of the object.
- * 
+ *
  * Parameters
  *  src - the source linked list
  *  dst - the destination linked list
- *  predicate - the predicate which assesses the values 
-**/
+ *  predicate - the predicate which assesses the values
+ **/
 int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_func_t predicate) {
   assert(src);
   assert(dst);
@@ -235,7 +235,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
  *  value - output parameter which will be updated with a pointer to the value
  *
  * Returns 0 on success or -1 if not found.
-**/
+ **/
 size_t list_at(linked_list_t* list, size_t index, void** value) {
   assert(list);
 
@@ -274,7 +274,7 @@ size_t list_at(linked_list_t* list, size_t index, void** value) {
 
 /**
  * Unlinks and frees a node given the list and node.
-**/
+ **/
 void remove_node(linked_list_t* list, node_t* node) {
   if (list->first == node) {
     list->first = node->next;
@@ -297,7 +297,7 @@ void remove_node(linked_list_t* list, node_t* node) {
 
 /**
  * Returns an iterator positioned at the start of the list.
-**/
+ **/
 it_t list_begin(linked_list_t* list) {
   it_t it;
 
@@ -308,7 +308,7 @@ it_t list_begin(linked_list_t* list) {
 
 /**
  * Returns an iterator positioned at the end of the list.
-**/
+ **/
 it_t list_end(linked_list_t* list) {
   it_t it;
 
@@ -321,7 +321,7 @@ it_t list_end(linked_list_t* list) {
  * Calculates the amount of elements in the list.
  *
  * Returns the calculated amount of eleemnts in the list.
-**/
+ **/
 int list_size(linked_list_t* list) {
   assert(list);
 

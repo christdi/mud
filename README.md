@@ -5,6 +5,8 @@ This repository contains an incomplete (and unnamed) framework for writing MUD g
 
 Some core functionality is still missing but it is technically possible to write games.
 
+This started as a toy pet project but it's actually grown into something that might actually be usable.  This means that all code isn't always to the same standard and can be inconsistent in terms of naming conventions and commenting.
+
 The dist directory contains a sample game used during development as an example of how a game might be written.
 
 ## Requirements
@@ -14,7 +16,7 @@ The dist directory contains a sample game used during development as an example 
 
 ## Features
 
-* Text based interface via MUD client
+* Text based interface over TCP/IP
 * Persistence via SQLite
 * Lua API for developing MUDs
 * Entity Component System (currently missing the system part)

@@ -7,13 +7,13 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct hash_table hash_table_t;
 typedef struct hash_node hash_node_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct hash_iterator {
   hash_table_t* hash_table;
   hash_node_t* node;
@@ -26,7 +26,7 @@ typedef struct hash_iterator {
 
 /**
  * Function prototypes
-**/
+ **/
 h_it_t h_it_next(h_it_t it);
 void* h_it_get(h_it_t it);
 

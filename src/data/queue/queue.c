@@ -5,7 +5,7 @@
 
 /**
  * Syntactic sugar method to insert a node into a queue which is backed by a linked list.
-**/
+ **/
 void queue_enqueue(linked_list_t* queue, void* data) {
   assert(queue);
   assert(data);
@@ -14,11 +14,11 @@ void queue_enqueue(linked_list_t* queue, void* data) {
 }
 
 /**
- * Syntactic sugar method to retrieve and then remove the first entry from a queue backed 
+ * Syntactic sugar method to retrieve and then remove the first entry from a queue backed
  * by a linked list.
  *
  * Returns the data at the front of the linked list.
-**/
+ **/
 void* queue_dequeue(linked_list_t* queue) {
   assert(queue);
 

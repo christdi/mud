@@ -22,7 +22,7 @@ int prune_clients(network_t* network);
  * Allocates and initialises a new network_t struct.
  *
  * Returns the newly allocated network_t.
-**/
+ **/
 network_t* create_network_t(void) {
   network_t* network = calloc(1, sizeof *network);
 
@@ -41,7 +41,7 @@ network_t* create_network_t(void) {
 
 /**
  * Frees an allocted network_t and all substructures.
-**/
+ **/
 void free_network_t(network_t* network) {
   assert(network);
   assert(network->servers);
@@ -85,7 +85,7 @@ void free_network_t(network_t* network) {
  * Returns -1 if unable to listen or add fd to the fd set.
  *
  * Returns 0 on success.
-**/
+ **/
 int start_game_server(network_t* network, unsigned int port) {
   assert(network);
   assert(port > 0);
@@ -109,7 +109,7 @@ int start_game_server(network_t* network, unsigned int port) {
 
 /**
  * Sets a callback to be called when a client is accepted.
-**/
+ **/
 void register_connection_callback(network_t* network, callback_func func, void* context) {
   assert(network);
   assert(func);
@@ -121,7 +121,7 @@ void register_connection_callback(network_t* network, callback_func func, void* 
 
 /**
  * Sets a callback to be called when a client is pruned.
-**/
+ **/
 void register_disconnection_callback(network_t* network, callback_func func, void* context) {
   assert(network);
   assert(func);
@@ -133,7 +133,7 @@ void register_disconnection_callback(network_t* network, callback_func func, voi
 
 /**
  * Sets a callback to be called has input.
-**/
+ **/
 void register_input_callback(network_t* network, callback_func func, void* context) {
   assert(network);
   assert(func);
@@ -143,14 +143,13 @@ void register_input_callback(network_t* network, callback_func func, void* conte
   network->input_callback->context = context;
 }
 
-
 /**
  * Sets a callback to be called on client flush.
  *
  * network - instance of network_t.
  * func - callback function to be called on flush
  * context - void pointer to context that will be included in callback
-**/
+ **/
 void register_flush_callback(network_t* network, callback_func func, void* context) {
   assert(network);
   assert(func);
@@ -164,7 +163,7 @@ void register_flush_callback(network_t* network, callback_func func, void* conte
  * Internal method which contains the logic to poll the network for activity.
  * Uses select to determine if we have read activity on a server or client and
  * accepts or reads as appropriate.
-**/
+ **/
 void poll_network(network_t* network) {
   assert(network);
 
@@ -239,7 +238,7 @@ void poll_network(network_t* network) {
  * Checks all clients for pending output and flushes their buffers.
  *
  * network - network_t containing network context
-**/
+ **/
 void flush_output(network_t* network) {
   it_t it = list_begin(network->clients);
   client_t* client = NULL;
@@ -262,7 +261,7 @@ void flush_output(network_t* network) {
  * removes the fd from the mster set, removes the client from the client list and then
  * frees the client.  This method does not call disconnection callbacks.  It is intended
  * to clear down the client list when shutting down.
-**/
+ **/
 void disconnect_clients(network_t* network) {
   assert(network);
 
@@ -284,7 +283,7 @@ void disconnect_clients(network_t* network) {
  * internal list of clients before releasing their memory.
  *
  * Returns 0 on success
-**/
+ **/
 int prune_clients(network_t* network) {
   assert(network);
   assert(network->clients);
@@ -325,7 +324,7 @@ int prune_clients(network_t* network) {
  * is removed from our internal server list and it's memory is freed
  *
  * Returns -1 if unable to stop a server or 0 on success.
-**/
+ **/
 int stop_game_server(network_t* network, unsigned int port) {
   assert(network);
 
@@ -355,7 +354,7 @@ int stop_game_server(network_t* network, unsigned int port) {
  * Adds an fd to the master set and tracks the maximum fd.
  *
  * Returns -1 on failure or 0 on success.
-**/
+ **/
 void add_fd_to_master_set(network_t* network, int fd) {
   FD_SET(fd, &network->master_set);
 
@@ -366,7 +365,7 @@ void add_fd_to_master_set(network_t* network, int fd) {
 
 /**
  * Removes an FD from the master fd set
-**/
+ **/
 void remove_fd_from_master_set(network_t* network, int fd) {
   FD_CLR(fd, &network->master_set);
 }

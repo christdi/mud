@@ -11,7 +11,7 @@
 
 /**
  * Mapping of markup to ANSI control codes.
-**/
+ **/
 static const char* ansi_codes[][2] = {
   { "[black]", "\033[0;30m" },
   { "[red]", "\033[0;31m" },
@@ -45,7 +45,7 @@ static const char* ansi_codes[][2] = {
  *  size - the size of the argument buffer
  *
  * Returns a character pointer to after the extracted word in the source
-**/
+ **/
 char* extract_argument(char* source, char* destination, size_t size) {
   assert(source);
   assert(destination);
@@ -93,7 +93,7 @@ char* extract_argument(char* source, char* destination, size_t size) {
 
 /**
  * Wrapper around trim_left and trim_right.
-**/
+ **/
 char* trim(char* source) {
   return trim_left(trim_right(source));
 }
@@ -105,7 +105,7 @@ char* trim(char* source) {
  * write the original pointer.
  *
  * Returns a pointer to the first non-whitespace character in the string.
-**/
+ **/
 char* trim_left(char* source) {
   char* current = source;
 
@@ -121,7 +121,7 @@ char* trim_left(char* source) {
  * until such time as it finds a non-space character.
  *
  * Returns the same pointer it was passed in so the call be chained.
-**/
+ **/
 char* trim_right(char* source) {
   size_t len = strlen(source) - 1;
 
@@ -138,12 +138,12 @@ char* trim_right(char* source) {
 /**
  * Modifies a string inline to all lowercase.  The string must be null terminated
  * or a buffer overflow will likely occur.
- * 
+ *
  * Parameters
  *  input - the string to be lowercased
- * 
+ *
  * Returns input
-**/
+ **/
 char* lowercase(char* input) {
   char* w = input;
 
@@ -157,13 +157,13 @@ char* lowercase(char* input) {
 
 /**
  * Case insensitive comparison of two strings.
- * 
+ *
  * Parameters
  *  s1 - first string to compare, must be null terminated
  *  s2 - second string to compare, must be null terminated
- * 
+ *
  * Returns the results of strncmp of s1 and s2
-**/
+ **/
 int strcmpi(const char* s1, const char* s2) {
   char* s1_lower = lowercase(strndup(s1, strlen(s1) + 1));
   char* s2_lower = lowercase(strndup(s2, strlen(s2) + 1));
@@ -191,7 +191,7 @@ int strcmpi(const char* s1, const char* s2) {
  * buffer must be provided for the string to be written to.
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int int_to_string(int input, char* destination) {
   assert(input);
   assert(destination);
@@ -207,7 +207,7 @@ int int_to_string(int input, char* destination) {
  * Convert up to len characters of the input string into a hex representation.
  * A valid destination character buffer must be provided for the string to be
  * written to.
-**/
+ **/
 void string_to_hex(char* input, char* destination, size_t len) {
   assert(input);
   assert(destination);
@@ -236,7 +236,7 @@ void string_to_hex(char* input, char* destination, size_t len) {
  *  rplc - what to replace it with
  *
  * Returns a newly allocated string that must be freed by the caller when done.
-**/
+ **/
 char* replace(const char* src, const char* find, const char* rplc) {
   size_t find_len = strlen(find);
   size_t rplc_len = strlen(rplc);
@@ -294,7 +294,7 @@ char* replace(const char* src, const char* find, const char* rplc) {
  *  rplc - what to replace it with
  *
  * Returns a newly allocated string that must be freed by the caller when done.
-**/
+ **/
 char* replace_r(char* src, const char* find, const char* rplc) {
   char* new = replace(src, find, rplc);
 
@@ -309,7 +309,7 @@ char* replace_r(char* src, const char* find, const char* rplc) {
  * provided and it must be large enough to hold the converted string.
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len) {
   assert(input);
   assert(destination);

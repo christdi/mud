@@ -19,7 +19,7 @@
  * Allocates and initialises a new entity_t struct.
  *
  * Returns a pointer to the newly allocated entity_t struct.
-**/
+ **/
 entity_t* ecs_create_entity_t() {
   entity_t* entity = calloc(1, sizeof *entity);
 
@@ -28,7 +28,7 @@ entity_t* ecs_create_entity_t() {
 
 /**
  * Frees an allocated entity_t struct.
-**/
+ **/
 void ecs_free_entity_t(entity_t* entity) {
   assert(entity);
 
@@ -38,7 +38,7 @@ void ecs_free_entity_t(entity_t* entity) {
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
  * to cast to the actual type and pass it to the relevant free function.
-**/
+ **/
 void ecs_deallocate_entity(void* value) {
   assert(value);
 
@@ -54,7 +54,7 @@ void ecs_deallocate_entity(void* value) {
  *   game - the game_t struct where the entities should be loaded to
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int ecs_load_entities(game_t* game) {
   assert(game);
 
@@ -97,7 +97,7 @@ int ecs_load_entities(game_t* game) {
  * Searches the game for an entity matching a given uuid.
  *
  * Returns a pointer to the entity if found or NULL if not.
-**/
+ **/
 entity_t* ecs_get_entity(game_t* game, const char* uuid) {
   assert(game);
   assert(uuid);
@@ -112,7 +112,7 @@ entity_t* ecs_get_entity(game_t* game, const char* uuid) {
  *   game - a pointer to a game struct containing components
  *
  * Returns a pointer to an entity struct representing the new entity
-**/
+ **/
 entity_t* ecs_new_entity(game_t* game) {
   entity_t* entity = ecs_create_entity_t();
   entity->id = new_uuid();

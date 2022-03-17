@@ -1,5 +1,5 @@
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
@@ -26,7 +26,7 @@
  * entity - entity to be converted
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 void lua_push_entity(lua_State* l, entity_t* entity) {
   assert(l);
   assert(entity);
@@ -53,7 +53,7 @@ void lua_push_entity(lua_State* l, entity_t* entity) {
  * player - player to be converted
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 void lua_push_player(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
@@ -87,7 +87,7 @@ void lua_push_player(lua_State* l, player_t* player) {
  * l - Lua state instance
  *
  * Returns the entity_t pointer or null
-**/
+ **/
 entity_t* lua_to_entity(lua_State* l, int index) {
   assert(l);
 
@@ -122,7 +122,7 @@ entity_t* lua_to_entity(lua_State* l, int index) {
  * l - Lua state instance
  *
  * Returns the player_t pointer or null
-**/
+ **/
 player_t* lua_to_player(lua_State* l, int index) {
   assert(l);
 

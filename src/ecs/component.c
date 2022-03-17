@@ -12,7 +12,7 @@
  * Creates a new instance of component_t
  *
  * Returns the new instance of component_t
-**/
+ **/
 component_t* ecs_create_component_t() {
   component_t* component = calloc(1, sizeof *component);
 
@@ -26,7 +26,7 @@ component_t* ecs_create_component_t() {
  * Frees an allocated instance of component_t
  *
  * component - the component to free
-**/
+ **/
 void ecs_free_component_t(component_t* component) {
   assert(component);
 
@@ -41,7 +41,7 @@ void ecs_free_component_t(component_t* component) {
  * Deallocates a void pointer to a component_t
  *
  * value - void pointer to component_t
-**/
+ **/
 void ecs_deallocate_component_t(void* value) {
   assert(value);
 
@@ -52,7 +52,7 @@ void ecs_deallocate_component_t(void* value) {
  * Creates a new instance of component_data_t
  *
  * Returns the new instance of component_data_t
-**/
+ **/
 component_data_t* ecs_create_component_data_t() {
   component_data_t* component_data = calloc(1, sizeof *component_data);
 
@@ -65,7 +65,7 @@ component_data_t* ecs_create_component_data_t() {
  * Frees an instance of component_data_t
  *
  * component_data - the component_data_t to free
-**/
+ **/
 void ecs_free_component_data_t(component_data_t* component_data) {
   assert(component_data);
 
@@ -76,7 +76,7 @@ void ecs_free_component_data_t(component_data_t* component_data) {
  * Deallocates a void pointer to component_data_t
  *
  * value - void pointer to component_data_t
-**/
+ **/
 void ecs_deallocate_component_data_t(void* value) {
   assert(value);
 
@@ -89,7 +89,7 @@ void ecs_deallocate_component_data_t(void* value) {
  * component - the component to add the entity to
  * archetypes - archetypes to assess against the entity
  * entity - the entity to be added to the component
-**/
+ **/
 void ecs_add_entity_to_component(component_t* component, component_data_t* data, linked_list_t* archetypes, entity_t* entity) {
   assert(component);
   assert(data);
@@ -110,7 +110,7 @@ void ecs_add_entity_to_component(component_t* component, component_data_t* data,
  * component - the component to remove the entity from
  * archetypes - archetypes to assess against the entity
  * entity - the entity to be removed from the component
-**/
+ **/
 void ecs_remove_entity_from_component(component_t* component, linked_list_t* archetypes, entity_t* entity) {
   assert(component);
   assert(archetypes);
@@ -131,7 +131,7 @@ void ecs_remove_entity_from_component(component_t* component, linked_list_t* arc
  * entity - entity to check
  *
  * Returns true if entity has component or false otherwise
-**/
+ **/
 bool ecs_component_has_entity(component_t* component, entity_t* entity) {
   assert(component);
   assert(entity);

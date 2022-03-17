@@ -26,7 +26,7 @@ static const struct luaL_Reg log_lib[] = {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int lua_log_register_api(lua_State* l) {
   luaL_newlib(l, log_lib);
   lua_setglobal(l, "log");
@@ -36,7 +36,7 @@ int lua_log_register_api(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static lua_Debug get_debug_info(lua_State* l) {
   lua_Debug debug;
   lua_getstack(l, 1, &debug);
@@ -47,7 +47,7 @@ static lua_Debug get_debug_info(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_log_trace(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -62,7 +62,7 @@ static int lua_log_trace(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_log_debug(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -77,7 +77,7 @@ static int lua_log_debug(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_log_info(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -92,7 +92,7 @@ static int lua_log_info(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_log_warn(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 
@@ -107,7 +107,7 @@ static int lua_log_warn(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_log_error(lua_State* l) {
   lua_common_assert_n_arguments(l, 1);
 

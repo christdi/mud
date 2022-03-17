@@ -5,7 +5,7 @@
 
 /**
  * Function prototypes
-**/
+ **/
 void queue_enqueue(linked_list_t* queue, void* data);
 void* queue_dequeue(linked_list_t* queue);
 

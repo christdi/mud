@@ -19,7 +19,7 @@
  *   deallocator - Function to deallocate data when event is freed
  *
  * Returns the allocated instance.
-**/
+ **/
 event_t* event_new_event_t(event_type_t type, void* data, event_deallocate_func_t deallocator) {
   event_t* event = calloc(1, sizeof *event);
 
@@ -35,7 +35,7 @@ event_t* event_new_event_t(event_type_t type, void* data, event_deallocate_func_
  *
  * Parameters
  *   event - The event_t instance to be freed.
-**/
+ **/
 void event_free_event_t(event_t* event) {
   assert(event);
 
@@ -54,7 +54,7 @@ void event_free_event_t(event_t* event) {
  * Allocates a new instance of an event_broker.
  *
  * Returns the allocated instance
-**/
+ **/
 event_broker_t* event_new_event_broker_t() {
   event_broker_t* event_broker = calloc(1, sizeof *event_broker);
 
@@ -68,7 +68,7 @@ event_broker_t* event_new_event_broker_t() {
  *
  * Parameters
  *   event_broker - The event_broker_t instance to be freed
-**/
+ **/
 void event_free_event_broker_t(event_broker_t* event_broker) {
   assert(event_broker);
 
@@ -88,7 +88,7 @@ void event_free_event_broker_t(event_broker_t* event_broker) {
  *   event_broker - The event_broker_t instance to check for events.
  *
  * Returns true if the broker has events, or false otherwise.
-**/
+ **/
 bool event_has_events(event_broker_t* event_broker) {
   assert(event_broker);
 
@@ -103,7 +103,7 @@ bool event_has_events(event_broker_t* event_broker) {
  *   game - Instance of game_t containing pointers to data.
  *   entities - a linked list of entity_t types to submit events to.
  *   players - a linked list of player_t types to submit events to.
-**/
+ **/
 void event_dispatch_events(event_broker_t* event_broker, game_t* game, hash_table_t* entities, hash_table_t* players) {
   assert(event_broker);
   assert(entities);
@@ -131,7 +131,7 @@ void event_dispatch_events(event_broker_t* event_broker, game_t* game, hash_tabl
  * Parameters
  *   event_broker - the event_broker_t instance to store the event against.
  *   event - the event_t instance to be stored against the event broker.
-**/
+ **/
 void event_submit_event(event_broker_t* event_broker, event_t* event) {
   assert(event_broker);
   assert(event_broker->events);

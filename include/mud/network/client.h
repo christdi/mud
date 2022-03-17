@@ -8,14 +8,14 @@
 
 /**
  * Definitions
-**/
+ **/
 #define CLIENT_BUFFER_SIZE (1024 * 5) + 1 // 5 KB + null terminator
 #define CLIENT_BUFFER_LENGTH CLIENT_BUFFER_SIZE - 1 // 5 KB
 #define DELIM_SIZE 2
 
 /**
  * Structs
-**/
+ **/
 typedef struct client {
   int fd;
   unsigned int hungup;
@@ -29,7 +29,7 @@ typedef struct client {
 
 /**
  * Function prototypes
-**/
+ **/
 client_t* create_client_t(void);
 void free_client_t(client_t* client);
 

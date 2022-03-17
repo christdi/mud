@@ -5,14 +5,14 @@
 
 /**
  * Definitions
-**/
+ **/
 #define HASH_TABLE_SIZE 16
 #define HASH_BASE_VALUE 5381
 #define FIVE_BITS 5u
 
 /**
  * Structs
-**/
+ **/
 typedef struct hash_table {
   linked_list_deallocate_func_t deallocator;
   linked_list_t* nodes[HASH_TABLE_SIZE];
@@ -20,7 +20,7 @@ typedef struct hash_table {
 
 /**
  * Function prototypes
-**/
+ **/
 hash_table_t* create_hash_table_t();
 void free_hash_table_t(hash_table_t* hash_table);
 

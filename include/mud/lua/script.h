@@ -5,7 +5,7 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct lua_State lua_State;
 typedef struct hash_table hash_table_t;
 typedef struct game game_t;
@@ -16,7 +16,7 @@ typedef struct event event_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct script_group {
   char* name;
 } script_group_t;

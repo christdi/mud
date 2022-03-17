@@ -10,8 +10,8 @@
 #include "mud/network/client.h"
 #include "mud/state/state.h"
 #include "mud/util/mudhash.h"
-#include "mud/util/muduuid.h"
 #include "mud/util/mudstring.h"
+#include "mud/util/muduuid.h"
 
 #include <assert.h>
 #include <sqlite3.h>
@@ -25,7 +25,7 @@ static void write_to_player(player_t* player, char* output);
  * Allocates and initialises a new player_t struct.
  *
  * Returns the allocated player_t struct.
-**/
+ **/
 player_t* create_player_t() {
   player_t* player = calloc(1, sizeof *player);
 
@@ -39,7 +39,7 @@ player_t* create_player_t() {
 
 /**
  * Frees a player_t struct.
-**/
+ **/
 void free_player_t(player_t* player) {
   assert(player);
 
@@ -53,7 +53,7 @@ void free_player_t(player_t* player) {
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
  * to cast to the actual type and pass it to the relevant free function.
-**/
+ **/
 void deallocate_player(void* value) {
   assert(value);
 
@@ -64,7 +64,7 @@ void deallocate_player(void* value) {
 
 /**
  * Callback from the network module when a new client connects.
-**/
+ **/
 void player_connected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
@@ -79,7 +79,7 @@ void player_connected(client_t* client, void* context) {
 
 /**
  * Callback from the network module when a client disconnects.
-**/
+ **/
 void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
   player_t* player = client->userdata;
@@ -90,7 +90,7 @@ void player_disconnected(client_t* client, void* context) {
 
 /**
  * Callback from the network module when a client receives input.
-**/
+ **/
 void player_input(client_t* client, void* context) {
   game_t* game = (game_t*)context;
   player_t* player = client->userdata;
@@ -107,7 +107,7 @@ void player_input(client_t* client, void* context) {
 
 /**
  * Callback from the network module to indicate this client is about to be flushed.
-**/
+ **/
 void player_output(client_t* client, void* context) {
   game_t* game = (game_t*)context;
   player_t* player = client->userdata;
@@ -124,7 +124,7 @@ void player_output(client_t* client, void* context) {
  *   player - the player whose state is to be changed
  *   game - the game struct
  *   state - the name of the state to be found
-**/
+ **/
 int player_change_state(player_t* player, game_t* game, state_t* state) {
   assert(player);
   assert(game);
@@ -145,11 +145,11 @@ int player_change_state(player_t* player, game_t* game, state_t* state) {
 /**
  * Called on each tick of the game engine, delegates to the state on_tick
  * method if one is defined to allow any time based updates to occur.
- * 
+ *
  * Parameters
  *  player - the player who is being ticked
  *  game - game object containing all necessary game data
-**/
+ **/
 void player_on_tick(player_t* player, game_t* game) {
   assert(player);
   assert(game);
@@ -165,7 +165,7 @@ void player_on_tick(player_t* player, game_t* game) {
  *  player - the player who is receiving the event
  *  game - instance of game_t containing data required by downstream calls
  *  event - the event that has occurred
-**/
+ **/
 void player_on_event(player_t* player, game_t* game, event_t* event) {
   assert(player);
   assert(game);
@@ -178,14 +178,14 @@ void player_on_event(player_t* player, game_t* game, event_t* event) {
  * Authenticates a player by hashing their password and comparing the supplied username
  * and password hash against users in the database.  If authentication is successful,
  * the player struct is populated with user details.
- * 
+ *
  * Parameters
  *   player - the player to be authenticated
  *   username - the username to be authenticated
  *   password - the password to be authenticated
- * 
+ *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int player_authenticate(player_t* player, game_t* game, const char* username, const char* password) {
   assert(player);
   assert(username);
@@ -214,7 +214,7 @@ int player_authenticate(player_t* player, game_t* game, const char* username, co
  *   event - The event that has occurred
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int player_narrate(player_t* player, game_t* game, event_t* event) {
   assert(player);
   assert(game);
@@ -237,7 +237,7 @@ int player_narrate(player_t* player, game_t* game, event_t* event) {
  * client_t is valid before attempting to write.
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 void send_to_player(player_t* player, const char* fmt, ...) {
   assert(player);
   assert(fmt);
@@ -285,7 +285,7 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
 /**
  * Sends a formatted message to all connected players.  May optionally exclude a player
  * by specifying them in the excluding parameter.
-**/
+ **/
 void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...) {
   assert(game);
   assert(game->players);
@@ -319,7 +319,7 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
 
 /**
  * Writes a character array to a player.  Ensures that they first have a client.
-**/
+ **/
 static void write_to_player(player_t* player, char* output) {
   assert(player);
   assert(output);

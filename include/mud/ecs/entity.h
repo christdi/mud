@@ -5,20 +5,20 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct game game_t;
 typedef struct entity entity_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct entity {
   mud_uuid_t id;
 } entity_t;
 
 /**
  * Function prototypes
-**/
+ **/
 entity_t* ecs_create_entity_t();
 void ecs_free_entity_t(entity_t* entity);
 void ecs_deallocate_entity(void* value);

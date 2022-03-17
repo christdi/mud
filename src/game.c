@@ -37,7 +37,7 @@ int initialise_lua(game_t* game, config_t* config);
  * Allocate a new instance of a game_t struct.
  *
  * Returns an allocated game_t struct with default values.
-**/
+ **/
 game_t* create_game_t(void) {
   game_t* game = calloc(1, sizeof *game);
 
@@ -79,7 +79,7 @@ game_t* create_game_t(void) {
 
 /**
  * Frees an allocated game_t struct.
-**/
+ **/
 void free_game_t(game_t* game) {
   assert(game);
   assert(game->players);
@@ -112,7 +112,7 @@ void free_game_t(game_t* game) {
  * Starts running the game, binds a server and enters the game loop.
  *
  * Returns a 0 on success or -1 on failure.
-**/
+ **/
 int start_game(int argc, char* argv[]) {
   game_t* game = create_game_t();
 
@@ -130,7 +130,7 @@ int start_game(int argc, char* argv[]) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
   register_flush_callback(game->network, player_output, game);
-  
+
   if (template_load_from_file(game->templates, "template.properties") != 0) {
     LOG(ERROR, "Failed to load templates");
 
@@ -192,7 +192,7 @@ int start_game(int argc, char* argv[]) {
 /**
  * Attempts to connect to the SQLite3 database with a given filename.  Returns -1 on failure
  * or 0 on success.
-**/
+ **/
 int connect_to_database(game_t* game, const char* filename) {
   LOG(INFO, "Connecting to database [%s]", filename);
 
@@ -209,12 +209,12 @@ int connect_to_database(game_t* game, const char* filename) {
 
 /**
  * Pulses all currently connected players.
- * 
+ *
  * Parameters
  *  game - contains all necessary game data
- * 
+ *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int game_pulse_players(game_t* game) {
   assert(game);
   assert(game->players);
@@ -238,7 +238,7 @@ int game_pulse_players(game_t* game) {
  * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time
  * time since the last time the method was called and makes the thread sleep if it's less than
  * the amount of time calculated per tick.
-**/
+ **/
 void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   struct timeval current_time;
   gettimeofday(&current_time, NULL);

@@ -5,7 +5,7 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef void (*event_deallocate_func_t)(void*);
 
 typedef struct hash_table hash_table_t;
@@ -14,14 +14,14 @@ typedef struct game game_t;
 
 /**
  * Enum
-**/
+ **/
 typedef enum event_type {
   LUA_EVENT
 } event_type_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct event_broker {
   linked_list_t* events;
 } event_broker_t;
@@ -34,7 +34,7 @@ typedef struct event {
 
 /**
  * Function prototypes
-**/
+ **/
 event_t* event_new_event_t(event_type_t type, void* data, event_deallocate_func_t deallocator);
 void event_free_event_t(event_t* event);
 

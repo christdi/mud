@@ -14,13 +14,13 @@
 
 /**
  * Initialises a new Lua state with global fields used for API calls.
- * 
+ *
  * Parameters
  *   l - the Lua state to be populated
  *   game - game struct containing data we want to expose
- * 
+ *
  * Returns 0 on success.
-**/
+ **/
 int lua_common_initialise_state(lua_State* l, game_t* game) {
   assert(l);
   assert(game);
@@ -37,9 +37,9 @@ int lua_common_initialise_state(lua_State* l, game_t* game) {
 /**
  * Parameters
  *   l - Lua state which is currently active
- * 
- * Returns a pointer to the game struct. 
-**/
+ *
+ * Returns a pointer to the game struct.
+ **/
 game_t* lua_common_get_game(lua_State* l) {
   assert(l);
 
@@ -56,9 +56,9 @@ game_t* lua_common_get_game(lua_State* l) {
 /**
  * Parameters
  *   l - Lua state which is currently active
- * 
- * Returns a pointer to the sqlite3 database. 
-**/
+ *
+ * Returns a pointer to the sqlite3 database.
+ **/
 sqlite3* lua_common_get_database(lua_State* l) {
   assert(l);
 
@@ -75,12 +75,12 @@ sqlite3* lua_common_get_database(lua_State* l) {
 
 /**
  * Configures a Lua debug struct with script/line information, mostly for logging.
- * 
+ *
  * Parameters
  *   l - Lua state which is currently active
- * 
+ *
  * Returns a copy of the Lua debug struct
-**/
+ **/
 lua_Debug lua_common_get_debug(lua_State* l) {
   assert(l);
 
@@ -94,13 +94,13 @@ lua_Debug lua_common_get_debug(lua_State* l) {
 /**
  * Asserts the amount of elements on the Lua stack, intended to be used to determine
  * an API function has received the expected amount of parameters.
- * 
+ *
  * Parameters
  *   l - Lua state which is currently active
  *   n - the amount of expected elements on the stack
- * 
+ *
  * Returns 0 on success or a Lua error on failure.
-**/
+ **/
 int lua_common_assert_n_arguments(lua_State* l, int n) {
   assert(l);
 
@@ -118,7 +118,7 @@ int lua_common_assert_n_arguments(lua_State* l, int n) {
  *
  * Parameters
  *   l - The lua state whose stack should be printed
-**/
+ **/
 void lua_common_log_stack(lua_State* l) {
   int top = lua_gettop(l);
 

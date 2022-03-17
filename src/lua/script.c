@@ -22,7 +22,7 @@ static int build_environment_table(game_t* game, const char* script_uuid);
  * name - name of the script group
  *
  * Returns the allocated instance of script_group_t.
-**/
+ **/
 script_group_t* script_new_script_group_t(const char* name) {
   assert(name);
 
@@ -37,7 +37,7 @@ script_group_t* script_new_script_group_t(const char* name) {
  * Frees an allocated instance of script_group_t.
  *
  * script_group - script_group_t instance to be freed.
-**/
+ **/
 void script_free_script_group_t(script_group_t* script_group) {
   assert(script_group);
 
@@ -52,7 +52,7 @@ void script_free_script_group_t(script_group_t* script_group) {
  * Deallocates a void pointer to script_group_t.
  *
  * value - void pointer to script_group_t
-**/
+ **/
 void script_deallocate_script_group_t(void* value) {
   assert(value);
 
@@ -67,14 +67,14 @@ void script_deallocate_script_group_t(void* value) {
  *   code - code to populate in the instance
  *
  * Returns the newly allocated instance.
-**/
+ **/
 script_permission_t* script_new_script_permission_t(const char* module, const char* method) {
   script_permission_t* script_permission = calloc(1, sizeof(script_permission_t));
 
   if (module != NULL) {
     script_permission->module = strdup(module);
   }
-  
+
   if (method != NULL) {
     script_permission->method = strdup(method);
   }
@@ -87,7 +87,7 @@ script_permission_t* script_new_script_permission_t(const char* module, const ch
  *
  * Parameters
  *   script_permisiont - The instance to be freed
-**/
+ **/
 void script_free_script_permission_t(script_permission_t* script_permission) {
   assert(script_permission);
 
@@ -107,7 +107,7 @@ void script_free_script_permission_t(script_permission_t* script_permission) {
  *
  * Parameters
  *   value - a void pointer to an instance of script_permission_t.
-**/
+ **/
 void script_deallocate_script_permission_t(void* value) {
   assert(value);
 
@@ -118,7 +118,7 @@ void script_deallocate_script_permission_t(void* value) {
  * Allocates a new instance of script_t.
  *
  * Returns the newly allocated script_t.
-**/
+ **/
 script_t* create_script_t() {
   script_t* script = calloc(1, sizeof(*script));
 
@@ -130,7 +130,7 @@ script_t* create_script_t() {
  *
  * Paramters
  *   script - The script_t instance to be freed.
-**/
+ **/
 void free_script_t(script_t* script) {
   assert(script);
 
@@ -146,7 +146,7 @@ void free_script_t(script_t* script) {
  *
  * Paramters
  *   value - void* pointing towards a script_t
-**/
+ **/
 void deallocate_script(void* value) {
   assert(value);
 
@@ -163,7 +163,7 @@ void deallocate_script(void* value) {
  * argument - Argument sprovided for the command
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int script_run_command_script(game_t* game, const char* uuid, player_t* player, const char* arguments) {
   assert(game);
   assert(uuid);
@@ -228,7 +228,7 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
  * script_uuid - UUID of scritt
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 static int build_environment_table(game_t* game, const char* script_uuid) {
   linked_list_t* permissions = create_linked_list_t();
   permissions->deallocator = script_deallocate_script_permission_t;
@@ -248,7 +248,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
 
   while ((script_permission = it_get(it)) != NULL) {
 
-  if (script_permission->module != NULL) {
+    if (script_permission->module != NULL) {
       if (script_permission->method == NULL) { // copy entire module
         lua_pushstring(game->lua_state, script_permission->module);
 
@@ -261,7 +261,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
         lua_settable(game->lua_state, -3);
       } else { // copy specific method
         lua_pushstring(game->lua_state, script_permission->module);
-        
+
         if (lua_gettable(game->lua_state, -2) != LUA_TTABLE) {
           lua_pop(game->lua_state, 1);
           lua_newtable(game->lua_state);

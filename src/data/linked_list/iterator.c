@@ -10,7 +10,7 @@
  * null value.
  *
  * Returns the new iterator
-**/
+ **/
 it_t it_next(it_t it) {
   it_t nextIt;
 
@@ -29,7 +29,7 @@ it_t it_next(it_t it) {
  * null value.
  *
  * Returns the new iterator
-**/
+ **/
 it_t it_prev(it_t it) {
   it_t prevIt;
 
@@ -46,7 +46,7 @@ it_t it_prev(it_t it) {
  * Given an iterator, attempts to retrieve the value stored by the node pointed to.
  *
  * Returns a void pointer to the data or NULL if no data is available.
-**/
+ **/
 void* it_get(it_t it) {
   if (it.node && it.node->data) {
     return it.node->data;

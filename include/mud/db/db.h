@@ -3,7 +3,7 @@
 
 /**
  * Forward declarations
-**/
+ **/
 typedef struct entity entity_t;
 typedef struct player player_t;
 typedef struct sqlite3 sqlite3;
@@ -13,7 +13,7 @@ typedef struct state state_t;
 
 /**
  * Function prototypes
-**/
+ **/
 int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results);
 
 int db_entity_load_all(sqlite3* db, linked_list_t* entities);

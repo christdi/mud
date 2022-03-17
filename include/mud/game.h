@@ -10,7 +10,7 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct config config_t;
 typedef struct hash_table hash_table_t;
 typedef struct linked_list linked_list_t;
@@ -20,7 +20,7 @@ typedef struct lua_State lua_State;
 
 /**
  * Structs
-**/
+ **/
 typedef struct game {
   unsigned int shutdown;
   struct timeval last_tick;
@@ -46,7 +46,7 @@ typedef struct game {
 
 /**
  * Function prototypes
-**/
+ **/
 game_t* create_game_t(void);
 void free_game_t(game_t* game);
 

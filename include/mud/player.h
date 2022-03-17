@@ -6,14 +6,14 @@
 
 /**
  * Defines
-**/
+ **/
 #define USERNAME_SIZE 30
 #define PASSWORD_SIZE 30
 #define SEND_SIZE 1024
 #define COMMAND_SIZE 256
 /**
  * Typedefs
-**/
+ **/
 typedef struct client client_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
@@ -24,7 +24,7 @@ typedef struct linked_list linked_list_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct player {
   mud_uuid_t uuid;
   mud_uuid_t user_uuid;
@@ -39,7 +39,7 @@ typedef struct player {
 
 /**
  * Function prototypes
-**/
+ **/
 player_t* create_player_t();
 void free_player_t(player_t* player);
 void deallocate_player(void* value);

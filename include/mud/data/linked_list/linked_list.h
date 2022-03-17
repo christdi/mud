@@ -7,14 +7,14 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct node node_t; /* linked_list/node.h */
 typedef void (*linked_list_deallocate_func_t)(void*);
 typedef int (*linked_list_predicate_func_t)(void*);
 
 /**
  * Structs
-**/
+ **/
 typedef struct linked_list {
   pthread_mutex_t mutex;
   linked_list_deallocate_func_t deallocator;
@@ -24,7 +24,7 @@ typedef struct linked_list {
 
 /**
  * Function prototypes
-**/
+ **/
 linked_list_t* create_linked_list_t(void);
 void init_linked_list(linked_list_t* list);
 void free_linked_list_t(linked_list_t* list);
