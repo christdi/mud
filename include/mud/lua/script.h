@@ -13,6 +13,7 @@ typedef struct command command_t;
 typedef struct player player_t;
 typedef struct state state_t;
 typedef struct event event_t;
+typedef struct entity entity_t;
 
 /**
  * Structs
@@ -44,5 +45,6 @@ void free_script_t(script_t* script);
 void deallocate_script(void* value);
 
 int script_run_command_script(game_t* game, const char* uuid, player_t* player, const char* arguments);
+int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, int ref);
 
 #endif

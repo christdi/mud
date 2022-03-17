@@ -192,7 +192,7 @@ int player_authenticate(player_t* player, game_t* game, const char* username, co
   assert(password);
 
   char password_hash[SHA256_HEX_SIZE];
-  mudhash_sha256(username, password_hash);
+  mudhash_sha256(password, password_hash);
 
   if (db_user_authenticate(game->database, username, password_hash) != 1) {
     return -1;

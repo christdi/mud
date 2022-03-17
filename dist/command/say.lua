@@ -6,4 +6,4 @@ end
 
 local character = player.get_entity(p)
 
-events.dispatch(communicate_event.new(character, arg, communicate_event.scope.ROOM))
+actions.execute("speak_room", character, { origin = character, what = arg })

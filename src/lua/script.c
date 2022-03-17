@@ -170,28 +170,22 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
   assert(player);
   assert(arguments);
 
-  script_t* script = create_script_t();
+  script_t script;
 
-  if (db_script_load(game->database, uuid, script) != 0) {
+  if (db_script_load(game->database, uuid, &script) != 0) {
     LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
 
-    free_script_t(script);
-
     return -1;
   }
 
-  if (luaL_loadfile(game->lua_state, script->filepath) != 0) {
+  if (luaL_loadfile(game->lua_state, script.filepath) != 0) {
     LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
-    free_script_t(script);
-
     return -1;
   }
 
-  if (build_environment_table(game, uuid_str(&script->uuid)) != 0) {
+  if (build_environment_table(game, uuid_str(&script.uuid)) != 0) {
     LOG(ERROR, "Error building script white list environment");
-
-    free_script_t(script);
 
     return -1;
   }
@@ -209,17 +203,67 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
   if (lua_pcall(game->lua_state, 0, 0, 0) != 0) {
     LOG(ERROR, "Error when calling command script [%s]", lua_tostring(game->lua_state, -1));
 
-    free_script_t(script);
+    return -1;
+  }
+
+  return 0;
+}
+
+
+/**
+ * Runs a script which defines the steps of an action.
+ *
+ * game - game_t instance containing core game data
+ * uuid - uuid of the script to run
+ * entity - entity who is performing this action
+ * ref - A lua ref to a table containing data relevant to action
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, int ref) {
+  assert(game);
+  assert(uuid);
+  assert(entity);
+
+  script_t script;
+
+  if (db_script_load(game->database, uuid, &script) != 0) {
+    LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
 
     return -1;
   }
 
-  free_script_t(script);
+  if (luaL_loadfile(game->lua_state, script.filepath) != 0) {
+    LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
-  lua_pop(game->lua_state, 1);
+    return -1;
+  }
+
+  if (build_environment_table(game, uuid_str(&script.uuid)) != 0) {
+    LOG(ERROR, "Error building script white list environment");
+
+    return -1;
+  }
+
+  lua_pushstring(game->lua_state, "entity");
+  lua_push_entity(game->lua_state, entity);
+  lua_settable(game->lua_state, -3);
+
+  lua_pushstring(game->lua_state, "data");
+  lua_rawgeti(game->lua_state, LUA_REGISTRYINDEX, ref);
+  lua_settable(game->lua_state, -3);
+
+  lua_setupvalue(game->lua_state, 1, 1);
+
+  if (lua_pcall(game->lua_state, 0, 2, 0) != 0) {
+    LOG(ERROR, "Error when calling action script [%s]", lua_tostring(game->lua_state, -1));
+
+    return -1;
+  }
 
   return 0;
 }
+
 
 /**
  * Constructs the _ENV table to be used by a user script with appropriate permissions
