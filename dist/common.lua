@@ -47,3 +47,20 @@ function dump(o)
       return tostring(o)
    end
 end
+
+function filter_array(tbl, filter)
+ local j = 1
+
+ for i = 1, #tbl do
+   if (filter(tbl[i])) then
+     if (i ~= j) then
+         tbl[j] = tbl[i];
+         tbl[i] = nil;
+     end
+       
+     j = j + 1;
+   else
+     tbl[i] = nil;
+   end
+ end
+end

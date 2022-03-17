@@ -2,7 +2,7 @@
 #include <uuid/uuid.h>
 
 #include "bsd/string.h"
-
+#include "mud/log.h"
 #include "mud/util/muduuid.h"
 
 #define UUID_SIZE 37

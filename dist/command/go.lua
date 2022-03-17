@@ -7,9 +7,6 @@ end
 local entity = player.get_entity(p)
 local location = location_component.get(entity)
 
-log.info("Go player: " .. dump(p))
-log.info("Go entity: " .. dump(entity))
-
 local entities = goable_archetype.entities(function(goable)
   local lc = location_component.get(goable)
   return lc.room_uuid == location.room_uuid

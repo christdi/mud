@@ -6,7 +6,6 @@
 #include "mud/ecs/ecs.h"
 #include "mud/event/event.h"
 #include "mud/game.h"
-#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
@@ -258,6 +257,7 @@ static int lua_add_component(lua_State* l) {
   lua_pop(l, 2);
 
   component_data_t* component_data = ecs_create_component_data_t();
+  component_data->entity = entity;
   component_data->ref = ref;
 
   game_t* game = lua_common_get_game(l);
@@ -304,17 +304,17 @@ static int lua_get_component(lua_State* l) {
 static int lua_get_component_entities(lua_State* l) {
   luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
   component_t* component = lua_touserdata(l, -1);
-  lua_pop(l, 1);  
+  lua_pop(l, 1); 
 
   h_it_t it = hash_table_iterator(component->entities);
-  entity_t* entity = NULL;
+  component_data_t* component_data = NULL;
 
   lua_newtable(l);
   int count = 1;
 
-  while ((entity = h_it_get(it)) != NULL) {
+  while ((component_data = h_it_get(it)) != NULL) {
     lua_pushnumber(l, count);
-    lua_push_entity(l, entity);
+    lua_push_entity(l, component_data->entity);
     lua_rawset(l, -3);
       
     it = h_it_next(it);

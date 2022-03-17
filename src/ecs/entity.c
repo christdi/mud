@@ -117,7 +117,7 @@ entity_t* ecs_new_entity(game_t* game) {
   entity_t* entity = ecs_create_entity_t();
   entity->id = new_uuid();
 
-  hash_table_insert(game->entities, entity->id.raw, entity);
+  hash_table_insert(game->entities, uuid_str(&entity->id), entity);
 
   LOG(INFO, "New entity created uuid: [%s]", uuid_str(&entity->id));
 

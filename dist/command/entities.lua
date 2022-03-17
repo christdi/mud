@@ -10,15 +10,19 @@ if subcommand:lower() == "list" then
   local entities = game.get_entities()
 
   for _, v in ipairs(entities) do
-    player.send(p, "[bcyan]uuid[reset]: " .. v.uuid .. "\n\r");
+
+    local archetypes = {}
 
     if goable_archetype.matches(v) then
-      player.send(p, " [bmagenta]goable[reset]\n\r")
+      table.insert(archetypes, "goable")
     end
 
     if observable_archetype.matches(v) then
-      player.send(p, " [bmagenta]observable[reset]\n\r")
+      table.insert(archetypes, "observable")
     end
+
+    player.send(p, "[bcyan]uuid[reset]: " .. v.uuid .. " ([bmagenta]" .. join(archetypes, "[reset],[bmagenta] ") .. "[reset])\n\r");
+
 
     if location_component.has(v) then
       player.send(p, " [bgreen]location[reset] = " .. dump(location_component.get(v)) .. "\n\r")

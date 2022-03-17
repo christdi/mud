@@ -29,17 +29,7 @@ entities = function(filter)
   local entities = game.get_component_entities(c)
 
   if filter ~= nil then
-    local keys = {}
-
-    for k, v in ipairs(entities) do
-      if filter(v) == false then
-        table.insert(keys, k);
-      end
-    end
-
-    for _, v in ipairs(keys) do
-      table.remove(entities, v)
-    end
+    filter_array(entities, filter)
   end
 
   return entities

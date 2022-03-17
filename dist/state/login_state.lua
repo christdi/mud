@@ -171,6 +171,14 @@ end
 -- arg - arguments passed in by player
 -- data - reference to player data
 get_entity_name = function(p, arg, data)
+   if #name_component.entities(function(entity)       
+      return name_component.get(entity).name:lower() == arg:lower()
+   end) > 0 then
+      player.send(p, "\n\rThat name is already in use.  Please enter another: ")
+      
+      return
+   end
+
    data.login.name = arg
 
    local character = character_entity.new(arg, arg, "A generic looking individual")

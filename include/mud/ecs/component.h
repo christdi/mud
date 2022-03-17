@@ -17,6 +17,7 @@ typedef struct component {
 } component_t;
 
 typedef struct component_data {
+  entity_t* entity;
   int ref;
 } component_data_t;
 
