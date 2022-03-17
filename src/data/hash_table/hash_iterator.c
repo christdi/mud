@@ -7,8 +7,8 @@
 
 /**
  * Retrieves the next hash node in a hash table.  Internally iterates over the
- * linked list that each node uses.  
-**/
+ * linked list that each node uses.
+ **/
 h_it_t h_it_next(h_it_t it) {
   it.list_iterator = it_next(it.list_iterator);
 
@@ -38,7 +38,7 @@ h_it_t h_it_next(h_it_t it) {
 
 /**
  * Retrieves the value from the hash_node the h_it_t is currently looking at.
-**/
+ **/
 void* h_it_get(h_it_t it) {
   if (it.node) {
     return it.node->value;

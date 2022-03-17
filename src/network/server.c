@@ -16,7 +16,7 @@
 
 /**
  * Allocates and returns a new server_t structure
-**/
+ **/
 server_t* create_server_t(void) {
   server_t* server = calloc(1, sizeof *server);
 
@@ -29,7 +29,7 @@ server_t* create_server_t(void) {
 
 /**
  * Frees a server_t structure, will also free clients belonging to this server
-**/
+ **/
 void free_server_t(server_t* server) {
   assert(server);
 
@@ -40,8 +40,8 @@ void free_server_t(server_t* server) {
  * Attempts to listen on server defined by the server parameter.  The reuse address and
  * non-blocking flags are set automatically.
  *
- * Returns -1 on error on 0 on success.  
-**/
+ * Returns -1 on error on 0 on success.
+ **/
 int listen_on_server(server_t* server) {
   assert(server);
   assert(server->port != 0);
@@ -117,7 +117,7 @@ int listen_on_server(server_t* server) {
  * blocking flag is also set on the client.
  *
  * Returns -1 on error or 0 on success.
-**/
+ **/
 int accept_on_server(server_t* server, client_t* client) {
   struct sockaddr_storage remote_address;
   socklen_t remote_address_size = sizeof remote_address;
@@ -143,7 +143,7 @@ int accept_on_server(server_t* server, client_t* client) {
  * Attempts to close the server defined by the server_t parameter.
  *
  * Returns -1 on error on 0 on success.
-**/
+ **/
 int close_server(server_t* server) {
   assert(server);
 

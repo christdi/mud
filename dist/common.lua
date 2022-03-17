@@ -40,10 +40,27 @@ function dump(o)
       local s = '{ '
       for k,v in pairs(o) do
          if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
+         s = s .. k ..' = ' .. dump(v) .. ', '
       end
       return s .. '} '
    else
       return tostring(o)
    end
+end
+
+function filter_array(tbl, filter)
+ local j = 1
+
+ for i = 1, #tbl do
+   if (filter(tbl[i])) then
+     if (i ~= j) then
+         tbl[j] = tbl[i];
+         tbl[i] = nil;
+     end
+       
+     j = j + 1;
+   else
+     tbl[i] = nil;
+   end
+ end
 end

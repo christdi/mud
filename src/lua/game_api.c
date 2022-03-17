@@ -3,49 +3,60 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/ecs/component.h"
-#include "mud/ecs/entity.h"
+#include "mud/ecs/ecs.h"
 #include "mud/event/event.h"
 #include "mud/game.h"
-#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
+#include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/state/state.h"
 
 #define API_TABLE_NAME "game"
 
+static int lua_get_entities(lua_State* l);
 static int lua_new_entity(lua_State* l);
 static int lua_get_entity(lua_State* l);
-static int lua_get_entity_id(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_register_state(lua_State* l);
 static int lua_register_narrator(lua_State* l);
+static int lua_register_archetype(lua_State* l);
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
+static int lua_get_component_entities(lua_State* l);
+static int lua_get_archetype_entities(lua_State* l);
+static int lua_matches_archetype(lua_State* l);
 static int lua_event(lua_State* l);
 static int lua_shutdown(lua_State* l);
 
 static const struct luaL_Reg game_lib[] = {
+  { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
-  { "get_entity_id", lua_get_entity_id },
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
   { "register_narrator", lua_register_narrator },
+  { "register_archetype", lua_register_archetype },
   { "has_component", lua_has_component },
   { "add_component", lua_add_component },
   { "get_component", lua_get_component },
+  { "get_component_entities", lua_get_component_entities },
+  { "get_archetype_entities", lua_get_archetype_entities },
+  { "matches_archetype", lua_matches_archetype },
   { "event", lua_event },
   { "shutdown", lua_shutdown },
   { NULL, NULL }
 };
 
 /**
- * TODO(Chris I)
-**/
+ * Register the game API with Lua
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
+ **/
 int lua_game_register_api(lua_State* l) {
   luaL_newlib(l, game_lib);
   lua_setglobal(l, API_TABLE_NAME);
@@ -54,72 +65,78 @@ int lua_game_register_api(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
-**/
-static int lua_new_entity(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
-
-  const char* name = luaL_checkstring(l, 1);
-  const char* description = luaL_checkstring(l, 2);
-
+ * Lua API method which returns all entities registered with the game
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
+ **/
+static int lua_get_entities(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
-  entity_t* entity = new_entity(game, name, description);
+  lua_newtable(l);
 
-  lua_settop(l, 0);
+  h_it_t it = hash_table_iterator(game->entities);
+  entity_t* entity = NULL;
+  int count = 1;
 
-  lua_pushlightuserdata(l, entity);
+  while ((entity = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, entity);
+    lua_settable(l, -3);
+
+    it = h_it_next(it);
+    count++;
+  }
 
   return 1;
 }
 
 /**
- * TODO(Chris I)
-**/
-static int lua_get_entity(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
+ * Lua API method that creates a new entity and returns a table representing it.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
+ **/
+static int lua_new_entity(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
-  const char* uuid = luaL_checkstring(l, 1);
+  entity_t* entity = ecs_new_entity(game);
 
-  entity_t* entity = get_entity(game, uuid);
+  lua_push_entity(l, entity);
+
+  return 1;
+}
+
+/**
+ * Lua API method which allows an entity to be retrieved via uuid
+ *
+ * l - Lua state instance
+ **/
+static int lua_get_entity(lua_State* l) {
+  const char* uuid = luaL_checkstring(l, -1);
+  lua_pop(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+  entity_t* entity = ecs_get_entity(game, uuid);
 
   if (entity == NULL) {
     return luaL_error(l, "No entity found for UUID [%s]", uuid);
   }
 
-  lua_pop(l, 1);
-
-  lua_pushlightuserdata(l, entity);
+  lua_push_entity(l, entity);
 
   return 1;
 }
 
 /**
  * TODO(Chris I)
-**/
-static int lua_get_entity_id(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-
-  entity_t* entity = lua_touserdata(l, 1);
-
-  lua_pushstring(l, entity->id.raw);
-
-  lua_pop(l, 1);
-
-  return 1;
-}
-
-/**
- * TODO(Chris I)
-**/
+ **/
 static int lua_register_component(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
-  component_t* component = create_component_t();
+  component_t* component = ecs_create_component_t();
 
   if (list_add(game->components, component) != 0) {
     return luaL_error(l, "Unable to add component to entity");
@@ -137,10 +154,9 @@ static int lua_register_component(lua_State* l) {
  *   l - The Lua state being called from
  *
  * Returns 0 on success or luaL_error on error.
-**/
+ **/
 static int lua_register_state(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-  luaL_checktype(l, 1, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TTABLE);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -157,10 +173,9 @@ static int lua_register_state(lua_State* l) {
  *   l - The Lua state being called from
  *
  * Returns 0 on success or luaL_error on error.
-**/
+ **/
 static int lua_register_narrator(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-  luaL_checktype(l, 1, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TTABLE);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -171,16 +186,49 @@ static int lua_register_narrator(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
-**/
+ * API method that adds a new archetype to the engine.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or luaL_error on error
+ **/
+static int lua_register_archetype(lua_State* l) {
+  int top = 0 - lua_gettop(l);
+  int index = -1;
+
+  archetype_t* archetype = ecs_new_archetype_t();
+
+  while (index >= top) {
+    luaL_checktype(l, index, LUA_TLIGHTUSERDATA);
+    component_t* component = lua_touserdata(l, index);
+    ecs_add_archetype_component(archetype, component);
+
+    index--;
+  }
+
+  lua_settop(l, 0);
+
+  game_t* game = lua_common_get_game(l);
+  list_add(game->archetypes, archetype);
+
+  lua_pushlightuserdata(l, archetype);
+
+  return 1;
+}
+
+/**
+ * API method that returns if an entity has a given component.
+ *
+ * l - The Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
+ **/
 static int lua_has_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
-
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  component_t* component = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
 
   lua_pop(l, 2);
 
@@ -190,51 +238,139 @@ static int lua_has_component(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
-**/
+ * API method that adds a component to a given entity
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
+ **/
 static int lua_add_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 3);
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -3, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 3, LUA_TTABLE);
+  entity_t* entity = lua_to_entity(l, -3);
+  component_t* component = lua_touserdata(l, -2);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
 
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  lua_pop(l, 2);
 
-  component_data_t* component_data = create_component_data_t();
+  component_data_t* component_data = ecs_create_component_data_t();
+  component_data->entity = entity;
   component_data->ref = ref;
 
-  hash_table_insert(component->entities, entity->id.raw, component_data);
+  game_t* game = lua_common_get_game(l);
 
-  lua_pop(l, 2);
+  ecs_add_entity_to_component(component, component_data, game->archetypes, entity);
 
   return 0;
 }
 
 /**
- * TODO(Chris I)
-**/
+ * API method that retrieves a component for a given entity
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
+ **/
 static int lua_get_component(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
 
-  luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
-  luaL_checktype(l, 2, LUA_TLIGHTUSERDATA);
+  component_t* component = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
 
-  entity_t* entity = lua_touserdata(l, 1);
-  component_t* component = lua_touserdata(l, 2);
+  lua_pop(l, 2);
 
   component_data_t* component_data = hash_table_get(component->entities, entity->id.raw);
 
   if (component_data == NULL) {
-    return 0;
+    lua_pushnil(l);
+  } else {
+    lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
   }
+
+  return 1;
+}
+
+/**
+ * API method that returns the entities associated with a component
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.
+ **/
+static int lua_get_component_entities(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  component_t* component = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  h_it_t it = hash_table_iterator(component->entities);
+  component_data_t* component_data = NULL;
+
+  lua_newtable(l);
+  int count = 1;
+
+  while ((component_data = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, component_data->entity);
+    lua_rawset(l, -3);
+
+    it = h_it_next(it);
+    count++;
+  }
+
+  return 1;
+}
+
+/**
+ * API method that returns the entities associated with an archetype
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.
+ **/
+static int lua_get_archetype_entities(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  archetype_t* archetype = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  h_it_t it = hash_table_iterator(archetype->entities);
+  entity_t* entity = NULL;
+
+  lua_newtable(l);
+  int count = 1;
+
+  while ((entity = h_it_get(it)) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_entity(l, entity);
+    lua_rawset(l, -3);
+
+    it = h_it_next(it);
+    count++;
+  }
+
+  return 1;
+}
+
+/**
+ * API method that returns if a given entity matches an archetype
+ *
+ * l - the Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error.*
+ **/
+static int lua_matches_archetype(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  archetype_t* archetype = lua_touserdata(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
 
   lua_pop(l, 2);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
+  lua_pushboolean(l, ecs_archetype_has_entity(archetype, entity));
 
   return 1;
 }
@@ -246,10 +382,8 @@ static int lua_get_component(lua_State* l) {
  *  l - the lua state submitting the event
  *
  * Returns 0 on success or calls luaL_error on failure
-**/
+ **/
 static int lua_event(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
   game_t* game = lua_common_get_game(l);
 
   lua_event_data_t* lua_event_data = lua_new_lua_event_data_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
@@ -260,8 +394,12 @@ static int lua_event(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
-**/
+ * Lua API method to shut down the game
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success
+ **/
 static int lua_shutdown(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 

@@ -5,14 +5,14 @@
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct game game_t;
 typedef struct linked_list linked_list_t;
 typedef int (*task_func_t)(game_t* game);
 
 /**
  * Structs
-**/
+ **/
 typedef struct task {
   time_t execute_at;
   task_func_t function;
@@ -20,7 +20,7 @@ typedef struct task {
 
 /**
  * Function prototypes
-**/
+ **/
 task_t* create_task_t();
 void free_task_t(task_t* task);
 void deallocate_task_t(void* value);

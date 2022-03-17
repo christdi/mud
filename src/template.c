@@ -15,7 +15,7 @@ int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* positio
  * Allocates a new instance of template_t.
  *
  * Returns the newly allocated instance of template_t.
-**/
+ **/
 template_t* template_t_new() {
   template_t* template = calloc(1, sizeof *template);
 
@@ -27,7 +27,7 @@ template_t* template_t_new() {
  *
  * Parameters
  *  template - the template to be freed
-**/
+ **/
 void template_t_free(template_t* template) {
   assert(template);
 
@@ -47,7 +47,7 @@ void template_t_free(template_t* template) {
  *
  * Parameters
  *  value - should be a template_t*, behaviour is undefined if not
-**/
+ **/
 void template_t_deallocate(void* value) {
   assert(value);
 
@@ -62,7 +62,7 @@ void template_t_deallocate(void* value) {
  *  filename - the filename to load the templates from
  *
  * Returns 0 on success or -1 on failure.
-**/
+ **/
 int template_load_from_file(hash_table_t* templates, const char* filename) {
   assert(templates);
   assert(filename);
@@ -105,7 +105,7 @@ int template_load_from_file(hash_table_t* templates, const char* filename) {
  * Parameters
  *  buffer - the line currently being parsed
  *  templates - the hash table templates should be stored in
-**/
+ **/
 int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* position) {
   assert(buffer);
   assert(templates);
@@ -150,7 +150,7 @@ int template_parse_buffer(char* buffer, hash_table_t* templates, size_t* positio
  *  key - the key to search for in the hash table
  *
  * Returns the value of the template or "undefined" literal if not found.
-**/
+ **/
 const char* tpl(hash_table_t* templates, const char* key) {
   assert(templates);
   assert(key);

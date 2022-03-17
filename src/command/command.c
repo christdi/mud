@@ -17,7 +17,7 @@ static int get_command(game_t* game, const char* name, command_t* command);
  * Allocate memory for and initialize a command_t.
  *
  * Returns the newly allocated command_t
-**/
+ **/
 command_t* create_command_t() {
   command_t* command = calloc(1, sizeof *command);
 
@@ -26,7 +26,7 @@ command_t* create_command_t() {
 
 /**
  * Frees an allocated command_t.
-**/
+ **/
 void free_command_t(command_t* command) {
   assert(command);
 
@@ -40,7 +40,7 @@ void free_command_t(command_t* command) {
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
  * to cast to the actual type and pass it to the relevant free function.
-**/
+ **/
 void deallocate_command(void* value) {
   assert(value);
 
@@ -51,7 +51,7 @@ void deallocate_command(void* value) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int execute_command(game_t* game, player_t* player, const char* command, const char* arguments) {
   command_t* cmd = create_command_t();
 
@@ -78,7 +78,7 @@ int execute_command(game_t* game, player_t* player, const char* command, const c
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int get_command(game_t* game, const char* name, command_t* command) {
   linked_list_t* commands = create_linked_list_t();
   commands->deallocator = deallocate_command;

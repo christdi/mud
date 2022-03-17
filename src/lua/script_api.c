@@ -19,7 +19,7 @@ static const struct luaL_Reg script_lib[] = {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 int lua_script_register_api(lua_State* l) {
   luaL_newlib(l, script_lib);
   lua_setglobal(l, "script");
@@ -29,7 +29,7 @@ int lua_script_register_api(lua_State* l) {
 
 /**
  * TODO(Chris I)
-**/
+ **/
 static int lua_script_available(lua_State* l) {
   lua_common_assert_n_arguments(l, 0);
 
@@ -74,7 +74,7 @@ static int lua_script_available(lua_State* l) {
 
     script_group_t* script_group = NULL;
     it_t group_it = list_begin(groups);
-    
+
     int group_index = 1;
 
     while ((script_group = it_get(group_it)) != NULL) {

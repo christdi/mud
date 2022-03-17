@@ -19,7 +19,7 @@ static const char* log_get_level(log_level_t level);
  *  line - the line log is called from
  *  format - formatted spring for use with vsprintf to build log line
  *  ... - varargs for vsprintf to build log line
-**/
+ **/
 void mlog(log_level_t level, const char* function, const int line, const char* format, ...) {
   if (level < min_log_level) {
     return;
@@ -50,7 +50,7 @@ void mlog(log_level_t level, const char* function, const int line, const char* f
  *
  * Parameters
  *  level - the minimum log level to be set
-**/
+ **/
 void log_set_level(const log_level_t level) {
   min_log_level = level;
 }
@@ -60,7 +60,7 @@ void log_set_level(const log_level_t level) {
  *
  * Parameters
  *  level - the log level to return a string of
-**/
+ **/
 static const char* log_get_level(log_level_t level) {
   switch (level) {
   case ERROR:

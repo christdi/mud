@@ -3,7 +3,7 @@
 
 /**
  * Function prototypes
-**/
+ **/
 void deallocate(void* value);
 
 #endif

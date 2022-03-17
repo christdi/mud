@@ -3,12 +3,12 @@
 
 /**
  * Forward declations
-**/
+ **/
 typedef struct lua_State lua_State;
 
 /**
  * Function prototypes
-**/
+ **/
 int lua_command_register_api(lua_State* l);
 
 #endif

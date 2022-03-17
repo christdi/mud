@@ -8,17 +8,17 @@
 
 /**
  * Definitions
-**/
+ **/
 #define BACKLOG 10
 
 /**
  * Typedefs
-**/
+ **/
 typedef struct linked_list linked_list_t;
 
 /**
  * Sturcts
-**/
+ **/
 typedef struct network {
   fd_set master_set;
   int max_fd;
@@ -34,7 +34,7 @@ typedef struct network {
 
 /**
  * Functions prototypes
-**/
+ **/
 network_t* create_network_t(void);
 void free_network_t(network_t* network);
 
@@ -42,6 +42,7 @@ int start_game_server(network_t* network, unsigned int port);
 int stop_game_server(network_t* network, unsigned int port);
 
 void poll_network(network_t* network);
+void flush_output(network_t* network);
 void disconnect_clients(network_t* network);
 
 void register_connection_callback(network_t* network, callback_func func, void* context);

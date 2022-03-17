@@ -19,8 +19,8 @@
  * Allocates and initialises a new entity_t struct.
  *
  * Returns a pointer to the newly allocated entity_t struct.
-**/
-entity_t* create_entity_t() {
+ **/
+entity_t* ecs_create_entity_t() {
   entity_t* entity = calloc(1, sizeof *entity);
 
   return entity;
@@ -28,17 +28,9 @@ entity_t* create_entity_t() {
 
 /**
  * Frees an allocated entity_t struct.
-**/
-void free_entity_t(entity_t* entity) {
+ **/
+void ecs_free_entity_t(entity_t* entity) {
   assert(entity);
-
-  if (entity->name != NULL) {
-    free(entity->name);
-  }
-
-  if (entity->description != NULL) {
-    free(entity->description);
-  }
 
   free(entity);
 }
@@ -46,13 +38,13 @@ void free_entity_t(entity_t* entity) {
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
  * to cast to the actual type and pass it to the relevant free function.
-**/
-void deallocate_entity(void* value) {
+ **/
+void ecs_deallocate_entity(void* value) {
   assert(value);
 
   entity_t* entity = (entity_t*)value;
 
-  free_entity_t(entity);
+  ecs_free_entity_t(entity);
 }
 
 /**
@@ -62,8 +54,8 @@ void deallocate_entity(void* value) {
  *   game - the game_t struct where the entities should be loaded to
  *
  * Returns 0 on success or -1 on failure
-**/
-int load_entities(game_t* game) {
+ **/
+int ecs_load_entities(game_t* game) {
   assert(game);
 
   LOG(INFO, "Loading entities");
@@ -105,8 +97,8 @@ int load_entities(game_t* game) {
  * Searches the game for an entity matching a given uuid.
  *
  * Returns a pointer to the entity if found or NULL if not.
-**/
-entity_t* get_entity(game_t* game, const char* uuid) {
+ **/
+entity_t* ecs_get_entity(game_t* game, const char* uuid) {
   assert(game);
   assert(uuid);
 
@@ -118,19 +110,16 @@ entity_t* get_entity(game_t* game, const char* uuid) {
  *
  * This function takes the following parameters:
  *   game - a pointer to a game struct containing components
- *   name - the name to use for the new entity
- *   description - the description to use for the new entity
  *
  * Returns a pointer to an entity struct representing the new entity
-**/
-entity_t* new_entity(game_t* game, const char* name, const char* description) {
-  entity_t* entity = create_entity_t();
+ **/
+entity_t* ecs_new_entity(game_t* game) {
+  entity_t* entity = ecs_create_entity_t();
   entity->id = new_uuid();
-  entity->name = strdup(name);
-  entity->description = strdup(description);
-  hash_table_insert(game->entities, entity->id.raw, entity);
 
-  LOG(INFO, "New entity created [%s], [%s]", name, description);
+  hash_table_insert(game->entities, uuid_str(&entity->id), entity);
+
+  LOG(INFO, "New entity created uuid: [%s]", uuid_str(&entity->id));
 
   return entity;
 }

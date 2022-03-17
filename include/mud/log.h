@@ -3,7 +3,7 @@
 
 /**
  * Defines
-**/
+ **/
 #define MAX_LOG_LINE_LENGTH 1024
 #define MAX_LOG_DATE_TIME_LENGTH 30
 
@@ -11,7 +11,7 @@
 
 /**
  * Enumes
-**/
+ **/
 typedef enum log_level {
   TRACE,
   DEBUG,
@@ -22,7 +22,7 @@ typedef enum log_level {
 
 /**
  * Function prototypes
-**/
+ **/
 void mlog(log_level_t level, const char* function, const int line, const char* format, ...);
 
 #endif

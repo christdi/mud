@@ -2,16 +2,16 @@
 #include <uuid/uuid.h>
 
 #include "bsd/string.h"
-
+#include "mud/log.h"
 #include "mud/util/muduuid.h"
 
 #define UUID_SIZE 37
 
 /**
  * Creates a new mud_uuid_t.
- * 
+ *
  * Returns a copy of the generated mud_uuid_t.
-**/
+ **/
 mud_uuid_t new_uuid() {
   mud_uuid_t uuid;
 
@@ -25,9 +25,9 @@ mud_uuid_t new_uuid() {
 /**
  * Parameters
  *   uuid - UUID to get string from
- * 
+ *
  * Returns a string representation of a UUID.
-**/
+ **/
 const char* uuid_str(const mud_uuid_t* uuid) {
   assert(uuid);
 
@@ -36,12 +36,12 @@ const char* uuid_str(const mud_uuid_t* uuid) {
 
 /**
  * Returns a mud_uuit_t populated with a UUID.
- * 
+ *
  * Parameters
  *   data -UUID as string to be copied into structure
- * 
+ *
  * Returns a copy of the generated mud_uuid_t.
-**/
+ **/
 mud_uuid_t str_uuid(const char* data) {
   assert(data);
 

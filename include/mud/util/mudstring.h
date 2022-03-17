@@ -5,7 +5,7 @@
 
 /**
  * Definitions
-**/
+ **/
 #define ANSI_SIZE 17
 #define BUFFER_SIZE 1024
 #define ARGUMENT_SIZE 256
@@ -14,7 +14,7 @@
 
 /**
  * Function prototypes
-**/
+ **/
 char* extract_argument(char* source, char* destination, size_t size);
 char* trim(char* source);
 char* trim_left(char* source);

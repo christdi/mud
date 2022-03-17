@@ -6,7 +6,7 @@ enable_language(C)
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_C_STANDARD_REQUIRED)
 set (PROJECT_NAME mud)
-set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter" "-header-filter=*")
+set (CMAKE_C_CLANG_TIDY "clang-tidy" "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter, -readability-magic-numbers" "-header-filter=*")
 # "-warnings-as-errors=*, -readability-non-const-parameter, -misc-unused-parameters, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
 
 project (${PROJECT_NAME} C)

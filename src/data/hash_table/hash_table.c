@@ -12,7 +12,7 @@ unsigned int get_hash_index(const char* key);
  * Allocates and initialises a new hash_table struct.
  *
  * Returns the newly allocated hash_table.
-**/
+ **/
 hash_table_t* create_hash_table_t() {
   hash_table_t* hash_table = calloc(1, sizeof *hash_table);
 
@@ -21,7 +21,7 @@ hash_table_t* create_hash_table_t() {
 
 /**
  * Frees a hash_table
-**/
+ **/
 void free_hash_table_t(hash_table_t* hash_table) {
   assert(hash_table);
 
@@ -38,7 +38,7 @@ void free_hash_table_t(hash_table_t* hash_table) {
 
 /**
  * Gets a table index by generating a hash value and modulating it by MAX_TABLE_SIZE;
-**/
+ **/
 unsigned int get_hash_index(const char* key) {
   assert(key);
 
@@ -63,7 +63,7 @@ unsigned int get_hash_index(const char* key) {
  * Inserts a value into a hash table with the supplied key.
  *
  * Returns 0 for success or -1 on failure.
-**/
+ **/
 int hash_table_insert(hash_table_t* table, const char* key, void* value) {
   assert(table);
   assert(key);
@@ -103,7 +103,7 @@ int hash_table_insert(hash_table_t* table, const char* key, void* value) {
  * value pointed to by the node is not freed.  It's the responsibility of
  * the caller to configure a deallocator or arrange for the value to be
  * freed first if relevant.
-**/
+ **/
 void hash_table_delete(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
@@ -139,7 +139,7 @@ void hash_table_delete(hash_table_t* table, const char* key) {
  * Determines if a key exists in a hash table.
  *
  * Returns 1 if the key exists, or 0 if not.
-**/
+ **/
 int hash_table_has(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
@@ -168,7 +168,7 @@ int hash_table_has(hash_table_t* table, const char* key) {
 
 /**
  * Searches a hash table for a node with a given key and returns the value if found.
-**/
+ **/
 void* hash_table_get(hash_table_t* table, const char* key) {
   assert(table);
   assert(key);
