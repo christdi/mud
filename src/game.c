@@ -57,6 +57,9 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = ecs_deallocate_entity;
 
+  game->actions = create_hash_table_t();
+  game->actions->deallocator = ecs_deallocate_action_t;
+
   game->event_broker = event_new_event_broker_t();
 
   game->components = create_linked_list_t();
@@ -91,6 +94,7 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
+  free_hash_table_t(game->actions);
 
   event_free_event_broker_t(game->event_broker);
 
@@ -151,6 +155,12 @@ int start_game(int argc, char* argv[]) {
 
   if (ecs_load_entities(game) == -1) {
     LOG(ERROR, "Failed to load entities");
+
+    return -1;
+  }
+
+  if (ecs_load_actions(game) == -1) {
+    LOG(ERROR, "Failed to load actions");
 
     return -1;
   }

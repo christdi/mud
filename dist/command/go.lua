@@ -22,10 +22,11 @@ for _, goable in ipairs(entities) do
       local current_room = character_entity.get_room(entity)
       local new_room = room_entity.get(room_ref.ref)
 
-      character_entity.set_room(entity, new_room)
+      local success, data = actions.execute("move_room", entity, {from = current_room, to = new_room, portal = goable})
 
-      events.dispatch(moved_event.new(entity, goable))
-      command.execute(p, "look", "")
+      if success then
+        command.execute(p, "look", "")    
+      end
 
       return
     end

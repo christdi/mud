@@ -206,8 +206,6 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
     return -1;
   }
 
-  lua_pop(game->lua_state, 1);
-
   return 0;
 }
 
@@ -247,15 +245,21 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, i
     return -1;
   }
 
+  lua_pushstring(game->lua_state, "entity");
+  lua_push_entity(game->lua_state, entity);
+  lua_settable(game->lua_state, -3);
+
+  lua_pushstring(game->lua_state, "data");
+  lua_rawgeti(game->lua_state, LUA_REGISTRYINDEX, ref);
+  lua_settable(game->lua_state, -3);
+
   lua_setupvalue(game->lua_state, 1, 1);
 
-  if (lua_pcall(game->lua_state, 0, 0, 0) != 0) {
+  if (lua_pcall(game->lua_state, 0, 2, 0) != 0) {
     LOG(ERROR, "Error when calling action script [%s]", lua_tostring(game->lua_state, -1));
 
     return -1;
   }
-
-  lua_pop(game->lua_state, 1);
 
   return 0;
 }

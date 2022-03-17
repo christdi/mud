@@ -1,4 +1,5 @@
 entities = require ('entities')
+actions = require('actions')
 events = require('events')
 states = require('states')
 narrators = require('narrators')
@@ -24,6 +25,10 @@ function main()
 end
 
 function entities_loaded(entities)
+end
+
+function actions_loaded(acts)
+  actions.initialise(acts)
 end
 
 

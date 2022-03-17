@@ -9,6 +9,7 @@
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
+#include "mud/lua/script.h"
 #include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/state/state.h"
@@ -18,6 +19,7 @@
 static int lua_get_entities(lua_State* l);
 static int lua_new_entity(lua_State* l);
 static int lua_get_entity(lua_State* l);
+static int lua_do_action(lua_State* l);
 static int lua_register_component(lua_State* l);
 static int lua_register_state(lua_State* l);
 static int lua_register_narrator(lua_State* l);
@@ -35,6 +37,7 @@ static const struct luaL_Reg game_lib[] = {
   { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
+  { "do_action", lua_do_action },
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
   { "register_narrator", lua_register_narrator },
@@ -107,6 +110,39 @@ static int lua_new_entity(lua_State* l) {
   lua_push_entity(l, entity);
 
   return 1;
+}
+
+/**
+ * Lua API method that executes an action with a given entity.
+ *
+ * game.do_action(entity, action, data)
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or calls LuaL_error on error
+**/
+static int lua_do_action(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TTABLE);
+  luaL_checktype(l, -3, LUA_TTABLE);
+
+  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  
+  action_t* action = lua_to_action(l, -1);
+  entity_t* entity = lua_to_entity(l, -2);
+  lua_pop(l, 2);
+
+  game_t* game = lua_common_get_game(l);
+
+  if (script_run_action_script(game, uuid_str(&action->script), entity, ref) == -1) {
+    luaL_unref(l, LUA_REGISTRYINDEX, ref);
+
+    return luaL_error(l, "Failed to execute action script");
+  }
+
+  luaL_unref(l, LUA_REGISTRYINDEX, ref);
+  
+  return 2;
 }
 
 /**
