@@ -12,30 +12,31 @@ typedef struct event event_t;
 typedef struct lua_event_data lua_event_data_t;
 typedef struct state state_t;
 typedef struct system system_t;
+typedef struct task task_t;
 
 /**
  * Functions
  **/
-int lua_hook_on_startup(lua_State* l);
-int lua_hook_on_shutdown(lua_State *l);
+int lua_call_startup_hook(lua_State* l);
+int lua_call_shutdown_hook(lua_State *l);
 
-int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities);
-int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands);
-int lua_hook_on_actions_loaded(lua_State* l, linked_list_t* actions);
+int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities);
+int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands);
+int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions);
 
-int lua_hook_on_player_connected(lua_State* l, player_t* player);
-int lua_hook_on_player_disconnected(lua_State* l, player_t* player);
-int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input);
+int lua_call_player_connected_hook(lua_State* l, player_t* player);
+int lua_call_player_disconnected_hook(lua_State* l, player_t* player);
+int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input);
 
-int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event);
+int lua_call_narrate_event_hook(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event);
 
-int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state);
-int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state);
-int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, const char* input);
-int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output);
-int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state);
-int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event);
+int lua_call_state_enter_hook(lua_State* l, player_t* player, state_t* state);
+int lua_call_state_exit_hook(lua_State* l, player_t* player, state_t* state);
+int lua_call_state_input_hook(lua_State* l, player_t* player, state_t* state, const char* input);
+int lua_call_state_output_hook(lua_State* l, player_t* player, state_t* state, const char* output);
+int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, event_t* event);
 
-int lua_hook_on_system_execute(lua_State* l, system_t* system);
+int lua_call_system_execute_hook(lua_State* l, system_t* system);
+int lua_call_task_execute_hook(lua_State* l, task_t* task);
 
 #endif

@@ -48,7 +48,6 @@ void player_connected(client_t* client, void* context);
 void player_disconnected(client_t* client, void* context);
 void player_input(client_t* client, void* context);
 void player_output(client_t* client, void* context);
-void player_on_tick(player_t* player, game_t* game);
 void player_on_event(player_t* player, game_t* game, event_t* event);
 
 int player_change_state(player_t* player, game_t* game, state_t* state);

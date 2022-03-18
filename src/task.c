@@ -1,8 +1,12 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mud/data/linked_list.h"
+#include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/hooks.h"
+#include "mud/lua/ref.h"
 #include "mud/task.h"
 
 int task_is_ready_to_execute(void* value);
@@ -12,11 +16,13 @@ int task_is_ready_to_execute(void* value);
  *
  * Returns the newly allocated task_t
  **/
-task_t* create_task_t() {
-  task_t* task = calloc(1, sizeof *task);
+task_t* task_new_task_t(const char* name, int execute_in, int ref) {
+  task_t* task = calloc(1, sizeof(task_t));
 
-  task->execute_at = 0;
-  task->function = NULL;
+  task->uuid = new_uuid();
+  task->name = strdup(name);
+  task->execute_at = time(NULL) + execute_in;
+  task->ref = ref;
 
   return task;
 }
@@ -24,8 +30,12 @@ task_t* create_task_t() {
 /**
  * Frees an allocated task_t
  **/
-void free_task_t(task_t* task) {
+void task_free_task_t(task_t* task) {
   assert(task);
+
+  if (task->name != NULL) {
+    free(task->name);
+  }
 
   free(task);
 }
@@ -36,10 +46,10 @@ void free_task_t(task_t* task) {
  * Parameters
  *  value - a void* that should be safe to cast to task_t*. Behaviour is undefined if not.
  **/
-void deallocate_task_t(void* value) {
+void task_deallocate_task_t(void* value) {
   assert(value);
 
-  free_task_t((task_t*)value);
+  task_free_task_t(value);
 }
 
 /**
@@ -47,22 +57,14 @@ void deallocate_task_t(void* value) {
  *
  * Parameters
  *  tasks - a linked list holding tasks to be executed
- *  seconds_in_future - how many seconds in the future the tasks should be executed
- *  function - the function to be executed when the task is due
+ *  task - the task to be scheduled
  *
  * Returns a 0 on success or -1 on failure
  **/
-int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t function) {
+int task_schedule_task(linked_list_t* tasks, task_t* task) {
   assert(tasks);
-  assert(seconds_in_future > 0);
-  assert(function);
 
-  task_t* task = create_task_t();
-
-  task->execute_at = time(NULL) + seconds_in_future;
-  task->function = function;
-
-  if (list_add(tasks, (void*)task) != 0) {
+  if (list_add(tasks, task) != 0) {
     LOG(ERROR, "Unable to add task to linked list");
 
     return -1;
@@ -80,11 +82,11 @@ int task_schedule(linked_list_t* tasks, int seconds_in_future, task_func_t funct
  *
  * Returns 0 on success or -1 on error.
  **/
-int task_execute(linked_list_t* tasks, game_t* game) {
+int task_execute_tasks(linked_list_t* tasks, game_t* game) {
   assert(tasks);
 
   linked_list_t* ready_tasks = create_linked_list_t();
-  ready_tasks->deallocator = deallocate_task_t;
+  ready_tasks->deallocator = task_deallocate_task_t;
 
   if (list_extract(tasks, ready_tasks, task_is_ready_to_execute) != 0) {
     LOG(ERROR, "Unable to extract ready tasks from linked list");
@@ -98,14 +100,32 @@ int task_execute(linked_list_t* tasks, game_t* game) {
   task_t* task = NULL;
 
   while ((task = (task_t*)it_get(it)) != NULL) {
-    if (task->function == NULL || task->function(game) != 0) {
-      LOG(WARN, "task returned failure");
-    }
+    lua_call_task_execute_hook(game->lua_state, task);
 
     it = it_next(it);
   }
 
   free_linked_list_t(ready_tasks);
+
+  return 0;
+}
+
+/**
+ * Cancels a task that is pending execution
+ *
+ * tasks - linked list containing pending tasks
+ * task - task to be removed
+ *
+ * Returns 0 on success
+**/
+int task_cancel_task(linked_list_t* tasks, game_t* game, task_t* task) {
+  assert(tasks);
+  assert(game);
+  assert(task);
+
+  lua_release_ref(game->lua_state, task->ref);
+
+  list_remove(tasks, task);
 
   return 0;
 }
@@ -119,7 +139,7 @@ int task_execute(linked_list_t* tasks, game_t* game) {
  * Returns 1 if this task is ready to execute or 0 otherwise.
  **/
 int task_is_ready_to_execute(void* value) {
-  task_t* task = (task_t*)value;
+  task_t* task = value;
 
   if (time(NULL) > task->execute_at) {
     return 1;

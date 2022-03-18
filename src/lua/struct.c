@@ -8,6 +8,7 @@
 #include "mud/log.h"
 #include "mud/lua/struct.h"
 #include "mud/player.h"
+#include "mud/task.h"
 #include "mud/util/muduuid.h"
 
 #include <assert.h>
@@ -27,6 +28,9 @@
 
 #define SYSTEM_NAME_FIELD "name"
 #define SYSTEM_ENABLED_FIELD "enabled"
+
+#define TASK_NAME_FIELD "name"
+#define TASK_EXECUTE_AT "execute_at"
 
 /**
  * Converts an entity structure to a Lua table and pushes it on top of the stack.
@@ -192,6 +196,41 @@ void lua_push_system(lua_State* l, system_t* system) {
 
   lua_pushstring(l, SYSTEM_ENABLED_FIELD);
   lua_pushboolean(l, system->enabled);
+  lua_rawset(l, -3);
+}
+
+/**
+ * Converts a task structure to a Lua table and pushes it on top of the stack.
+ *
+ * l - Lua state instance
+ * task - task to be converted
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+void lua_push_task(lua_State* l, task_t* task) {
+  assert(l);
+  assert(task);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_TASK);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_pushlightuserdata(l, task);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, UUID_FIELD);
+  lua_pushstring(l, uuid_str(&task->uuid));
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, TASK_NAME_FIELD);
+  lua_pushstring(l, task->name);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, TASK_EXECUTE_AT);
+  lua_pushnumber(l, task->execute_at);
   lua_rawset(l, -3);
 }
 
@@ -368,4 +407,39 @@ system_t* lua_to_system(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return system;
+}
+
+/**
+ * Extracts the pointer to a task from the table on top of the stack.
+ *
+ * l - Lua state instance
+ *
+ * Returns the task_t pointer or null
+ **/
+task_t* lua_to_task(lua_State* l, int index) {
+  assert(l);
+
+  luaL_checktype(l, index, LUA_TTABLE);
+  lua_pushstring(l, TYPE_FIELD);
+
+  int table_index = index > 0 ? index : index - 1;
+  lua_rawget(l, table_index);
+
+  struct_type_t type = luaL_checknumber(l, -1);
+  lua_pop(l, 1);
+
+  if (type != STRUCT_TASK) {
+    LOG(ERROR, "Could not convert lua table to action as type was not struct");
+
+    return NULL;
+  }
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_rawget(l, table_index);
+
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  task_t* task = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  return task;
 }

@@ -27,9 +27,7 @@
 #include "mud/task.h"
 
 int connect_to_database(game_t* game, const char* filename);
-void game_execute_tasks(game_t* game);
-int game_pulse_players(game_t* game);
-void game_sleep_until_tick(game_t* game, unsigned int ticks_per_second);
+void sleep_until_tick(game_t* game, unsigned int ticks_per_second);
 int initialise_lua(game_t* game, config_t* config);
 
 /**
@@ -71,7 +69,7 @@ game_t* create_game_t(void) {
   game->systems->deallocator = ecs_deallocate_system_t;
 
   game->tasks = create_linked_list_t();
-  game->tasks->deallocator = deallocate_task_t;
+  game->tasks->deallocator = task_deallocate_task_t;
 
   game->events = create_linked_list_t();
 
@@ -174,15 +172,13 @@ int start_game(int argc, char* argv[]) {
     return -1;
   }
 
-  task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
-
   while (!game->shutdown) {
     poll_network(game->network);
     event_dispatch_events(game->event_broker, game, game->entities, game->players);
-    task_execute(game->tasks, game);
+    task_execute_tasks(game->tasks, game);
     ecs_update_systems(game);
-    game_sleep_until_tick(game, game->config->ticks_per_second);
     flush_output(game->network);
+    sleep_until_tick(game, game->config->ticks_per_second);
   }
 
   if (stop_game_server(game->network, game->config->game_port) == -1) {
@@ -191,7 +187,7 @@ int start_game(int argc, char* argv[]) {
     return -1;
   }
 
-  lua_hook_on_shutdown(game->lua_state);
+  lua_call_shutdown_hook(game->lua_state);
 
   disconnect_clients(game->network);
 
@@ -223,38 +219,11 @@ int connect_to_database(game_t* game, const char* filename) {
 }
 
 /**
- * Pulses all currently connected players.
- *
- * Parameters
- *  game - contains all necessary game data
- *
- * Returns 0 on success or -1 on failure
- **/
-int game_pulse_players(game_t* game) {
-  assert(game);
-  assert(game->players);
-
-  h_it_t it = hash_table_iterator(game->players);
-
-  player_t* player = NULL;
-
-  while ((player = (player_t*)h_it_get(it)) != NULL) {
-    player_on_tick(player, game);
-
-    it = h_it_next(it);
-  }
-
-  task_schedule(game->tasks, GAME_PLAYER_PULSE_SECONDS, game_pulse_players);
-
-  return 0;
-}
-
-/**
  * Forces the game loop to adhere to a spcified ticks per second.  Calculates the elapsed time
  * time since the last time the method was called and makes the thread sleep if it's less than
  * the amount of time calculated per tick.
  **/
-void game_sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
+void sleep_until_tick(game_t* game, const unsigned int ticks_per_second) {
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
 
@@ -326,7 +295,7 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  if (lua_hook_on_startup(game->lua_state) != 0) {
+  if (lua_call_startup_hook(game->lua_state) != 0) {
     return -1;
   }
 

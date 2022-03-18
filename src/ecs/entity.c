@@ -70,7 +70,7 @@ int ecs_load_entities(game_t* game) {
     return -1;
   };
 
-  if (lua_hook_on_entities_loaded(game->lua_state, entities) != 0) {
+  if (lua_call_entities_loaded_hook(game->lua_state, entities) != 0) {
     LOG(ERROR, "Lua on entities loaded hook could not be called");
 
     free_linked_list_t(entities);

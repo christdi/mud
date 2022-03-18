@@ -40,6 +40,8 @@ INSERT INTO script_sandbox_permission VALUES('5e1f3800-b418-4893-8536-13de357465
 INSERT INTO script_sandbox_permission VALUES('df14283a-83c8-4911-bc39-b40d6b1ac576', 'components', NULL);
 INSERT INTO script_sandbox_permission VALUES('e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5', 'archetypes', NULL);
 INSERT INTO script_sandbox_permission VALUES('36128ad7-88a8-4b23-81aa-e1f04693588a', 'systems', NULL);
+INSERT INTO script_sandbox_permission VALUES('c551dc14-5d8d-4e51-b1da-ad1a3b674053', 'tasks', NULL);
+INSERT INTO script_sandbox_permission VALUES('5d5f62db-5b4a-4d84-a24e-9da040b1d95c', 'players', NULL);
 INSERT INTO script_sandbox_permission VALUES('6b2bc1fc-70eb-4392-9181-fd68fe6b739a', 'character_looked_event', NULL);
 INSERT INTO script_sandbox_permission VALUES('2660099c-4bd7-4cda-8f6c-05dce4189ef4', 'communicate_event', NULL);
 INSERT INTO script_sandbox_permission VALUES('491c0a33-272b-447c-bf1d-1421a71205ea', 'moved_event', NULL);
@@ -89,6 +91,8 @@ INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'df14283a-83c8-4911-bc39-b40d6b1ac576');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '36128ad7-88a8-4b23-81aa-e1f04693588a');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'c551dc14-5d8d-4e51-b1da-ad1a3b674053');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '5d5f62db-5b4a-4d84-a24e-9da040b1d95c');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '6b2bc1fc-70eb-4392-9181-fd68fe6b739a');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2660099c-4bd7-4cda-8f6c-05dce4189ef4');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '491c0a33-272b-447c-bf1d-1421a71205ea');

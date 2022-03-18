@@ -74,7 +74,7 @@ void player_connected(client_t* client, void* context) {
 
   hash_table_insert(game->players, uuid_str(&player->uuid), player);
 
-  lua_hook_on_player_connected(game->lua_state, player);
+  lua_call_player_connected_hook(game->lua_state, player);
 }
 
 /**
@@ -84,7 +84,7 @@ void player_disconnected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
   player_t* player = client->userdata;
 
-  lua_hook_on_player_disconnected(game->lua_state, player);
+  lua_call_player_disconnected_hook(game->lua_state, player);
   hash_table_delete(game->players, uuid_str(&player->uuid));
 }
 
@@ -99,8 +99,8 @@ void player_input(client_t* client, void* context) {
 
   while (extract_from_input(client, command, sizeof(command), "\r\n") != -1) {
     if (strnlen(command, sizeof(command) - 1) > 0) {
-      lua_hook_on_player_input(game->lua_state, player, command);
-      lua_hook_on_state_input(game->lua_state, player, player->state, command);
+      lua_call_player_input_hook(game->lua_state, player, command);
+      lua_call_state_input_hook(game->lua_state, player, player->state, command);
     }
   }
 }
@@ -112,7 +112,7 @@ void player_output(client_t* client, void* context) {
   game_t* game = (game_t*)context;
   player_t* player = client->userdata;
 
-  if (lua_hook_on_state_output(game->lua_state, player, player->state, client->output) == -1) {
+  if (lua_call_state_output_hook(game->lua_state, player, player->state, client->output) == -1) {
     LOG(ERROR, "Error calling state output hook");
   };
 }
@@ -134,27 +134,12 @@ int player_change_state(player_t* player, game_t* game, state_t* state) {
   player->state = state;
 
   if (old_state != NULL) {
-    lua_hook_on_state_exit(game->lua_state, player, old_state);
+    lua_call_state_exit_hook(game->lua_state, player, old_state);
   }
 
-  lua_hook_on_state_enter(game->lua_state, player, player->state);
+  lua_call_state_enter_hook(game->lua_state, player, player->state);
 
   return 0;
-}
-
-/**
- * Called on each tick of the game engine, delegates to the state on_tick
- * method if one is defined to allow any time based updates to occur.
- *
- * Parameters
- *  player - the player who is being ticked
- *  game - game object containing all necessary game data
- **/
-void player_on_tick(player_t* player, game_t* game) {
-  assert(player);
-  assert(game);
-
-  lua_hook_on_state_tick(game->lua_state, player, player->state);
 }
 
 /**
@@ -171,7 +156,7 @@ void player_on_event(player_t* player, game_t* game, event_t* event) {
   assert(game);
   assert(event);
 
-  lua_hook_on_state_event(game->lua_state, player, player->state, event);
+  lua_call_state_event_hook(game->lua_state, player, player->state, event);
 }
 
 /**
@@ -222,7 +207,7 @@ int player_narrate(player_t* player, game_t* game, event_t* event) {
 
   switch (event->type) {
   case LUA_EVENT:
-    lua_hook_on_narrate_event(game->lua_state, player, player->narrator, event->data);
+    lua_call_narrate_event_hook(game->lua_state, player, player->narrator, event->data);
     break;
   default:
     send_to_player(player, "Something happened but you're not sure how to describe it.\n\r");
