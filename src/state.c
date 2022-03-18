@@ -1,7 +1,7 @@
 #include <assert.h> /* assert */
 #include <stdlib.h> /* calloc */
 
-#include "mud/state/state.h"
+#include "mud/state.h"
 
 /**
  * Allocates memory for a new instance of state_t.

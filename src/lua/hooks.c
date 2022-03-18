@@ -13,7 +13,7 @@
 #include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/player.h"
-#include "mud/state/state.h"
+#include "mud/state.h"
 #include "mud/util/muduuid.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
@@ -128,7 +128,7 @@ int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands) {
 
   it_t it = list_begin(commands);
 
-  while ((command= it_get(it)) != NULL) {
+  while ((command = it_get(it)) != NULL) {
     lua_pushnumber(l, index);
     lua_push_command(l, command);
 
@@ -188,7 +188,6 @@ int lua_hook_on_actions_loaded(lua_State* l, linked_list_t* actions) {
 
   return 0;
 }
-
 
 /**
  * Hook method called when the engine has accepted a connection and created a new player.

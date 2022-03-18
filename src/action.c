@@ -5,10 +5,10 @@
 #include "mud/action.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
-#include "mud/lua/hooks.h"
+#include "mud/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
+#include "mud/lua/hooks.h"
 
 /**
  * Allocates a new instance of action_t
@@ -18,7 +18,7 @@
  * script_uuid - uuid of the script this action will run
  *
  * Returns the allocated instance of action_t
-**/
+ **/
 action_t* action_new_action_t(const char* uuid, const char* name, const char* script_uuid) {
   assert(uuid);
   assert(name);
@@ -37,7 +37,7 @@ action_t* action_new_action_t(const char* uuid, const char* name, const char* sc
  * Frees an allocated instance of action_t
  *
  * action - the action to be freed
-**/
+ **/
 void action_free_action_t(action_t* action) {
   assert(action);
 
@@ -52,7 +52,7 @@ void action_free_action_t(action_t* action) {
  * Deallocated a void pointer to action_t
  *
  * value - void pointer containing action_t
-**/
+ **/
 void action_deallocate_action_t(void* value) {
   assert(value);
 
@@ -65,7 +65,7 @@ void action_deallocate_action_t(void* value) {
  * game - game_t instance containing database and actions
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int action_load_actions(game_t* game) {
   linked_list_t* results = create_linked_list_t();
 
@@ -95,4 +95,3 @@ int action_load_actions(game_t* game) {
 
   return 0;
 }
-

@@ -5,9 +5,9 @@
 
 #include "mud/data/deallocate.h"
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/ecs/entity.h"
-#include "mud/event/event.h"
+#include "mud/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"

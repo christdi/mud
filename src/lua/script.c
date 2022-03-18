@@ -7,7 +7,7 @@
 #include "lualib.h"
 
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
@@ -209,7 +209,6 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
   return 0;
 }
 
-
 /**
  * Runs a script which defines the steps of an action.
  *
@@ -219,7 +218,7 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
  * ref - A lua ref to a table containing data relevant to action
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, int ref) {
   assert(game);
   assert(uuid);
@@ -263,7 +262,6 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, i
 
   return 0;
 }
-
 
 /**
  * Constructs the _ENV table to be used by a user script with appropriate permissions

@@ -2,7 +2,7 @@
 #include "lua.h"
 
 #include "mud/data/hash_table.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"

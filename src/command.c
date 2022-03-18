@@ -5,7 +5,7 @@
 #include "mud/command.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
@@ -58,7 +58,7 @@ void command_deallocate_command_t(void* value) {
  * game - game_t instance containing database and commands
  *
  * Returns 0 on success or -1 on failure
-**/
+ **/
 int command_load_commands(game_t* game) {
   linked_list_t* results = create_linked_list_t();
 

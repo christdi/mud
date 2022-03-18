@@ -5,13 +5,13 @@
 
 /**
  * Typeefs
-**/
+ **/
 typedef struct linked_list linked_list_t;
 typedef struct game game_t;
 
 /**
  * Structs
-**/
+ **/
 typedef struct action {
   mud_uuid_t uuid;
   char* name;
@@ -20,7 +20,7 @@ typedef struct action {
 
 /**
  * Functions
-**/
+ **/
 action_t* action_new_action_t(const char* uuid, const char* name, const char* script_uuid);
 void action_free_action_t(action_t* action);
 void action_deallocate_action_t(void* value);

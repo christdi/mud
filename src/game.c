@@ -11,7 +11,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
-#include "mud/event/event.h"
+#include "mud/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
@@ -24,8 +24,7 @@
 #include "mud/lua/script_api.h"
 #include "mud/network/network.h"
 #include "mud/player.h"
-#include "mud/task/task.h"
-#include "mud/template.h"
+#include "mud/task.h"
 
 int connect_to_database(game_t* game, const char* filename);
 void game_execute_tasks(game_t* game);
@@ -47,9 +46,6 @@ game_t* create_game_t(void) {
   game->config = config_new();
 
   game->database = NULL;
-
-  game->templates = create_hash_table_t();
-  game->templates->deallocator = template_t_deallocate;
 
   game->players = create_hash_table_t();
   game->players->deallocator = deallocate_player;
@@ -94,7 +90,6 @@ void free_game_t(game_t* game) {
 
   config_free(game->config);
 
-  free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
   free_hash_table_t(game->commands);
@@ -138,12 +133,6 @@ int start_game(int argc, char* argv[]) {
   register_disconnection_callback(game->network, player_disconnected, game);
   register_input_callback(game->network, player_input, game);
   register_flush_callback(game->network, player_output, game);
-
-  if (template_load_from_file(game->templates, "template.properties") != 0) {
-    LOG(ERROR, "Failed to load templates");
-
-    return -1;
-  }
 
   if (connect_to_database(game, game->config->database_file) != 0) {
     LOG(ERROR, "Failed to start game server");

@@ -6,7 +6,7 @@
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/ecs.h"
-#include "mud/event/event.h"
+#include "mud/event.h"
 #include "mud/game.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
@@ -14,7 +14,7 @@
 #include "mud/lua/script.h"
 #include "mud/lua/struct.h"
 #include "mud/narrator.h"
-#include "mud/state/state.h"
+#include "mud/state.h"
 
 #define API_TABLE_NAME "game"
 
@@ -40,7 +40,7 @@ static const struct luaL_Reg game_lib[] = {
   { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
-  { "do_command" , lua_do_command },
+  { "do_command", lua_do_command },
   { "do_action", lua_do_action },
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
@@ -124,7 +124,7 @@ static int lua_new_entity(lua_State* l) {
  * l - Lua state instance
  *
  * Returns 0 on success or calls LuaL_error on error
-**/
+ **/
 static int lua_do_command(lua_State* l) {
   luaL_checktype(l, -1, LUA_TSTRING);
   luaL_checktype(l, -2, LUA_TTABLE);
@@ -140,7 +140,7 @@ static int lua_do_command(lua_State* l) {
 
   if (script_run_command_script(game, uuid_str(&command->script), player, arguments) == -1) {
     return luaL_error(l, "Failed to execute command script");
-  }  
+  }
 
   return 0;
 }
@@ -153,14 +153,14 @@ static int lua_do_command(lua_State* l) {
  * l - Lua state instance
  *
  * Returns 0 on success or calls LuaL_error on error
-**/
+ **/
 static int lua_do_action(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
   luaL_checktype(l, -2, LUA_TTABLE);
   luaL_checktype(l, -3, LUA_TTABLE);
 
   int ref = luaL_ref(l, LUA_REGISTRYINDEX);
-  
+
   action_t* action = lua_to_action(l, -1);
   entity_t* entity = lua_to_entity(l, -2);
   lua_pop(l, 2);
@@ -174,7 +174,7 @@ static int lua_do_action(lua_State* l) {
   }
 
   luaL_unref(l, LUA_REGISTRYINDEX, ref);
-  
+
   return 2;
 }
 
