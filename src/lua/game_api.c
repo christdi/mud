@@ -15,6 +15,7 @@
 #include "mud/lua/struct.h"
 #include "mud/narrator.h"
 #include "mud/state.h"
+#include "mud/task.h"
 
 #define API_TABLE_NAME "game"
 
@@ -32,6 +33,10 @@ static int lua_register_system(lua_State *l);
 static int lua_deregister_system(lua_State *l);
 static int lua_enable_system(lua_State *l);
 static int lua_disable_system(lua_State *l);
+
+static int lua_schedule_task(lua_State *l);
+static int lua_cancel_task(lua_State* l);
+static int lua_get_tasks(lua_State* l);
 
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
@@ -59,6 +64,10 @@ static const struct luaL_Reg game_lib[] = {
   { "deregister_system", lua_deregister_system },
   { "enable_system", lua_enable_system },
   { "disable_system", lua_disable_system },
+
+  { "schedule_task", lua_schedule_task },
+  { "cancel_task", lua_cancel_task },
+  { "get_tasks", lua_get_tasks },
 
   { "has_component", lua_has_component },
   { "add_component", lua_add_component },
@@ -385,6 +394,89 @@ static int lua_disable_system(lua_State *l) {
 
   ecs_disable_system(system);
   lua_push_system(l, system);
+
+  return 1;
+}
+
+/**
+ * API method which schedules a task for execution
+ *
+ * l - Lua state instance
+ *
+ * game.schedule_task("name", 60, task_func)
+ *
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_schedule_task(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TFUNCTION);
+  luaL_checktype(l, -2, LUA_TNUMBER);
+  luaL_checktype(l, -3, LUA_TSTRING);
+
+  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+
+  int execute_in = lua_tonumber(l, -1);
+  const char* name = lua_tostring(l, -2);
+
+  lua_pop(l, 2);
+
+  task_t* task = task_new_task_t(name, execute_in, ref);
+  game_t* game = lua_common_get_game(l);
+
+  task_schedule_task(game->tasks, task);
+
+  lua_push_task(l, task);
+
+  return 1;
+}
+
+/**
+ * API method which cancels a task pending execution
+ *
+ * l - Lua state instance
+ *
+ * game.cancel_task(task)
+ *
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_cancel_task(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+
+  task_t* task = lua_to_task(l, -1);
+  lua_pop(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+
+  task_cancel_task(game->tasks, game, task);
+
+  return 0;
+}
+
+/**
+ * API method which retrieves pending tasks
+ *
+ * l - Lua state instance
+ *
+ * game.get_tasks()
+ *
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_get_tasks(lua_State* l) {
+  game_t* game = lua_common_get_game(l);
+
+  it_t it = list_begin(game->tasks);
+  task_t* task = NULL;
+
+  int count = 1;
+
+  lua_newtable(l);
+
+  while ((task = it_get(it) ) != NULL) {
+    lua_pushnumber(l, count);
+    lua_push_task(l, task);
+    lua_settable(l, -3);
+
+    it = it_next(it);
+  }
 
   return 1;
 }

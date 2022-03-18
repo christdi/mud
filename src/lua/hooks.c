@@ -15,6 +15,7 @@
 #include "mud/narrator.h"
 #include "mud/player.h"
 #include "mud/state.h"
+#include "mud/task.h"
 #include "mud/util/muduuid.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
@@ -34,7 +35,6 @@
 #define STATE_EXIT_HOOK_FUNCTION "on_exit"
 #define STATE_INPUT_HOOK_FUNCTION "on_input"
 #define STATE_OUTPUT_HOOK_FUNCTION "on_output"
-#define STATE_TICK_HOOK_FUNCTION "on_tick"
 #define STATE_EVENT_HOOK_FUNCTION "on_event"
 
 #define SYSTEM_EXECUTE_HOOK_FUNCTION "execute"
@@ -46,7 +46,7 @@
  *
  * Returns 0 on success or -1 on error
  **/
-int lua_hook_on_startup(lua_State* l) {
+int lua_call_startup_hook(lua_State* l) {
   assert(l);
 
   if (lua_getglobal(l, ON_STARTUP_HOOK_FUNCTION) != LUA_TFUNCTION) {
@@ -67,7 +67,7 @@ int lua_hook_on_startup(lua_State* l) {
 /**
  * Hook method called when the engine is shuting down.
 **/
-int lua_hook_on_shutdown(lua_State *l) {
+int lua_call_shutdown_hook(lua_State *l) {
   assert(l);
 
   if (lua_getglobal(l, ON_SHUTDOWN_HOOK_FUNCTION) != LUA_TFUNCTION) {
@@ -93,7 +93,7 @@ int lua_hook_on_shutdown(lua_State *l) {
  *
  * Returns 0 on success or -1 on failure
  **/
-int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
+int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities) {
   assert(l);
   assert(entities);
 
@@ -136,7 +136,7 @@ int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
  *
  * Returns 0 on success or -1 on failure
  **/
-int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands) {
+int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands) {
   assert(l);
   assert(commands);
 
@@ -179,7 +179,7 @@ int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands) {
  *
  * Returns 0 on success or -1 on failure
  **/
-int lua_hook_on_actions_loaded(lua_State* l, linked_list_t* actions) {
+int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions) {
   assert(l);
   assert(actions);
 
@@ -222,7 +222,7 @@ int lua_hook_on_actions_loaded(lua_State* l, linked_list_t* actions) {
  *
  * Returns 0 on success or -1 on failure.
  **/
-int lua_hook_on_player_connected(lua_State* l, player_t* player) {
+int lua_call_player_connected_hook(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
@@ -251,7 +251,7 @@ int lua_hook_on_player_connected(lua_State* l, player_t* player) {
  *
  * Returns 0 on success or -1 on failure.
  **/
-int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
+int lua_call_player_disconnected_hook(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
@@ -275,7 +275,7 @@ int lua_hook_on_player_disconnected(lua_State* l, player_t* player) {
 /**
  * TODO(Chris I)
  **/
-int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) {
+int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input) {
   assert(l);
   assert(player);
   assert(input);
@@ -307,7 +307,7 @@ int lua_hook_on_player_input(lua_State* l, player_t* player, const char* input) 
  *   narrator - Narrator struct containing ref to Lua module
  *   event - The event to be narrated
  **/
-int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event) {
+int lua_call_narrate_event_hook(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event) {
   assert(l);
   assert(player);
   assert(narrator);
@@ -345,7 +345,7 @@ int lua_hook_on_narrate_event(lua_State* l, player_t* player, narrator_t* narrat
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
+int lua_call_state_enter_hook(lua_State* l, player_t* player, state_t* state) {
   assert(l);
   assert(player);
   assert(state);
@@ -381,7 +381,7 @@ int lua_hook_on_state_enter(lua_State* l, player_t* player, state_t* state) {
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
+int lua_call_state_exit_hook(lua_State* l, player_t* player, state_t* state) {
   assert(l);
   assert(player);
   assert(state);
@@ -418,7 +418,7 @@ int lua_hook_on_state_exit(lua_State* l, player_t* player, state_t* state) {
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, const char* input) {
+int lua_call_state_input_hook(lua_State* l, player_t* player, state_t* state, const char* input) {
   assert(l);
   assert(player);
   assert(state);
@@ -455,7 +455,7 @@ int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, cons
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output) {
+int lua_call_state_output_hook(lua_State* l, player_t* player, state_t* state, const char* output) {
   assert(l);
   assert(player);
   assert(state);
@@ -483,42 +483,6 @@ int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, con
 }
 
 /**
- * Calls the on_tick method associated with the provided Lua state module.
- *
- * Parameters
- *   l - The Lua state
- *   player - The player whom we're calling this state for
- *   state - The state we're calling
- *
- * Returns 0 on success or returns luaL_error on error.
- **/
-int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
-  assert(l);
-  assert(player);
-  assert(state);
-
-  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
-  lua_pushstring(l, STATE_TICK_HOOK_FUNCTION); // -2 = state module table, -1 = on_tick method name
-
-  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_tick method
-    lua_pop(l, 2);
-
-    return 0;
-  }
-
-  lua_remove(l, -2); // -1 = on_tick method
-  lua_push_player(l, player); // -2 = on_tick method, -1 = player table
-
-  if (lua_pcall(l, 1, 0, 0) != 0) {
-    LOG(ERROR, "Error when calling state tick hook [%s]", lua_tostring(l, -1));
-
-    return -1;
-  }
-
-  return 0;
-}
-
-/**
  * Calls the on_event method associated with the provided Lua state module.
  *
  * Parameters
@@ -529,7 +493,7 @@ int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state) {
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event) {
+int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, event_t* event) {
   assert(l);
   assert(player);
   assert(state);
@@ -566,7 +530,7 @@ int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, even
  *
  * Returns 0 on success or -1 on failure
 **/
-int lua_hook_on_system_execute(lua_State* l, system_t* system) {
+int lua_call_system_execute_hook(lua_State* l, system_t* system) {
   assert(l);
   assert(system);
 
@@ -588,6 +552,31 @@ int lua_hook_on_system_execute(lua_State* l, system_t* system) {
 
     return -1;
   }
+
+  return 0;
+}
+
+/**
+ * Calls the Lua function associated with a reference within a task.
+ *
+ * l - Lua state
+ * task - the task to be executed
+**/
+int lua_call_task_execute_hook(lua_State* l, task_t* task) {
+  assert(l);
+  assert(task);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, task->ref);
+
+  luaL_checktype(l, -1, LUA_TFUNCTION);
+
+  if (lua_pcall(l, 0, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling task [%s]", task->name);
+
+    return -1;
+  }
+
+  luaL_unref(l, LUA_REGISTRYINDEX, task->ref);
 
   return 0;
 }

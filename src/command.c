@@ -71,7 +71,7 @@ int command_load_commands(game_t* game) {
     return -1;
   }
 
-  lua_hook_on_commands_loaded(game->lua_state, results);
+  lua_call_commands_loaded_hook(game->lua_state, results);
 
   it_t it = list_begin(results);
   command_t* command = NULL;

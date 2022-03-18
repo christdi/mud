@@ -78,7 +78,7 @@ int action_load_actions(game_t* game) {
     return -1;
   }
 
-  lua_hook_on_actions_loaded(game->lua_state, results);
+  lua_call_actions_loaded_hook(game->lua_state, results);
 
   it_t it = list_begin(results);
   action_t* action = NULL;

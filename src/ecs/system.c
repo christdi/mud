@@ -83,7 +83,7 @@ void ecs_update_systems(game_t* game) {
 
   while ((system = it_get(it)) != NULL) {
     if (system->enabled) {
-      if (lua_hook_on_system_execute(game->lua_state, system) == -1) {
+      if (lua_call_system_execute_hook(game->lua_state, system) == -1) {
         LOG(ERROR, "Failed to execute system");
       }
     }

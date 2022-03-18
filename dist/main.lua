@@ -1,3 +1,4 @@
+players = require('players')
 entities = require ('entities')
 components = require('components')
 systems = require('systems')
@@ -7,6 +8,7 @@ events = require('events')
 states = require('states')
 narrators = require('narrators')
 archetypes = require('archetypes')
+tasks = require('tasks')
 
 function main()
   game.players = {}
