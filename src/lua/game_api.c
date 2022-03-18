@@ -27,6 +27,12 @@ static int lua_register_component(lua_State* l);
 static int lua_register_state(lua_State* l);
 static int lua_register_narrator(lua_State* l);
 static int lua_register_archetype(lua_State* l);
+
+static int lua_register_system(lua_State *l);
+static int lua_deregister_system(lua_State *l);
+static int lua_enable_system(lua_State *l);
+static int lua_disable_system(lua_State *l);
+
 static int lua_has_component(lua_State* l);
 static int lua_add_component(lua_State* l);
 static int lua_get_component(lua_State* l);
@@ -40,19 +46,31 @@ static const struct luaL_Reg game_lib[] = {
   { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
+
   { "do_command", lua_do_command },
   { "do_action", lua_do_action },
+
   { "register_component", lua_register_component },
   { "register_state", lua_register_state },
   { "register_narrator", lua_register_narrator },
   { "register_archetype", lua_register_archetype },
+
+  { "register_system", lua_register_system },
+  { "deregister_system", lua_deregister_system },
+  { "enable_system", lua_enable_system },
+  { "disable_system", lua_disable_system },
+
   { "has_component", lua_has_component },
   { "add_component", lua_add_component },
   { "get_component", lua_get_component },
+
   { "get_component_entities", lua_get_component_entities },
   { "get_archetype_entities", lua_get_archetype_entities },
+
   { "matches_archetype", lua_matches_archetype },
+
   { "event", lua_event },
+
   { "shutdown", lua_shutdown },
   { NULL, NULL }
 };
@@ -281,6 +299,92 @@ static int lua_register_archetype(lua_State* l) {
   list_add(game->archetypes, archetype);
 
   lua_pushlightuserdata(l, archetype);
+
+  return 1;
+}
+
+/**
+ * API method that adds a new system to the engine.
+ *
+ * l - Lua state instance
+ *
+ * game.register_system("name", table)
+ *
+ * Returns 0 on success or luaL on error
+**/
+static int lua_register_system(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TSTRING);
+
+  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  const char* name = lua_tostring(l, -1);
+
+  lua_pop(l, 1);
+
+  system_t* system = ecs_new_system_t(name, ref);
+
+  game_t* game = lua_common_get_game(l);
+
+  list_add(game->systems, system);
+
+  lua_push_system(l, system);
+
+  return 1;
+}
+
+/**
+ * API method that removes a system from the game.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or luaL on error
+**/
+static int lua_deregister_system(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  system_t* system = lua_to_system(l, -1);
+
+  lua_pop(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+
+  luaL_unref(l, LUA_REGISTRYINDEX, system->ref);
+  list_remove(game->systems, system);
+
+  return 1;
+}
+
+/**
+ * API method which enables a system
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_enable_system(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  system_t* system = lua_to_system(l, -1);
+  lua_pop(l, 1);
+
+  ecs_enable_system(system);
+  lua_push_system(l, system);
+
+  return 1;
+}
+
+/**
+ * API method which disables a system
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_disable_system(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  system_t* system = lua_to_system(l, -1);
+  lua_pop(l, 1);
+
+  ecs_disable_system(system);
+  lua_push_system(l, system);
 
   return 1;
 }

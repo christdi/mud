@@ -9,6 +9,7 @@ local narrator
 local moved_handler = require('narrator/default/moved')
 local communicate_handler = require('narrator/default/communicate')
 local character_looked_handler = require('narrator/default/communicate')
+local teleport_handler = require('narrator/default/teleport')
 
 register = function()
   narrator = game.register_narrator(interface)
@@ -22,7 +23,8 @@ narrate = function(plr, event)
   local handlers = {
     { event = character_looked_event.TYPE, handler = character_looked_handler },
     { event = communicate_event.TYPE, handler = communicate_handler },
-    { event = moved_event.TYPE, handler = moved_handler }
+    { event = moved_event.TYPE, handler = moved_handler },
+    { event = teleport_event.TYPE, handler = teleport_handler }
   }
 
   for _, v in ipairs(handlers) do

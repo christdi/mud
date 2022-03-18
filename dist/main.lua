@@ -1,10 +1,11 @@
 entities = require ('entities')
+components = require('components')
+systems = require('systems')
 commands = require('commands')
 actions = require('actions')
 events = require('events')
 states = require('states')
 narrators = require('narrators')
-components = require('components')
 archetypes = require('archetypes')
 
 function main()
@@ -15,6 +16,7 @@ function main()
 
   states.register()
   components.register()
+  systems.register()
   archetypes.register()
   narrators.register()
 
@@ -23,6 +25,10 @@ function main()
 
   portal_entity.new("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel"} )
   portal_entity.new("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla"} )
+end
+
+function shutdown()
+  systems.deregister()
 end
 
 function entities_loaded(entities)
@@ -38,7 +44,7 @@ end
 
 
 function player_connected(p)
-  game.players[p.uuid] = {}
+  game.players[p.uuid] = p
 
   default_narrator.use(p)
   login_state.use(p)

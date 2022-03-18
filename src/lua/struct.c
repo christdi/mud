@@ -4,6 +4,7 @@
 #include "mud/action.h"
 #include "mud/command.h"
 #include "mud/ecs/entity.h"
+#include "mud/ecs/system.h"
 #include "mud/log.h"
 #include "mud/lua/struct.h"
 #include "mud/player.h"
@@ -23,6 +24,9 @@
 
 #define ACTION_NAME_FIELD "name"
 #define ACTION_SCRIPT_UUID_FIELD "script"
+
+#define SYSTEM_NAME_FIELD "name"
+#define SYSTEM_ENABLED_FIELD "enabled"
 
 /**
  * Converts an entity structure to a Lua table and pushes it on top of the stack.
@@ -157,6 +161,41 @@ void lua_push_action(lua_State* l, action_t* action) {
 }
 
 /**
+ * Converts a system structure to a Lua table and pushes it on top of the stack.
+ *
+ * l - Lua state instance
+ * system - system to be converted
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+void lua_push_system(lua_State* l, system_t* system) {
+  assert(l);
+  assert(system);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_SYSTEM);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_pushlightuserdata(l, system);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, UUID_FIELD);
+  lua_pushstring(l, uuid_str(&system->uuid));
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, SYSTEM_NAME_FIELD);
+  lua_pushstring(l, system->name);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, SYSTEM_ENABLED_FIELD);
+  lua_pushboolean(l, system->enabled);
+  lua_rawset(l, -3);
+}
+
+/**
  * Extracts the pointer to an entity_t from the table on top of the stack.
  *
  * l - Lua state instance
@@ -266,7 +305,7 @@ command_t* lua_to_command(lua_State* l, int index) {
  *
  * l - Lua state instance
  *
- * Returns the axtion_t pointer or null
+ * Returns the action_t pointer or null
  **/
 action_t* lua_to_action(lua_State* l, int index) {
   assert(l);
@@ -294,4 +333,39 @@ action_t* lua_to_action(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return action;
+}
+
+/**
+ * Extracts the pointer to a system from the table on top of the stack.
+ *
+ * l - Lua state instance
+ *
+ * Returns the system_t pointer or null
+ **/
+system_t* lua_to_system(lua_State* l, int index) {
+  assert(l);
+
+  luaL_checktype(l, index, LUA_TTABLE);
+  lua_pushstring(l, TYPE_FIELD);
+
+  int table_index = index > 0 ? index : index - 1;
+  lua_rawget(l, table_index);
+
+  struct_type_t type = luaL_checknumber(l, -1);
+  lua_pop(l, 1);
+
+  if (type != STRUCT_SYSTEM) {
+    LOG(ERROR, "Could not convert lua table to action as type was not action");
+
+    return NULL;
+  }
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_rawget(l, table_index);
+
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  system_t* system = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  return system;
 }

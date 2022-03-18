@@ -24,6 +24,8 @@ end
 
 on_enter = function(p)
   player.send(p, "You are now playing!\n\r")
+
+  commands.execute("look", p)
 end
 
 on_exit = function(p)
@@ -34,7 +36,7 @@ on_input = function(p, arg)
    local cmd, arguments = one_argument(arg)
 
    if not commands.execute(cmd, p, arguments) then
-      player.send(p, "Sorry! [bcyan]" .. arg .. "[reset] isn't a known command.\n\r");
+    commands.execute("go", p, cmd)
    end
 end
 

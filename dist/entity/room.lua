@@ -4,6 +4,8 @@ local get;
 new = function(name, short_description, long_description)
   local room = game.new_entity();
 
+  room_component.add(room, {})
+
   inventory_component.add(room, {})
 
   description_component.add(room, {

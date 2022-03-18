@@ -11,11 +11,13 @@ typedef struct narrator narrator_t;
 typedef struct event event_t;
 typedef struct lua_event_data lua_event_data_t;
 typedef struct state state_t;
+typedef struct system system_t;
 
 /**
  * Functions
  **/
 int lua_hook_on_startup(lua_State* l);
+int lua_hook_on_shutdown(lua_State *l);
 
 int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities);
 int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands);
@@ -33,5 +35,7 @@ int lua_hook_on_state_input(lua_State* l, player_t* player, state_t* state, cons
 int lua_hook_on_state_output(lua_State* l, player_t* player, state_t* state, const char* output);
 int lua_hook_on_state_tick(lua_State* l, player_t* player, state_t* state);
 int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, event_t* event);
+
+int lua_hook_on_system_execute(lua_State* l, system_t* system);
 
 #endif

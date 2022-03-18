@@ -67,6 +67,9 @@ game_t* create_game_t(void) {
   game->archetypes = create_linked_list_t();
   game->archetypes->deallocator = ecs_deallocate_archetype_t;
 
+  game->systems = create_linked_list_t();
+  game->systems->deallocator = ecs_deallocate_system_t;
+
   game->tasks = create_linked_list_t();
   game->tasks->deallocator = deallocate_task_t;
 
@@ -99,6 +102,7 @@ void free_game_t(game_t* game) {
 
   free_linked_list_t(game->components);
   free_linked_list_t(game->archetypes);
+  free_linked_list_t(game->systems);
   free_linked_list_t(game->tasks);
   free_linked_list_t(game->events);
 
@@ -186,6 +190,8 @@ int start_game(int argc, char* argv[]) {
 
     return -1;
   }
+
+  lua_hook_on_shutdown(game->lua_state);
 
   disconnect_clients(game->network);
 
