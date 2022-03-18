@@ -38,6 +38,7 @@ typedef struct game {
 
   linked_list_t* components;
   linked_list_t* archetypes;
+  linked_list_t* systems;
   linked_list_t* tasks;
   linked_list_t* events;
 

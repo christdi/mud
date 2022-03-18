@@ -6,6 +6,7 @@
 #include "mud/action.h"
 #include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
+#include "mud/ecs/system.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
@@ -17,6 +18,7 @@
 #include "mud/util/muduuid.h"
 
 #define ON_STARTUP_HOOK_FUNCTION "main"
+#define ON_SHUTDOWN_HOOK_FUNCTION "shutdown"
 
 #define ON_ENTITIES_LOADED_HOOK_FUNCTION "entities_loaded"
 #define ON_COMMANDS_LOADED_HOOK_FUNCTION "commands_loaded"
@@ -34,6 +36,8 @@
 #define STATE_OUTPUT_HOOK_FUNCTION "on_output"
 #define STATE_TICK_HOOK_FUNCTION "on_tick"
 #define STATE_EVENT_HOOK_FUNCTION "on_event"
+
+#define SYSTEM_EXECUTE_HOOK_FUNCTION "execute"
 
 /**
  * Hook method called when the Lua state has been successfully initialised.
@@ -53,6 +57,27 @@ int lua_hook_on_startup(lua_State* l) {
 
   if (lua_pcall(l, 0, 0, 0) != 0) {
     LOG(ERROR, "Error when calling on startup hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Hook method called when the engine is shuting down.
+**/
+int lua_hook_on_shutdown(lua_State *l) {
+  assert(l);
+
+  if (lua_getglobal(l, ON_SHUTDOWN_HOOK_FUNCTION) != LUA_TFUNCTION) {
+    lua_pop(l, 1);
+
+    return 0;
+  }
+
+  if (lua_pcall(l, 0, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling on shutdown hook [%s]", lua_tostring(l, -1));
 
     return -1;
   }
@@ -526,6 +551,40 @@ int lua_hook_on_state_event(lua_State* l, player_t* player, state_t* state, even
 
   if (lua_pcall(l, 2, 0, 0) != 0) {
     LOG(ERROR, "Error when calling state event hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Calls the execute method of a Lua table associated with a system_t instance.
+ *
+ * l - Lua state
+ * system - System we're calling
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int lua_hook_on_system_execute(lua_State* l, system_t* system) {
+  assert(l);
+  assert(system);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, system->ref);
+  lua_pushstring(l, SYSTEM_EXECUTE_HOOK_FUNCTION);
+
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) {
+    lua_pop(l, 2);
+
+    LOG(ERROR, "Lua system module did not define an execute function");
+
+    return -1;
+  }
+
+  lua_remove(l, -2);
+
+  if (lua_pcall(l, 0, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling system execute hook [%s]", lua_tostring(l, -1));
 
     return -1;
   }

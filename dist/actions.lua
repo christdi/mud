@@ -13,6 +13,8 @@ execute = function(name, entity, data)
       return game.do_action(entity, v, data)
     end
   end
+
+  log.error("Could not execute action [ " .. name .. "] as it was not found")
 end
 
 return {

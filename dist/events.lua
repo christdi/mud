@@ -1,6 +1,7 @@
 character_looked_event = require('event/character_looked')
 communicate_event = require('event/communicate')
 moved_event = require('event/moved')
+teleport_event = require('event/teleport')
 
 local dispatch
 
