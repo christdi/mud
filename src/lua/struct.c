@@ -1,7 +1,8 @@
 #include "lauxlib.h"
 #include "lua.h"
 
-#include "mud/ecs/action.h"
+#include "mud/action.h"
+#include "mud/command.h"
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
 #include "mud/lua/struct.h"
@@ -16,6 +17,9 @@
 
 #define PLAYER_USER_UUID_FIELD "user_uuid"
 #define PLAYER_USERNAME_FIELD "username"
+
+#define COMMAND_NAME_FIELD "name"
+#define COMMAND_SCRIPT_UUID_FIELD "script"
 
 #define ACTION_NAME_FIELD "name"
 #define ACTION_SCRIPT_UUID_FIELD "script"
@@ -79,6 +83,41 @@ void lua_push_player(lua_State* l, player_t* player) {
 
   lua_pushstring(l, PLAYER_USERNAME_FIELD);
   lua_pushstring(l, player->username);
+  lua_rawset(l, -3);
+}
+
+/**
+ * Converts a command structure to a Lua table and pushes it on top of the stack.
+ *
+ * l - Lua state instance
+ * command - command to be converted
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+void lua_push_command(lua_State* l, command_t* command) {
+  assert(l);
+  assert(command);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_COMMAND);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_pushlightuserdata(l, command);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, UUID_FIELD);
+  lua_pushstring(l, uuid_str(&command->uuid));
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, COMMAND_NAME_FIELD);
+  lua_pushstring(l, command->name);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, COMMAND_SCRIPT_UUID_FIELD);
+  lua_pushstring(l, uuid_str(&command->script));
   lua_rawset(l, -3);
 }
 
@@ -185,6 +224,41 @@ player_t* lua_to_player(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return player;
+}
+
+/**
+ * Extracts the pointer to a command from the table on top of the stack.
+ *
+ * l - Lua state instance
+ *
+ * Returns the command_t pointer or null
+ **/
+command_t* lua_to_command(lua_State* l, int index) {
+  assert(l);
+
+  luaL_checktype(l, index, LUA_TTABLE);
+  lua_pushstring(l, TYPE_FIELD);
+
+  int table_index = index > 0 ? index : index - 1;
+  lua_rawget(l, table_index);
+
+  struct_type_t type = luaL_checknumber(l, -1);
+  lua_pop(l, 1);
+
+  if (type != STRUCT_COMMAND) {
+    LOG(ERROR, "Could not convert lua table to command as type was not command");
+
+    return NULL;
+  }
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_rawget(l, table_index);
+
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  command_t* command = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  return command;
 }
 
 /**

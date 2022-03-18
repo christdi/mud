@@ -3,8 +3,8 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include "mud/action.h"
 #include "mud/data/linked_list.h"
-#include "mud/ecs/action.h"
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
@@ -19,6 +19,7 @@
 #define ON_STARTUP_HOOK_FUNCTION "main"
 
 #define ON_ENTITIES_LOADED_HOOK_FUNCTION "entities_loaded"
+#define ON_COMMANDS_LOADED_HOOK_FUNCTION "commands_loaded"
 #define ON_ACTIONS_LOADED_HOOK_FUNCTION "actions_loaded"
 
 #define ON_PLAYER_CONNECTED_HOOK_FUNCTION "player_connected"
@@ -103,7 +104,50 @@ int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities) {
 }
 
 /**
- * Hook method called when the engine has loaded all actions from persistence..
+ * Hook method called when the engine has loaded all commands from persistence.
+ *
+ * l - Lua state instance
+ * entities - A linked list of command_t structs
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands) {
+  assert(l);
+  assert(commands);
+
+  if (lua_getglobal(l, ON_COMMANDS_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
+    lua_pop(l, 1);
+
+    return 0;
+  }
+
+  lua_newtable(l);
+
+  command_t* command = NULL;
+  int index = 1;
+
+  it_t it = list_begin(commands);
+
+  while ((command= it_get(it)) != NULL) {
+    lua_pushnumber(l, index);
+    lua_push_command(l, command);
+
+    lua_rawset(l, -3);
+
+    it = it_next(it);
+    index++;
+  }
+
+  if (lua_pcall(l, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling actions loaded hook [%s]", lua_tostring(l, -1));
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Hook method called when the engine has loaded all actions from persistence.
  *
  * l - Lua state instance
  * entities - A linked list of action_t structs

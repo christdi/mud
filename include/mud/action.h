@@ -1,5 +1,5 @@
-#ifndef MUD_ECS_ACTION_H
-#define MUD_ECS_ACTION_H
+#ifndef MUD_ACTION_H
+#define MUD_ACTION_H
 
 #include "mud/util/muduuid.h"
 
@@ -21,10 +21,10 @@ typedef struct action {
 /**
  * Functions
 **/
-action_t* ecs_new_action_t(const char* uuid, const char* name, const char* script_uuid);
-void ecs_free_action_t(action_t* action);
-void ecs_deallocate_action_t(void* value);
+action_t* action_new_action_t(const char* uuid, const char* name, const char* script_uuid);
+void action_free_action_t(action_t* action);
+void action_deallocate_action_t(void* value);
 
-int ecs_load_actions(game_t* game);
+int action_load_actions(game_t* game);
 
 #endif

@@ -20,12 +20,10 @@ typedef struct command {
 /**
  * Function prototypes
  **/
-command_t* create_command_t();
-void free_command_t(command_t* command);
-void deallocate_command(void* value);
+command_t* command_new_command_t(const char* uuid, const char* name, const char* script_uuid);
+void command_free_command_t(command_t* command);
+void command_deallocate_command_t(void* value);
 
-void load_commands(game_t* game);
-
-int execute_command(game_t* game, player_t* player, const char* command, const char* arguments);
+int command_load_commands(game_t* game);
 
 #endif

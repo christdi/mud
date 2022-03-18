@@ -32,6 +32,7 @@ typedef struct game {
   hash_table_t* templates;
   hash_table_t* players;
   hash_table_t* entities;
+  hash_table_t* commands;
   hash_table_t* actions;
 
   event_broker_t* event_broker;

@@ -5,10 +5,10 @@
 
 #include "bsd/string.h"
 
-#include "mud/command/command.h"
+#include "mud/action.h"
+#include "mud/command.h"
 #include "mud/data/linked_list.h"
 #include "mud/db/db.h"
-#include "mud/ecs/action.h"
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
@@ -24,20 +24,13 @@
  *
  * Returns number of results on success or -1 on failure.
  **/
-int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results) {
+int db_command_find_all(sqlite3* db, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT uuid, name, script_uuid FROM command WHERE name = ?";
+  const char* sql = "SELECT uuid, name, script_uuid FROM command";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve commands from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, name, (int)strlen(name), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind command name to retrieve commands from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -55,13 +48,13 @@ int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* result
       return 0;
     }
 
-    command_t* command = create_command_t();
+    char* uuid = (char*)sqlite3_column_text(res, 0);
+    char* name = (char*)sqlite3_column_text(res, 1);
+    char* script_uuid = (char*)sqlite3_column_text(res, 2);
 
-    command->uuid = str_uuid((char*)sqlite3_column_text(res, 0));
-    command->name = strdup((char*)sqlite3_column_text(res, 1));
-    command->script = str_uuid((char*)sqlite3_column_text(res, 2));
+    command_t* command = command_new_command_t(uuid, name, script_uuid);
 
-    list_add(results, (void*)command);
+    list_add(results, command);
 
     count++;
   }
@@ -110,7 +103,7 @@ int db_action_find_all(sqlite3* db, linked_list_t* results) {
     char* name = (char*)sqlite3_column_text(res, 1);
     char* script_uuid = (char*)sqlite3_column_text(res, 2);    
 
-    action_t* action = ecs_new_action_t(uuid, name, script_uuid);
+    action_t* action = action_new_action_t(uuid, name, script_uuid);
     list_add(results, action);
 
     count++;

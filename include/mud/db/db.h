@@ -15,7 +15,7 @@ typedef struct action action_t;
 /**
  * Function prototypes
  **/
-int db_command_find_by_name(sqlite3* db, const char* name, linked_list_t* results);
+int db_command_find_all(sqlite3* db, linked_list_t* results);
 
 int db_action_find_all(sqlite3* db, linked_list_t* results);
 

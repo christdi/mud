@@ -5,7 +5,8 @@
 #include "lua.h"
 #include "lualib.h"
 
-#include "mud/command/command.h"
+#include "mud/action.h"
+#include "mud/command.h"
 #include "mud/config.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
@@ -13,7 +14,6 @@
 #include "mud/event/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
-#include "mud/lua/command_api.h"
 #include "mud/lua/common.h"
 #include "mud/lua/db_api.h"
 #include "mud/lua/game_api.h"
@@ -57,8 +57,11 @@ game_t* create_game_t(void) {
   game->entities = create_hash_table_t();
   game->entities->deallocator = ecs_deallocate_entity;
 
+  game->commands = create_hash_table_t();
+  game->commands->deallocator = command_deallocate_command_t;
+
   game->actions = create_hash_table_t();
-  game->actions->deallocator = ecs_deallocate_action_t;
+  game->actions->deallocator = action_deallocate_action_t;
 
   game->event_broker = event_new_event_broker_t();
 
@@ -94,6 +97,7 @@ void free_game_t(game_t* game) {
   free_hash_table_t(game->templates);
   free_hash_table_t(game->players);
   free_hash_table_t(game->entities);
+  free_hash_table_t(game->commands);
   free_hash_table_t(game->actions);
 
   event_free_event_broker_t(game->event_broker);
@@ -159,7 +163,13 @@ int start_game(int argc, char* argv[]) {
     return -1;
   }
 
-  if (ecs_load_actions(game) == -1) {
+  if (command_load_commands(game) == -1) {
+    LOG(ERROR, "Failed to load commands");
+
+    return -1;
+  }
+
+  if (action_load_actions(game) == -1) {
     LOG(ERROR, "Failed to load actions");
 
     return -1;
@@ -303,11 +313,6 @@ int initialise_lua(game_t* game, config_t* config) {
   }
 
   if (lua_script_register_api(game->lua_state) == -1) {
-    LOG(ERROR, "Failed to register Lua script API with state");
-    return -1;
-  }
-
-  if (lua_command_register_api(game->lua_state) == -1) {
     LOG(ERROR, "Failed to register Lua script API with state");
     return -1;
   }

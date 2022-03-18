@@ -1,4 +1,5 @@
 entities = require ('entities')
+commands = require('commands')
 actions = require('actions')
 events = require('events')
 states = require('states')
@@ -27,8 +28,12 @@ end
 function entities_loaded(entities)
 end
 
-function actions_loaded(acts)
-  actions.initialise(acts)
+function commands_loaded(c)
+  commands.initialise(c)
+end
+
+function actions_loaded(a)
+  actions.initialise(a)
 end
 
 
