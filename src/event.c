@@ -5,7 +5,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/queue.h"
-#include "mud/event/event.h"
+#include "mud/event.h"
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/player.h"

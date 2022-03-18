@@ -7,7 +7,7 @@
 
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/ecs/entity.h"
 #include "mud/game.h"
 #include "mud/log.h"

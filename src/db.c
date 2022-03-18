@@ -8,7 +8,7 @@
 #include "mud/action.h"
 #include "mud/command.h"
 #include "mud/data/linked_list.h"
-#include "mud/db/db.h"
+#include "mud/db.h"
 #include "mud/ecs/entity.h"
 #include "mud/log.h"
 #include "mud/lua/script.h"
@@ -71,7 +71,7 @@ int db_command_find_all(sqlite3* db, linked_list_t* results) {
  * results - linked list to place query results
  *
  * Returns number of results on success or -1 on failure
-**/
+ **/
 int db_action_find_all(sqlite3* db, linked_list_t* results) {
   assert(db);
   assert(results);
@@ -101,7 +101,7 @@ int db_action_find_all(sqlite3* db, linked_list_t* results) {
 
     char* uuid = (char*)sqlite3_column_text(res, 0);
     char* name = (char*)sqlite3_column_text(res, 1);
-    char* script_uuid = (char*)sqlite3_column_text(res, 2);    
+    char* script_uuid = (char*)sqlite3_column_text(res, 2);
 
     action_t* action = action_new_action_t(uuid, name, script_uuid);
     list_add(results, action);
@@ -111,7 +111,7 @@ int db_action_find_all(sqlite3* db, linked_list_t* results) {
 
   sqlite3_finalize(res);
 
-  return count;  
+  return count;
 }
 
 /**

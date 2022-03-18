@@ -3,7 +3,7 @@
 
 #include "mud/data/linked_list.h"
 #include "mud/log.h"
-#include "mud/task/task.h"
+#include "mud/task.h"
 
 int task_is_ready_to_execute(void* value);
 

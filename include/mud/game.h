@@ -29,7 +29,6 @@ typedef struct game {
 
   sqlite3* database;
 
-  hash_table_t* templates;
   hash_table_t* players;
   hash_table_t* entities;
   hash_table_t* commands;
