@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mud/action.h"
 #include "mud/data/hash_table.h"
-#include "Mud/data/linked_list.h"
+#include "mud/data/linked_list.h"
 #include "mud/db/db.h"
-#include "mud/ecs/action.h"
 #include "mud/lua/hooks.h"
 #include "mud/game.h"
 #include "mud/log.h"
@@ -19,7 +19,7 @@
  *
  * Returns the allocated instance of action_t
 **/
-action_t* ecs_new_action_t(const char* uuid, const char* name, const char* script_uuid) {
+action_t* action_new_action_t(const char* uuid, const char* name, const char* script_uuid) {
   assert(uuid);
   assert(name);
   assert(script_uuid);
@@ -38,7 +38,7 @@ action_t* ecs_new_action_t(const char* uuid, const char* name, const char* scrip
  *
  * action - the action to be freed
 **/
-void ecs_free_action_t(action_t* action) {
+void action_free_action_t(action_t* action) {
   assert(action);
 
   if (action->name != NULL) {
@@ -53,10 +53,10 @@ void ecs_free_action_t(action_t* action) {
  *
  * value - void pointer containing action_t
 **/
-void ecs_deallocate_action_t(void* value) {
+void action_deallocate_action_t(void* value) {
   assert(value);
 
-  ecs_free_action_t(value);
+  action_free_action_t(value);
 }
 
 /**
@@ -66,7 +66,7 @@ void ecs_deallocate_action_t(void* value) {
  *
  * Returns 0 on success or -1 on failure
 **/
-int ecs_load_actions(game_t* game) {
+int action_load_actions(game_t* game) {
   linked_list_t* results = create_linked_list_t();
 
   int count;

@@ -25,7 +25,7 @@ for _, goable in ipairs(entities) do
       local success, data = actions.execute("move_room", entity, {from = current_room, to = new_room, portal = goable})
 
       if success then
-        command.execute(p, "look", "")    
+        commands.execute("look", p)
       end
 
       return

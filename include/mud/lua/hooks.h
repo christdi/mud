@@ -18,6 +18,7 @@ typedef struct state state_t;
 int lua_hook_on_startup(lua_State* l);
 
 int lua_hook_on_entities_loaded(lua_State* l, linked_list_t* entities);
+int lua_hook_on_commands_loaded(lua_State* l, linked_list_t* commands);
 int lua_hook_on_actions_loaded(lua_State* l, linked_list_t* actions);
 
 int lua_hook_on_player_connected(lua_State* l, player_t* player);

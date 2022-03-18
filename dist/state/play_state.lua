@@ -33,7 +33,7 @@ end
 on_input = function(p, arg)
    local cmd, arguments = one_argument(arg)
 
-   if not command.execute(p, cmd, arguments) then
+   if not commands.execute(cmd, p, arguments) then
       player.send(p, "Sorry! [bcyan]" .. arg .. "[reset] isn't a known command.\n\r");
    end
 end
