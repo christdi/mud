@@ -2,6 +2,7 @@
 
 #include "mud/log.h"
 #include "mud/network/client.h"
+#include "mud/network/protocol.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -23,6 +24,7 @@ client_t* create_client_t() {
   client->hungup = 0;
   client->last_active = time(NULL);
   client->userdata = NULL;
+  client->protocol = NULL;
   client->output_length = 0;
 
   return client;
@@ -220,4 +222,16 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
   }
 
   return ret;
+}
+
+/**
+ * Either sets an initial protocol or appends a protocol to the chain for the client.
+ *
+ * client - the client to set the protocol for
+ * protocol - the protocol to set or append to the chain
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int network_add_protocol_to_client(client_t* client, protocol_t* protocol) {
+  return 0;
 }
