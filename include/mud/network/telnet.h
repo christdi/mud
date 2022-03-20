@@ -14,7 +14,7 @@ typedef struct protocol protocol_t;
  * Structs
 **/
 typedef enum parse_state {
-  READ_IAC, READ_OP, READ_OP_VALUE, DONE
+  READ_IAC, READ_OP, READ_OP_VALUE, READ_SE, DONE
 } parse_state_t;
 
 typedef enum option_state {
@@ -55,8 +55,8 @@ void network_deallocate_telnet_t(void* value);
 protocol_t* network_new_telnet_protocol_t();
 
 void network_telnet_initialised(client_t* client, void* protocol);
-void network_telnet_on_input(client_t* client, void* protocol, char* input, size_t len);
-void network_telnet_on_output(client_t* client, void* protocol, char* output, size_t len);
+int network_telnet_on_input(client_t* client, void* protocol, char* input, size_t len);
+int network_telnet_on_output(client_t* client, void* protocol, char* output, size_t len);
 void network_telnet_on_flush(client_t* client, void* protocol, char* output, size_t len);
 
 int network_telnet_send_ga(telnet_t* telnet, client_t* client);

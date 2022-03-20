@@ -7,6 +7,9 @@
 #include "mud/network/client.h"
 #include "mud/network/protocol.h"
 #include "mud/network/telnet.h"
+#include "mud/util/mudstring.h"
+
+static void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index);
 
 static void process_do_incoming(telnet_t* telnet, client_t* client, int option);
 static void process_dont_incoming(telnet_t* telnet, client_t* client, int option);
@@ -98,8 +101,9 @@ void network_telnet_initialised(client_t* client, void* protocol) {
   assert(client);
   assert(protocol);
 
-  network_telnet_send_will(protocol, client, (char) TELOPT_SGA);
-  network_telnet_send_do(protocol, client, (char) TELOPT_SGA);
+  telnet_t* telnet = protocol;
+
+  network_telnet_send_do(telnet, client, TELOPT_SGA);
 }
 
 /**
@@ -108,96 +112,69 @@ void network_telnet_initialised(client_t* client, void* protocol) {
  * client - the client who has received input
  * protocol - a void pointer to a telnet_t instance
  * data - the data that has been received
+ * len - the length of the input received
+ *
+ * Returns the length of the input as we may have altered it
 **/
-void network_telnet_on_input(client_t* client, void* protocol, char* input, size_t len) {
+int network_telnet_on_input(client_t* client, void* protocol, char* input, size_t len) {
   assert(client);
   assert(protocol);
   assert(input);
 
   telnet_t* telnet = protocol;
+  telnet_parse_t* ps = &telnet->incoming;
+
   int move_index = 0;
   int cmd_len = 0;
 
   for (int i = 0; i < len; i++) {
-    switch(telnet->incoming.state) {
-      case READ_IAC:
-        if (input[i] == (char)IAC) {
-          move_index = i;
-          telnet->incoming.state = READ_OP;
-        }
+    update_parse_state(ps, input[i], i, &move_index);
 
-        break;
+    cmd_len = ps->state != READ_IAC ? cmd_len + 1 : cmd_len;
 
-      case READ_OP:
-        telnet->incoming.op = (unsigned int)(unsigned char)input[i];
+    if (ps->state == DONE) {
+      LOG(INFO, "Complete telnet command in: [%d] [%d] [%d]", IAC, ps->op, ps->option);
 
-        switch(telnet->incoming.op) {
-          case WILL:
-          case WONT:
-          case DO:
-          case DONT:
-            telnet->incoming.state = READ_OP_VALUE;
-            break;
-          default:
-            LOG(ERROR, "Unsupported telnet op [%u]", (unsigned int)(unsigned char) input[i]);
-
-            telnet->incoming.state = IAC;
-            break;
-        }
-
-      case READ_OP_VALUE:
-        telnet->incoming.option = (unsigned int)(unsigned char)input[i];
-        telnet->incoming.state = DONE;
-
-        break;
-
-      case DONE:
-        break;
-    }
-
-    cmd_len = telnet->incoming.state != READ_IAC ? cmd_len + 1 : cmd_len;
-
-    if (telnet->incoming.state == DONE) {
-      switch(telnet->incoming.op) {
+      switch(ps->op) {
         case DO:
-          process_do_incoming(telnet, client, telnet->incoming.option);
+          process_do_incoming(telnet, client, ps->option);
           break;
         
         case DONT:
-          process_dont_incoming(telnet, client, telnet->incoming.option);
+          process_dont_incoming(telnet, client, ps->option);
           break;
 
         case WILL:
-          process_will_incoming(telnet, client, telnet->incoming.option);
+          process_will_incoming(telnet, client, ps->option);
           break;
 
         case WONT:
-          process_wont_incoming(telnet, client, telnet->incoming.option);
+          process_wont_incoming(telnet, client, ps->option);
           break;
       }
 
-      telnet->incoming.op = 0;
-      telnet->incoming.option = 0;
+      ps->op = 0;
+      ps->option = 0;
 
-      int j = i + 1;
+      int j = move_index + cmd_len + 1;
 
       if (j > len) {
-        telnet->incoming.state = READ_IAC;
+        memset(input + move_index, 0, cmd_len);
+      } else {
+        memmove(input + move_index, input + j, len - i);
 
-        continue;
+        i = i - cmd_len;
       }
 
-      memmove(input + move_index, input + j, len - i);
-
       len = len - cmd_len;
-      i = i - cmd_len;
-
       cmd_len = 0;
       move_index = 0;
 
-      telnet->incoming.state = READ_IAC;
+      ps->state = READ_IAC;
     }
   }
+
+  return len;
 }
 
 /**
@@ -207,8 +184,10 @@ void network_telnet_on_input(client_t* client, void* protocol, char* input, size
  * protocol - a void pointer to a telnet_t instance
  * output - the data that has been buffered for output
  * len - the length of the data buffered
+ *
+ * Returns the len of the output string as we may have altered it
 **/
-void network_telnet_on_output(client_t* client, void* protocol, char* output, size_t len) {
+int network_telnet_on_output(client_t* client, void* protocol, char* output, size_t len) {
   assert(client);
   assert(protocol);
   assert(output);
@@ -218,6 +197,8 @@ void network_telnet_on_output(client_t* client, void* protocol, char* output, si
   if (telnet->suppress_go_ahead.us != YES) {
     network_telnet_send_ga(telnet, client);
   }
+
+  return len;
 }
 
 /**
@@ -230,64 +211,36 @@ void network_telnet_on_output(client_t* client, void* protocol, char* output, si
 **/
 void network_telnet_on_flush(client_t* client, void* protocol, char* output, size_t len) {
   telnet_t* telnet = protocol;
+  telnet_parse_t* ps = &telnet->outgoing;
+
+  int iac_index = 0;
 
   for (int i = 0; i < len; i++) {
-    switch(telnet->outgoing.state) {
-      case READ_IAC:
-        if (output[i] == (char)IAC) {
-          telnet->outgoing.state = READ_OP;
-        }
+    update_parse_state(ps, output[i], i, &iac_index);
 
-        break;
-
-      case READ_OP:
-        telnet->outgoing.op = (unsigned int) (unsigned char)output[i];
-
-        switch(telnet->outgoing.op) {
-          case WILL:
-          case WONT:
-          case DO:
-          case DONT:
-            telnet->outgoing.state = READ_OP_VALUE;
-            break;
-          default:
-            LOG(ERROR, "Unsupported telnet op [%u]", (unsigned int)(unsigned char) output[i]);
-            telnet->outgoing.state = IAC;
-
-            break;
-        }
-
-      case READ_OP_VALUE:
-        telnet->outgoing.option = (unsigned int)(unsigned char)output[i];
-        telnet->outgoing.state = DONE;
-
-        break;
-
-      case DONE:
-        break;
-    }
-
-    if (telnet->outgoing.state == DONE) {
-      switch(telnet->outgoing.op) {
+    if (ps->state == DONE) {
+      LOG(INFO, "Complete telnet command out: [%d] [%d] [%d]", IAC, ps->op, ps->option);
+      switch(ps->op) {
         case DO:
-          process_do_outgoing(telnet, telnet->outgoing.option);
+          process_do_outgoing(telnet, ps->option);
           break;
 
         case DONT:
-          process_dont_outgoing(telnet, telnet->outgoing.option);
+          process_dont_outgoing(telnet, ps->option);
           break;
 
         case WILL:
-          process_will_outgoing(telnet, telnet->outgoing.option);
+          process_will_outgoing(telnet, ps->option);
           break;
           
         case WONT:
-          process_wont_outgoing(telnet, telnet->outgoing.option);
+          process_wont_outgoing(telnet, ps->option);
           break;
       }
 
-      telnet->outgoing.op = 0;
-      telnet->outgoing.option = 0;
+      ps->op = 0;
+      ps->option = 0;
+      ps->state = READ_IAC;
     }
   }
 }
@@ -385,6 +338,76 @@ int network_telnet_send_dont(telnet_t* telnet, client_t* client, int option) {
 }
 
 /**
+ * Updates the state of a parse_state_t based on a character.
+ *
+ * ps - the parse state to updat
+ * c - the character to use to update the state
+ * index - the position of the character c in the string that it was extracted
+ * iac_index - a pointer to an int representing the position of the IAC byte that we update for the caller
+ * cmd_len a pointer to an int representing the current length of the telnet command that we update for the
+**/
+void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index) {
+  switch(ps->state) {
+    case READ_IAC:
+      if (c == (char)IAC) {
+        *iac_index = index;
+
+        ps->state = READ_OP;
+      }
+
+      break;
+
+    case READ_OP:
+      ps->op = (unsigned int)(unsigned char)c;
+
+      switch(ps->op) {
+        case WILL:
+        case WONT:
+        case DO:
+        case DONT:
+          ps->state = READ_OP_VALUE;
+          break;
+        case SB:
+          ps->state = READ_SE;
+          break;
+        case SE:
+          ps->state = DONE;
+          break;
+        case GA:
+        case EL:
+        case EC:
+        case AYT:
+        case AO:
+        case IP:
+        case BREAK:
+        case DM:
+        case NOP:
+        case EOR:
+        case ABORT:
+        case SUSP:
+        case xEOF:
+          ps->state = DONE;
+          break;
+        default:
+          ps->state = READ_IAC;
+          break;
+      }
+
+    case READ_SE:
+      break;
+
+    case READ_OP_VALUE:
+      ps->option = (unsigned int)(unsigned char) c;
+      ps->state = DONE;
+
+      break;
+
+    case DONE:
+      break;
+  }
+}
+
+/**
  * Processes a DO request from the remote host.
  *
  * telnet - telnet_t object we use to assess and update options
@@ -392,6 +415,43 @@ int network_telnet_send_dont(telnet_t* telnet, client_t* client, int option) {
  * option - the option that has been asked to DO
 **/
 void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
+  if (option == TELOPT_SGA) {
+    telnet_option_t* sga = &telnet->suppress_go_ahead;
+
+    if (sga->us == NO) {
+      sga->us = YES;
+
+      network_telnet_send_will(telnet, client, option);
+    }
+
+    if (sga->us == WANT_NO) {
+      if (sga->us_side == EMPTY) {
+        sga->us = NO;
+      }
+
+      if (sga->us_side == OPPOSITE) {
+        sga->us = YES;
+        sga->us_side = EMPTY;
+      }
+    }
+
+    if (sga->us == WANT_YES) {
+      if (sga->us_side == EMPTY) {
+        sga->us = YES;
+      }
+
+      if (sga->us_side == OPPOSITE) {
+        sga->us = WANT_NO;
+        sga->us_side = EMPTY;
+
+        network_telnet_send_wont(telnet, client, option);
+      }
+    }
+
+    return;
+  }
+
+  network_telnet_send_wont(telnet, client, option);
 }
 
 /**

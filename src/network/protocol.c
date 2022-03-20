@@ -65,14 +65,18 @@ void network_protocol_chain_initialise(client_t* client) {
  * client - the client_t instance whose protocol chain we're walking
  * input - the input we've received
  * len - the amount of data received
+ *
+ * Returns the length of the input string as it may have been altered by protocols
 **/
-void network_protocol_chain_on_input(client_t* client, char* input, size_t len) {
+int network_protocol_chain_on_input(client_t* client, char* input, size_t len) {
   protocol_t* protocol = client->protocol;
 
   while (protocol != NULL) {
-    network_protocol_on_input(protocol, client, input, len);
+    len = network_protocol_on_input(protocol, client, input, len);
     protocol = protocol->next;
   }
+
+  return len;
 }
 
 /**
@@ -81,14 +85,18 @@ void network_protocol_chain_on_input(client_t* client, char* input, size_t len) 
  * client - the client_t instance whose protocol chain we're walking
  * output - the output to be sent
  * len - the length of the output
+ *
+ * Returns the length of the output string as it may have been altered by protocols
 **/
-void network_protocol_chain_on_output(client_t* client, char* output, size_t len) {
+int network_protocol_chain_on_output(client_t* client, char* output, size_t len) {
   protocol_t* protocol = client->protocol;
 
   while(protocol != NULL) {
-    network_protocol_on_output(protocol, client, output, len);
+    len = network_protocol_on_output(protocol, client, output, len);
     protocol = protocol->next;
   }
+
+  return len;
 }
 
 /**
@@ -129,15 +137,19 @@ void network_protocol_initialise(protocol_t* protocol, client_t* client) {
  * client - the client making use of the protocol
  * input - the input received by the client
  * len - length of the input
+ *
+* Returns the length of the input string as it may have been altered by protocols
 **/
-void network_protocol_on_input(protocol_t* protocol, client_t* client, char* input, size_t len) {
+int network_protocol_on_input(protocol_t* protocol, client_t* client, char* input, size_t len) {
   assert(protocol);
   assert(client);
   assert(input);
 
   if (protocol->on_input != NULL) {
-    protocol->on_input(client, protocol->data, input, len);
+    return protocol->on_input(client, protocol->data, input, len);
   }
+
+  return len;
 }
 
 /**
@@ -147,15 +159,19 @@ void network_protocol_on_input(protocol_t* protocol, client_t* client, char* inp
  * client - the client making use of the protocol
  * output - the output to be sent to the client
  * len - length of the output
+ *
+* Returns the length of the output string as it may have been altered by protocols
 **/
-void network_protocol_on_output(protocol_t* protocol, client_t* client, char* output, size_t len) {
+int network_protocol_on_output(protocol_t* protocol, client_t* client, char* output, size_t len) {
   assert(protocol);
   assert(client);
   assert(output);
 
   if (protocol->on_output != NULL) {
-    protocol->on_output(client, protocol->data, output, len);
+    return protocol->on_output(client, protocol->data, output, len);
   }
+
+  return len;
 }
 
 /**
