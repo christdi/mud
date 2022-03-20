@@ -14,6 +14,7 @@
 #include "mud/util/mudstring.h"
 #include "mud/util/muduuid.h"
 
+#include <arpa/telnet.h>
 #include <assert.h>
 #include <sqlite3.h>
 #include <stdio.h>
@@ -215,6 +216,44 @@ int player_narrate(player_t* player, game_t* game, event_t* event) {
   default:
     send_to_player(player, "Something happened but you're not sure how to describe it.\n\r");
     break;
+  }
+
+  return 0;
+}
+
+/**
+ * Request the player disables their echo so their input is not displayed, i.e. passwords.
+ * This is accomplished by using the telnet protocol to tell the client we will echo and
+ * then we just don't.  This method is a no-op if the player does not have a telnet client.
+ * 
+ * player - the player who we are requesting disable their echo
+ *
+ * Returns 0 on success
+**/
+int player_request_disable_echo(player_t* player) {
+  if (network_client_has_protocol(player->client, TELNET)) {
+    telnet_t* telnet = network_client_get_protocol(player->client, TELNET);
+
+    network_telnet_send_will(telnet, player->client, TELOPT_ECHO);
+  }
+
+  return 0;
+}
+
+/**
+ * Request the player enable their echo so their input. This is accomplished by using the telnet 
+ * protocol to tell the client we won't echo.  This method is a no-op if the player does not have 
+ * a telnet client.
+ * 
+ * player - the player who we are requesting enable their echo
+ *
+ * Returns 0 on success
+**/
+int player_request_enable_echo(player_t* player) {
+  if (network_client_has_protocol(player->client, TELNET)) {
+    telnet_t* telnet = network_client_get_protocol(player->client, TELNET);
+
+    network_telnet_send_wont(telnet, player->client, TELOPT_ECHO);
   }
 
   return 0;

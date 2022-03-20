@@ -2,9 +2,11 @@
 #define MUD_NETWORK_CLIENT_H
 
 #include "mud/util/muduuid.h"
+#include "mud/network/protocol.h"
 
 #include <pthread.h>
 #include <time.h>
+#include <stdbool.h>
 
 /**
  * Definitions
@@ -45,6 +47,9 @@ int receive_from_client(client_t* client);
 int close_client(client_t* client);
 int client_get_idle_seconds(const client_t* const client);
 int extract_from_input(client_t* client, char* dest, size_t dest_len, const char* delim);
+
 int network_add_client_protocol(client_t* client, protocol_t* protocol);
+bool network_client_has_protocol(client_t* client, protocol_type_t type);
+void* network_client_get_protocol(client_t* client, protocol_type_t type);
 
 #endif

@@ -2,7 +2,6 @@
 
 #include "mud/log.h"
 #include "mud/network/client.h"
-#include "mud/network/protocol.h"
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
@@ -88,6 +87,8 @@ int flush_client_output(client_t* client) {
     return 0;
   }
 
+  network_protocol_chain_on_output(client, client->output, client->output_length);
+
   long bytes_sent = 0;
 
   char* data = client->output;
@@ -111,7 +112,7 @@ int flush_client_output(client_t* client) {
     len = len - bytes_sent;
   }
 
-  network_protocol_chain_on_output(client, client->output, client->output_length);
+  network_protocol_chain_on_flush(client, client->output, client->output_length);
 
   memset(client->output, 0, sizeof(client->output));
   client->output_length = len;
@@ -270,4 +271,46 @@ int network_add_client_protocol(client_t* client, protocol_t* protocol) {
   }
 
   return 0;
+}
+
+/**
+ * Determines if this client implements a protocol matching the type.
+ *
+ * client - the client whose protocols we are checking
+ * protocol - an enum of the protocol type we're looking for
+ *
+ * Returns true if client has protocol or false otherwise
+**/
+bool network_client_has_protocol(client_t* client, protocol_type_t type) {
+  protocol_t* protocol = client->protocol;
+
+  while (protocol != NULL) {
+    if (protocol->type == type) {
+      return true;
+    }
+
+    protocol = protocol->next;
+  }
+
+  return false;
+}
+
+/**
+ * Retrieves a protocol by type from a client
+ *
+ * client - the client for whom we are retrieving the protocol
+ * protocol - an enum of the protocol we wish to retrieve
+ *
+ * Returns a pointer to the protocol or NULL if not found
+**/
+void* network_client_get_protocol(client_t* client, protocol_type_t type) {
+  protocol_t* protocol = client->protocol;
+
+  while (protocol != NULL) {
+    if (protocol->type == type) {
+      return protocol->data;
+    }
+  }
+
+  return NULL;
 }

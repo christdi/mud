@@ -92,6 +92,22 @@ void network_protocol_chain_on_output(client_t* client, char* output, size_t len
 }
 
 /**
+ * Walks the protocol chain and calls the on flush callback for each
+ *
+ * client - the client_t instance whose protocol chain we're walking
+ * output - the output that was flushed
+ * len - the length of the output
+**/
+void network_protocol_chain_on_flush(client_t* client, char* output, size_t len) {
+  protocol_t* protocol = client->protocol;
+
+  while(protocol != NULL) {
+    network_protocol_on_flush(protocol, client, output, len);
+    protocol = protocol->next;
+  }
+}
+
+/**
  * Calls the initialise callback of a protocol for a client
  *
  * protocol - protocol to call the initialise callback for
@@ -127,9 +143,9 @@ void network_protocol_on_input(protocol_t* protocol, client_t* client, char* inp
 /**
  * Calls the on output callback of a protocol for a client
  *
- * protocol - protocol to call the on input callback for
+ * protocol - protocol to call the on output callback for
  * client - the client making use of the protocol
- * input - the input received by the client
+ * output - the output to be sent to the client
  * len - length of the output
 **/
 void network_protocol_on_output(protocol_t* protocol, client_t* client, char* output, size_t len) {
@@ -139,5 +155,23 @@ void network_protocol_on_output(protocol_t* protocol, client_t* client, char* ou
 
   if (protocol->on_output != NULL) {
     protocol->on_output(client, protocol->data, output, len);
+  }
+}
+
+/**
+ * Calls the on flush callback of a protocol for a client
+ *
+ * protocol - protocol to call the on flush callback for
+ * client - the client making use of the protocol
+ * output -the output that was flushed
+ * len - length of the output
+**/
+void network_protocol_on_flush(protocol_t* protocol, client_t* client, char* output, size_t len) {
+  assert(protocol);
+  assert(client);
+  assert(output);
+
+  if (protocol->on_flush != NULL) {
+    protocol->on_flush(client, protocol->data, output, len);
   }
 }

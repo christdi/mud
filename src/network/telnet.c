@@ -8,6 +8,16 @@
 #include "mud/network/protocol.h"
 #include "mud/network/telnet.h"
 
+static void process_do_incoming(telnet_t* telnet, client_t* client, int option);
+static void process_dont_incoming(telnet_t* telnet, client_t* client, int option);
+static void process_will_incoming(telnet_t* telnet, client_t* client, int option);
+static void process_wont_incoming(telnet_t* telnet, client_t* client, int option);
+
+static void process_do_outgoing(telnet_t* telnet, int option);
+static void process_dont_outgoing(telnet_t* telnet, int option);
+static void process_will_outgoing(telnet_t* telnet, int option);
+static void process_wont_outgoing(telnet_t* telnet, int option);
+
 /**
  * Allocates a new instance of telnet_t
  *
@@ -16,7 +26,23 @@
 telnet_t* network_new_telnet_t() {
   telnet_t* telnet = calloc(1, sizeof(telnet_t));
 
-  telnet->state = READ_IAC;
+  telnet->incoming.state = READ_IAC;
+  telnet->incoming.op = 0;
+  telnet->incoming.option = 0;
+
+  telnet->outgoing.state = READ_IAC;
+  telnet->outgoing.op = 0;
+  telnet->outgoing.option = 0;
+
+  telnet->echo.us = NO;
+  telnet->echo.them = NO;
+  telnet->echo.us_side = EMPTY;
+  telnet->echo.them_side = EMPTY;
+
+  telnet->suppress_go_ahead.us = NO;
+  telnet->suppress_go_ahead.them = NO;
+  telnet->suppress_go_ahead.us_side = EMPTY;
+  telnet->suppress_go_ahead.them_side = EMPTY;
 
   return telnet;
 }
@@ -51,11 +77,13 @@ void network_deallocate_telnet_t(void* value) {
 protocol_t* network_new_telnet_protocol_t() {
   protocol_t* protocol = network_new_protocol_t();
 
+  protocol->type = TELNET;
   protocol->data = network_new_telnet_t();
   protocol->deallocator = network_deallocate_telnet_t;
   protocol->initialiser = network_telnet_initialised;
   protocol->on_input = network_telnet_on_input;
   protocol->on_output = network_telnet_on_output;
+  protocol->on_flush = network_telnet_on_flush;
 
   return protocol;
 }
@@ -70,8 +98,8 @@ void network_telnet_initialised(client_t* client, void* protocol) {
   assert(client);
   assert(protocol);
 
-  network_telnet_send_will(protocol, client, (char) TELOPT_ECHO);
   network_telnet_send_will(protocol, client, (char) TELOPT_SGA);
+  network_telnet_send_do(protocol, client, (char) TELOPT_SGA);
 }
 
 /**
@@ -91,33 +119,35 @@ void network_telnet_on_input(client_t* client, void* protocol, char* input, size
   int cmd_len = 0;
 
   for (int i = 0; i < len; i++) {
-    switch(telnet->state) {
+    switch(telnet->incoming.state) {
       case READ_IAC:
         if (input[i] == (char)IAC) {
-          LOG(INFO, "Received IAC byte");
-
           move_index = i;
-          telnet->state = READ_OP;
+          telnet->incoming.state = READ_OP;
         }
 
         break;
 
       case READ_OP:
-        if (input[i] == (char) WILL || input[i] == (char) WONT || input[i] == (char) DO || input[i] == (char) DONT) {
-          telnet->buffer[0] = input[i];
+        telnet->incoming.op = (unsigned int)(unsigned char)input[i];
 
-          telnet->state = READ_OP_VALUE;
-        } else {
-          LOG(ERROR, "Unsupported telnet op [%u]", (unsigned int)(unsigned char) input[i]);
+        switch(telnet->incoming.op) {
+          case WILL:
+          case WONT:
+          case DO:
+          case DONT:
+            telnet->incoming.state = READ_OP_VALUE;
+            break;
+          default:
+            LOG(ERROR, "Unsupported telnet op [%u]", (unsigned int)(unsigned char) input[i]);
 
-          telnet->state = IAC;
+            telnet->incoming.state = IAC;
+            break;
         }
 
-        break;
-
       case READ_OP_VALUE:
-        telnet->buffer[1] = input[i];
-        telnet->state = DONE;
+        telnet->incoming.option = (unsigned int)(unsigned char)input[i];
+        telnet->incoming.state = DONE;
 
         break;
 
@@ -125,20 +155,38 @@ void network_telnet_on_input(client_t* client, void* protocol, char* input, size
         break;
     }
 
-    cmd_len = telnet->state != READ_IAC ? cmd_len + 1 : cmd_len;
+    cmd_len = telnet->incoming.state != READ_IAC ? cmd_len + 1 : cmd_len;
 
-    if (telnet->state == DONE) {
-      LOG(INFO, "Full telnet request: [%u] [%u] [%u]", IAC, (unsigned int)(unsigned char)telnet->buffer[0], (unsigned int)(unsigned char)telnet->buffer[1]);
+    if (telnet->incoming.state == DONE) {
+      switch(telnet->incoming.op) {
+        case DO:
+          process_do_incoming(telnet, client, telnet->incoming.option);
+          break;
+        
+        case DONT:
+          process_dont_incoming(telnet, client, telnet->incoming.option);
+          break;
+
+        case WILL:
+          process_will_incoming(telnet, client, telnet->incoming.option);
+          break;
+
+        case WONT:
+          process_wont_incoming(telnet, client, telnet->incoming.option);
+          break;
+      }
+
+      telnet->incoming.op = 0;
+      telnet->incoming.option = 0;
 
       int j = i + 1;
 
       if (j > len) {
-        telnet->state = READ_IAC;
+        telnet->incoming.state = READ_IAC;
 
         continue;
       }
 
-      memset(telnet->buffer, 0, TELNET_BUFFER_SIZE);
       memmove(input + move_index, input + j, len - i);
 
       len = len - cmd_len;
@@ -147,17 +195,18 @@ void network_telnet_on_input(client_t* client, void* protocol, char* input, size
       cmd_len = 0;
       move_index = 0;
 
-      telnet->state = READ_IAC;
+      telnet->incoming.state = READ_IAC;
     }
   }
 }
 
 /**
- * Callback method called when the client has received new output.
+ * Callback method called when the client is about to send output
  *
- * client - the client who has received output
+ * client - the client who is about to send output
  * protocol - a void pointer to a telnet_t instance
- * data - the data that has been buffered for output
+ * output - the data that has been buffered for output
+ * len - the length of the data buffered
 **/
 void network_telnet_on_output(client_t* client, void* protocol, char* output, size_t len) {
   assert(client);
@@ -166,8 +215,80 @@ void network_telnet_on_output(client_t* client, void* protocol, char* output, si
 
   telnet_t* telnet = protocol;
 
-  if (telnet->suppress_go_ahead != YES) {
+  if (telnet->suppress_go_ahead.us != YES) {
     network_telnet_send_ga(telnet, client);
+  }
+}
+
+/**
+ * Callback method called when the client has flushed output.
+ *
+ * client - the client who has flushed output
+ * protocol - a void pointer to a telnet_t instance
+ * output - the output that has been flushed
+ * len - the length of the data that was flushed
+**/
+void network_telnet_on_flush(client_t* client, void* protocol, char* output, size_t len) {
+  telnet_t* telnet = protocol;
+
+  for (int i = 0; i < len; i++) {
+    switch(telnet->outgoing.state) {
+      case READ_IAC:
+        if (output[i] == (char)IAC) {
+          telnet->outgoing.state = READ_OP;
+        }
+
+        break;
+
+      case READ_OP:
+        telnet->outgoing.op = (unsigned int) (unsigned char)output[i];
+
+        switch(telnet->outgoing.op) {
+          case WILL:
+          case WONT:
+          case DO:
+          case DONT:
+            telnet->outgoing.state = READ_OP_VALUE;
+            break;
+          default:
+            LOG(ERROR, "Unsupported telnet op [%u]", (unsigned int)(unsigned char) output[i]);
+            telnet->outgoing.state = IAC;
+
+            break;
+        }
+
+      case READ_OP_VALUE:
+        telnet->outgoing.option = (unsigned int)(unsigned char)output[i];
+        telnet->outgoing.state = DONE;
+
+        break;
+
+      case DONE:
+        break;
+    }
+
+    if (telnet->outgoing.state == DONE) {
+      switch(telnet->outgoing.op) {
+        case DO:
+          process_do_outgoing(telnet, telnet->outgoing.option);
+          break;
+
+        case DONT:
+          process_dont_outgoing(telnet, telnet->outgoing.option);
+          break;
+
+        case WILL:
+          process_will_outgoing(telnet, telnet->outgoing.option);
+          break;
+          
+        case WONT:
+          process_wont_outgoing(telnet, telnet->outgoing.option);
+          break;
+      }
+
+      telnet->outgoing.op = 0;
+      telnet->outgoing.option = 0;
+    }
   }
 }
 
@@ -261,4 +382,116 @@ int network_telnet_send_dont(telnet_t* telnet, client_t* client, int option) {
   send_to_client(client, msg, 3);
 
   return 0;
+}
+
+/**
+ * Processes a DO request from the remote host.
+ *
+ * telnet - telnet_t object we use to assess and update options
+ * client - client we may need to respond to
+ * option - the option that has been asked to DO
+**/
+void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
+}
+
+/**
+ * Processes a DONT request from the remote host.
+ *
+ * telnet - telnet_t object we use to assess and update options
+ * client - client we may need to respond to
+ * option - the option that has been asked to DO
+**/
+void process_dont_incoming(telnet_t* telnet, client_t* client, int option) {
+}
+
+/**
+ * Processes a WILL request from the remote host.
+ *
+ * telnet - telnet_t object we use to assess and update options
+ * client - client we may need to respond to
+ * option - the option that has been asked to DO
+**/
+void process_will_incoming(telnet_t* telnet, client_t* client, int option) {
+  if (option == TELOPT_SGA) {
+    telnet_option_t* sga = &telnet->suppress_go_ahead;
+
+    if (sga->them == NO) {
+      sga->them = YES;
+      network_telnet_send_do(telnet, client, option);
+    }
+
+    if (sga->them == WANT_NO) {
+      if (sga->them_side == EMPTY) {
+        
+      }
+
+      if (sga->them_side == OPPOSITE) {
+        sga->them = YES;
+        sga->them_side = EMPTY;
+      }
+    }
+
+    if (sga->them == WANT_YES) {
+      if (sga->them_side == EMPTY) {
+        sga->them = YES;        
+      }
+
+      if (sga->them_side == OPPOSITE) {
+        sga->them = WANT_NO;
+        sga->them_side = EMPTY;
+        
+        network_telnet_send_dont(telnet, client, option);
+      }
+    }
+
+    return; 
+  }
+
+  network_telnet_send_dont(telnet, client, option);
+}
+
+/**
+ * Processes a WONT request from the remote host.
+ *
+ * telnet - telnet_t object we use to assess and update options
+ * client - client we may need to respond to
+ * option - the option that has been asked to DO
+**/
+void process_wont_incoming(telnet_t* telnet, client_t* client, int option) {
+}
+
+/**
+ * Processes a DO request we are sending to the remote host.
+ *
+ * telnet - telnet_t object we need to update
+ * option - the option that we're asking to DO
+**/
+void process_do_outgoing(telnet_t* telnet, int option) {
+}
+
+/**
+ * Processes a DONT request we are sending to the remote host.
+ *
+ * telnet - telnet_t object we need to update
+ * option - the option that we're asking to DONT
+**/
+void process_dont_outgoing(telnet_t* telnet, int option) {
+}
+
+/**
+ * Processes a WILL request we are sending to the remote host.
+ *
+ * telnet - telnet_t object we need to update
+ * option - the option that we're asking to WILL
+**/
+void process_will_outgoing(telnet_t* telnet, int option) {
+}
+
+/**
+ * Processes a WONT request we are sending to the remote host.
+ *
+ * telnet - telnet_t object we need to update
+ * option - the option that we're asking to WONT
+**/
+void process_wont_outgoing(telnet_t* telnet, int option) {
 }
