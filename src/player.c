@@ -8,6 +8,7 @@
 #include "mud/lua/hooks.h"
 #include "mud/lua/script.h"
 #include "mud/network/client.h"
+#include "mud/network/telnet.h"
 #include "mud/state.h"
 #include "mud/util/mudhash.h"
 #include "mud/util/mudstring.h"
@@ -67,6 +68,8 @@ void deallocate_player(void* value) {
  **/
 void player_connected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
+
+  network_add_client_protocol(client, network_new_telnet_protocol_t());
 
   player_t* player = create_player_t();
   player->client = client;

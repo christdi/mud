@@ -45,6 +45,6 @@ int receive_from_client(client_t* client);
 int close_client(client_t* client);
 int client_get_idle_seconds(const client_t* const client);
 int extract_from_input(client_t* client, char* dest, size_t dest_len, const char* delim);
-int network_add_protocol_to_client(client_t* client, protocol_t* protocol);
+int network_add_client_protocol(client_t* client, protocol_t* protocol);
 
 #endif

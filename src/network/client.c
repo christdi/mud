@@ -36,6 +36,10 @@ client_t* create_client_t() {
 void free_client_t(client_t* client) {
   assert(client);
 
+  if (client->protocol != NULL) {
+    network_deallocate_protocol_chain(client->protocol);
+  }
+
   free(client);
 
   client = NULL;
@@ -87,11 +91,12 @@ int flush_client_output(client_t* client) {
   long bytes_sent = 0;
 
   char* data = client->output;
+  int len = client->output_length;
 
-  while (bytes_sent < client->output_length) {
+  while (bytes_sent < len) {
     data = data + bytes_sent;
 
-    bytes_sent = send(client->fd, data, client->output_length, 0);
+    bytes_sent = send(client->fd, data, len, 0);
 
     if (bytes_sent == -1L) {
       LOG(ERROR, "%s", strerror(errno));
@@ -103,10 +108,13 @@ int flush_client_output(client_t* client) {
       return -1;
     }
 
-    client->output_length = client->output_length - bytes_sent;
+    len = len - bytes_sent;
   }
 
+  network_protocol_chain_on_output(client, client->output, client->output_length);
+
   memset(client->output, 0, sizeof(client->output));
+  client->output_length = len;
 
   return 0;
 }
@@ -132,8 +140,9 @@ int receive_from_client(client_t* client) {
   }
 
   size_t remaining = (CLIENT_BUFFER_SIZE)-existing;
+  char* buffer = client->input + existing;
 
-  if ((len = recv(client->fd, client->input + existing, remaining - 1, 0)) == -1) {
+  if ((len = recv(client->fd, buffer, remaining - 1, 0)) == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK) {
       return 0;
     }
@@ -146,8 +155,13 @@ int receive_from_client(client_t* client) {
   if (len <= 0) {
     client->hungup = 1;
   } else {
-    client->input[existing + len] = '\0';
+    buffer[len] = '\0';
+
+    network_protocol_chain_on_input(client, buffer, len);
+
     client->last_active = time(NULL);
+
+
   }
 
   return 0;
@@ -226,12 +240,34 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
 
 /**
  * Either sets an initial protocol or appends a protocol to the chain for the client.
+ * If the client has a non-zero fd, it's assumed the protocol is being added to a
+ * client that is already connected to an endpoint and the protocol should initialise
+ * immediately.
  *
  * client - the client to set the protocol for
  * protocol - the protocol to set or append to the chain
  *
  * Returns 0 on success or -1 on failure
 **/
-int network_add_protocol_to_client(client_t* client, protocol_t* protocol) {
+int network_add_client_protocol(client_t* client, protocol_t* protocol) {
+  assert(client);
+  assert(protocol);
+
+  if (client->protocol == NULL) {
+    client->protocol = protocol;
+  } else {
+    protocol_t* chain = client->protocol;
+
+    while(chain->next != NULL) {
+      chain = protocol->next;
+    }
+
+    chain->next = protocol;
+  }
+
+  if (client->fd != 0) {
+    network_protocol_initialise(protocol, client);
+  }
+
   return 0;
 }
