@@ -1,14 +1,22 @@
 #ifndef MUD_NETWORK_TELNET_H
 #define MUD_NETWORK_TELNET_H
 
-#define TELNET_BUFFER_SIZE 128
+#include <stdbool.h>
 
 /**
  * Typedefs
 **/
+typedef struct telnet telnet_t;
 typedef struct client client_t;
 typedef struct protocol protocol_t;
+typedef struct telnet_option telnet_option_t;
+typedef struct telnet_config telnet_config_t;
+typedef struct telnet_extension telnet_extension_t;
 
+typedef void (*telnet_deallocator_func_t)(void*);
+typedef void (*telnet_initialise_func_t)(void*, telnet_t*, client_t*);
+typedef telnet_option_t* (*telnet_option_func_t)(void*, int);
+typedef telnet_config_t* (*telnet_config_func_t)(void*, int);
 
 /**
  * Structs
@@ -38,7 +46,17 @@ typedef struct telnet_config {
   bool accept_do;
 } telnet_config_t;
 
+typedef struct telnet_extension {
+  void* extension;
+  telnet_deallocator_func_t deallocate;
+  telnet_initialise_func_t initialise;
+  telnet_option_func_t get_option;
+  telnet_config_func_t get_config;
+  telnet_extension_t* next;
+} telnet_extension_t;
+
 typedef struct telnet {
+  telnet_extension_t* extensions;
   telnet_parse_t incoming;
   telnet_parse_t outgoing; 
   telnet_option_t echo;
@@ -53,6 +71,8 @@ void network_free_telnet_t(telnet_t* telnet);
 void network_deallocate_telnet_t(void* value);
 
 protocol_t* network_new_telnet_protocol_t();
+
+void network_register_telnet_extension(telnet_t* telnet, telnet_extension_t* extension);
 
 void network_telnet_initialised(client_t* client, void* protocol);
 int network_telnet_on_input(client_t* client, void* protocol, char* input, size_t len);

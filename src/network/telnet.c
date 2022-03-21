@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <arpa/telnet.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "mud/log.h"
 #include "mud/network/client.h"
@@ -25,7 +24,7 @@ static int send_raw_wont(client_t* client, int option);
 static telnet_option_t* get_option(telnet_t* telnet, int option);
 static option_state_t* get_local_option(telnet_t* telnet, int option);
 static option_state_t* get_client_option(telnet_t* telnet, int option);
-static telnet_config_t* get_option_config(int option);
+static telnet_config_t* get_option_config(telnet_t* telnet, int option);
 
 static void log_telnet_parse(telnet_parse_t* ps, size_t len, bool in);
 static char* get_op_string(int op);
@@ -83,6 +82,16 @@ telnet_t* network_new_telnet_t() {
 void network_free_telnet_t(telnet_t* telnet) {
   assert(telnet);
 
+  telnet_extension_t* ext = telnet->extensions;
+
+  while (ext != NULL) {
+    telnet_extension_t* next = ext->next;
+
+    ext->deallocate(ext->extension);
+
+    ext = next;
+  }
+
   free(telnet);
 }
 
@@ -117,6 +126,28 @@ protocol_t* network_new_telnet_protocol_t() {
 }
 
 /**
+ * Allows extensions to be registered with Telnet.
+ *
+ * telnet - a reference to the telnet_t instance to add the extension to
+ * extension - the extension to be added
+**/
+void network_register_telnet_extension(telnet_t* telnet, telnet_extension_t* extension) {
+  if (telnet->extensions == NULL) {
+    telnet->extensions = extension;
+
+    return;
+  }
+
+  telnet_extension_t* ext = telnet->extensions;
+
+  while (ext->next != NULL) {
+    ext = ext->next;
+  }
+
+  ext->next = extension;
+}
+
+/**
  * Callback method called when the protocol is initialised
  *
  * client - the client who has established a connection
@@ -129,6 +160,16 @@ void network_telnet_initialised(client_t* client, void* protocol) {
   telnet_t* telnet = protocol;
 
   network_telnet_send_do(telnet, client, TELOPT_ECHO);
+
+  telnet_extension_t* ext = telnet->extensions;
+
+  while (ext != NULL) {
+    if (ext->initialise != NULL) {
+      ext->initialise(ext->extension, telnet, client);
+    }
+
+    ext = ext->next;
+  }
 }
 
 /**
@@ -569,7 +610,7 @@ void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
     return;
   }
 
-  telnet_config_t* config = get_option_config(option);
+  telnet_config_t* config = get_option_config(telnet, option);
 
   if (config == NULL) {
     LOG(ERROR, "Failed to retrieve configuration for option [%d]", option);
@@ -611,6 +652,7 @@ void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
       break;
 
     case WANT_YES: // We've sent a WILL, enable option
+      LOG(INFO, "Got DO for option [%d]", option);
       *state = YES;
 
       break;
@@ -700,7 +742,7 @@ void process_will_incoming(telnet_t* telnet, client_t* client, int option) {
     return;
   }
 
-    telnet_config_t* config = get_option_config(option);
+    telnet_config_t* config = get_option_config(telnet, option);
 
     if (config == NULL) {
       LOG(ERROR, "Failed to retrieve configuration for option [%d]", option);
@@ -908,9 +950,20 @@ telnet_option_t* get_option(telnet_t* telnet, int option) {
       return &telnet->suppress_go_ahead;
     case TELOPT_ECHO:
       return &telnet->echo;
-    default:
-      return NULL;
   }
+
+  telnet_extension_t* ext = telnet->extensions;
+  telnet_option_t* opt = NULL;
+
+  while (ext != NULL && opt == NULL) {
+    if (ext->get_option != NULL) {
+      opt = ext->get_option(ext->extension, option);
+    }
+    
+    ext = ext->next;
+  }
+
+  return opt;
 }
 
 /**
@@ -952,11 +1005,12 @@ option_state_t* get_client_option(telnet_t* telnet, int option) {
 /**
  * Retrieves the configuration for a given telnet option.
  *
+ * telnet - the telnet_t instance for extensions
  * option - the option to find the configuration for
  *
  * Returns the config or NULL
 **/
-telnet_config_t* get_option_config(int option) {
+telnet_config_t* get_option_config(telnet_t* telnet, int option) {
   telnet_config_t* config = &opt_config[0];
 
   while (config->option != 0) {
@@ -967,7 +1021,18 @@ telnet_config_t* get_option_config(int option) {
     config++;
   }
 
-  return NULL;
+  config = NULL;
+  telnet_extension_t* ext = telnet->extensions;
+
+  while (ext != NULL && config == NULL) {
+    if (ext->get_config != NULL) {
+      config = ext->get_config(telnet, option);
+    }
+
+    ext = ext->next;
+  }
+
+  return config;
 }
 
 /**

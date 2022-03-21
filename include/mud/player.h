@@ -11,6 +11,8 @@
 #define PASSWORD_SIZE 30
 #define SEND_SIZE 1024
 #define COMMAND_SIZE 256
+#define TOPIC_LEN 128
+#define MSG_LEN 1024
 /**
  * Typedefs
  **/
@@ -57,6 +59,7 @@ int player_request_disable_echo(player_t* player);
 int player_request_enable_echo(player_t* player);
 
 void send_to_player(player_t* player, const char* fmt, ...);
+void send_gmcp_to_player(player_t* player, char* topic, char* msg);
 void send_to_players(linked_list_t* players, const char* fmt, ...);
 void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...);
 
