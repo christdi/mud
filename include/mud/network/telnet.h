@@ -18,18 +18,12 @@ typedef enum parse_state {
 } parse_state_t;
 
 typedef enum option_state {
-  NO, YES, WANT_NO, WANT_YES
+  NO, YES, WANT_NO, WANT_NO_OPPOSITE, WANT_YES, WANT_YES_OPPOSITE 
 } option_state_t;
-
-typedef enum option_side {
-  EMPTY, OPPOSITE
-} option_side_t;
 
 typedef struct telnet_option {
   option_state_t us;
   option_state_t them;
-  option_side_t us_side;
-  option_side_t them_side;
 } telnet_option_t;
 
 typedef struct telnet_parse {
@@ -37,6 +31,12 @@ typedef struct telnet_parse {
   unsigned int op;
   unsigned int option;
 } telnet_parse_t;
+
+typedef struct telnet_config {
+  int option;
+  bool accept_will;
+  bool accept_do;
+} telnet_config_t;
 
 typedef struct telnet {
   telnet_parse_t incoming;
