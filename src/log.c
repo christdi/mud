@@ -5,7 +5,7 @@
 
 #include "mud/log.h"
 
-static log_level_t min_log_level = TRACE;
+static log_level_t min_log_level = INFO;
 
 static const char* log_get_level(log_level_t level);
 
@@ -43,6 +43,27 @@ void mlog(log_level_t level, const char* function, const int line, const char* f
   strftime(date_time, MAX_LOG_DATE_TIME_LENGTH, "%d-%m-%Y %X", tm);
 
   printf("%-16s %5s [%s:%d] %s\n\r", date_time, log_get_level(level), function, line, log_line);
+}
+
+void hlog(log_level_t level, const char* function, const int line, const char* input, size_t len) {
+  if (len == 0) {
+    return;
+  }
+
+  char hex[len * 3 + 1];
+
+  size_t i = 0;
+  size_t j = 0;
+
+  for (i = 0; i < len; i++) {
+    sprintf(hex + j, "%02X ", (unsigned char)input[i]);
+
+    j += 3;
+  }
+
+  hex[j - 1] = '\0';
+
+  mlog(level, function, line, "%s", hex);  
 }
 
 /**

@@ -12,11 +12,11 @@
 #include <string.h>
 #include <sys/select.h>
 
-void free_client_list_t(linked_list_t* list);
-
-void add_fd_to_master_set(network_t* network, int fd);
-void remove_fd_from_master_set(network_t* network, int fd);
-int prune_clients(network_t* network);
+static void add_fd_to_master_set(network_t* network, int fd);
+static void remove_fd_from_master_set(network_t* network, int fd);
+static int prune_clients(network_t* network);
+static int accept_new_clients(network_t* network, fd_set* read_set);
+static int read_from_clients(network_t* network, fd_set* read_set);
 
 /**
  * Allocates and initialises a new network_t struct.
@@ -188,48 +188,12 @@ void poll_network(network_t* network) {
   }
 
   if (results > 0) {
-    server_t* server;
-    it_t server_it = list_begin(network->servers);
-
-    while ((server = (server_t*)it_get(server_it)) != NULL) {
-      if (FD_ISSET(server->fd, &read_set)) {
-        client_t* client = create_client_t();
-
-        if (accept_on_server(server, client) != 0) {
-          free_client_t(client);
-
-          return;
-        }
-
-        add_fd_to_master_set(network, client->fd);
-        list_add(network->clients, client);
-
-        LOG(INFO, "Client descriptor [%d] connected", client->fd);
-
-        if (network->connection_callback->func) {
-          network->connection_callback->func(client, network->connection_callback->context);
-        }
-      }
-
-      server_it = it_next(server_it);
+    if (accept_new_clients(network, &read_set) == -1) {
+      LOG(ERROR, "Failed to accept new clients");
     }
 
-    it_t client_it = list_begin(network->clients);
-    client_t* client;
-
-    while ((client = (client_t*)it_get(client_it)) != NULL) {
-
-      if (FD_ISSET(client->fd, &read_set)) {
-        if (receive_from_client(client) != 0) {
-          LOG(ERROR, "Failed to read from client fd [%d]", client->fd);
-        } else {
-          if (network->input_callback->func) {
-            network->input_callback->func(client, network->input_callback->context);
-          }
-        }
-      }
-
-      client_it = it_next(client_it);
+    if (read_from_clients(network, &read_set) == -1) {
+      LOG(ERROR, "Failed to read from clients");
     }
   }
 }
@@ -277,46 +241,7 @@ void disconnect_clients(network_t* network) {
   }
 }
 
-/**
- * Checks to see if clients have disconnected (have their hungup flag set to 1)
- * and closes them on our side, removes them from the master fd_set and from our
- * internal list of clients before releasing their memory.
- *
- * Returns 0 on success
- **/
-int prune_clients(network_t* network) {
-  assert(network);
-  assert(network->clients);
 
-  client_t* client = NULL;
-
-  it_t it = list_begin(network->clients);
-
-  while ((client = (client_t*)it_get(it)) != NULL) {
-    if (client->hungup == 1) {
-      LOG(INFO, "Client descriptor [%d] disconnected", client->fd);
-
-      if (close_client(client) == -1) {
-        LOG(INFO, "Failed to close hungup client");
-      }
-
-      remove_fd_from_master_set(network, client->fd);
-
-      it = list_remove(network->clients, client);
-
-      if (network->disconnection_callback->func) {
-        network->disconnection_callback->func(client, network->disconnection_callback->context);
-      }
-
-      free_client_t(client);
-
-    } else {
-      it = it_next(it);
-    }
-  }
-
-  return 0;
-}
 
 /**
  * Searches our internal list of servers and determines if we have one on a given
@@ -368,4 +293,115 @@ void add_fd_to_master_set(network_t* network, int fd) {
  **/
 void remove_fd_from_master_set(network_t* network, int fd) {
   FD_CLR(fd, &network->master_set);
+}
+
+/**
+ * Accepts clients on any server with pending connections.
+ *
+ * network - the network context containing servers that may have new connections
+ * read_set - set of file descriptions with activity*
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int accept_new_clients(network_t* network, fd_set* read_set) {
+  server_t* server = NULL;
+
+  it_t it = list_begin(network->servers);
+
+  while ((server = it_get(it)) != NULL) {
+    if (FD_ISSET(server->fd, read_set)) {
+      client_t* client = create_client_t();
+
+      if (accept_on_server(server, client) != 0) {
+        free_client_t(client);
+
+        return -1;
+      }
+
+      add_fd_to_master_set(network, client->fd);
+      list_add(network->clients, client);
+
+      LOG(INFO, "Client descriptor [%d] connected", client->fd);
+
+      if (network->connection_callback->func) {
+        network->connection_callback->func(client, network->connection_callback->context);
+      }
+    }
+
+    it = it_next(it);
+  }
+
+  return 0;
+}
+
+/**
+ * Read from clients with pending input.
+ *
+ * network - the network context containing clients that may have input
+ * read_set - set of file descriptions with activity
+ *
+ * Returns 0 on success or -1 on failure
+**/
+static int read_from_clients(network_t* network, fd_set* read_set) {
+  it_t it = list_begin(network->clients);
+
+  client_t* client = NULL;
+
+  while ((client = it_get(it)) != NULL) {
+
+    if (FD_ISSET(client->fd, read_set)) {
+      if (receive_from_client(client) != 0) {
+        LOG(ERROR, "Failed to read from client fd [%d]", client->fd);
+      } else {
+        if (network->input_callback->func) {
+          network->input_callback->func(client, network->input_callback->context);
+        }
+      }
+    }
+
+    it = it_next(it);
+  }
+
+  return 0;
+}
+
+/**
+ * Checks to see if clients have disconnected (have their hungup flag set to 1)
+ * and closes them on our side, removes them from the master fd_set and from our
+ * internal list of clients before releasing their memory.
+ *
+ * Returns 0 on success
+ **/
+int prune_clients(network_t* network) {
+  assert(network);
+  assert(network->clients);
+
+  client_t* client = NULL;
+
+  it_t it = list_begin(network->clients);
+
+  while ((client = (client_t*)it_get(it)) != NULL) {
+    if (client->hungup == 1) {
+      LOG(INFO, "Client descriptor [%d] disconnected", client->fd);
+
+      if (close_client(client) == -1) {
+        LOG(INFO, "Failed to close hungup client");
+      }
+
+      remove_fd_from_master_set(network, client->fd);
+
+      it = list_remove(network->clients, client);
+
+      if (network->disconnection_callback->func) {
+        network->disconnection_callback->func(client, network->disconnection_callback->context);
+      }
+
+      free_client_t(client);
+
+    } else {
+      it = it_next(it);
+    }
+  }
+
+  return 0;
 }

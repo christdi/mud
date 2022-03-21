@@ -107,6 +107,7 @@ get_username = function(p, arg, data)
    data.login.username = arg
 
    player.send(p, "\n\rPlease enter your password: ")
+   player.disable_echo(p)
 
    data.login.substate = get_password;
 end
@@ -132,6 +133,8 @@ get_password = function(p, arg, data)
 
       data.login.substate = get_username
    end
+
+   player.enable_echo(p)
 end
 
 

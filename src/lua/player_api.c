@@ -27,6 +27,8 @@ static int lua_set_narrator(lua_State* l);
 static int lua_get_entities(lua_State* l);
 static int lua_send_to_player(lua_State* l);
 static int lua_disconnect(lua_State* l);
+static int lua_disable_echo(lua_State* l);
+static int lua_enable_echo(lua_State* l);
 
 static const struct luaL_Reg player_lib[] = {
   { "authenticate", lua_authenticate },
@@ -38,6 +40,8 @@ static const struct luaL_Reg player_lib[] = {
   { "get_entities", lua_get_entities },
   { "send", lua_send_to_player },
   { "disconnect", lua_disconnect },
+  { "disable_echo", lua_disable_echo },
+  { "enable_echo", lua_enable_echo },
   { NULL, NULL }
 };
 
@@ -285,6 +289,44 @@ static int lua_disconnect(lua_State* l) {
   lua_pop(l, 1);
 
   player->client->hungup = 1;
+
+  return 0;
+}
+
+/**
+ * API method to request the player disable their echo.
+ *
+ * l - The current Lua state
+ *
+ * player.disable_echo(p)
+ * 
+ * Returns 0 on success or calls luaL_error on failure
+**/
+static int lua_disable_echo(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -1);
+
+  player_request_disable_echo(player);
+
+  return 0;
+}
+
+/**
+ * API method to request the player enable their echo.
+ *
+ * l - The current Lua state
+ *
+ * player.enable_echo(p)
+ *
+ * Returns 0 on success or calls luaL_error on failure
+**/
+static int lua_enable_echo(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -1);
+
+  player_request_enable_echo(player);
 
   return 0;
 }

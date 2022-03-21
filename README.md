@@ -27,6 +27,5 @@ The dist directory contains a sample game used during development as an example 
 ## Future
 
 This is still very much in the toy project category but is starting to mature.  Future development might include the following
-* Telnet protocol implementation
 * MUD specific protocol like GMCP
 * Extract common functionality like networking and data structures to their own libraries

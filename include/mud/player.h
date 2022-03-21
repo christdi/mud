@@ -53,6 +53,8 @@ void player_on_event(player_t* player, game_t* game, event_t* event);
 int player_change_state(player_t* player, game_t* game, state_t* state);
 int player_authenticate(player_t* player, game_t* game, const char* username, const char* password);
 int player_narrate(player_t* player, game_t* game, event_t* event);
+int player_request_disable_echo(player_t* player);
+int player_request_enable_echo(player_t* player);
 
 void send_to_player(player_t* player, const char* fmt, ...);
 void send_to_players(linked_list_t* players, const char* fmt, ...);
