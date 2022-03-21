@@ -234,7 +234,6 @@ int player_request_disable_echo(player_t* player) {
   if (network_client_has_protocol(player->client, TELNET)) {
     telnet_t* telnet = network_client_get_protocol(player->client, TELNET);
 
-    network_telnet_send_will(telnet, player->client, TELOPT_SGA);
     network_telnet_send_will(telnet, player->client, TELOPT_ECHO);
   }
 
@@ -253,7 +252,6 @@ int player_request_disable_echo(player_t* player) {
 int player_request_enable_echo(player_t* player) {
   if (network_client_has_protocol(player->client, TELNET)) {
     telnet_t* telnet = network_client_get_protocol(player->client, TELNET);
-
 
     network_telnet_send_wont(telnet, player->client, TELOPT_ECHO);
   }

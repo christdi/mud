@@ -45,7 +45,7 @@ static char* telopts[] = {
 
 static telnet_config_t opt_config[] = {
   { TELOPT_ECHO, true, false },
-  { TELOPT_SGA, true, true },
+  { TELOPT_SGA, false, false },
   { 0, false, false }
 };
 
@@ -128,8 +128,7 @@ void network_telnet_initialised(client_t* client, void* protocol) {
 
   telnet_t* telnet = protocol;
 
-  network_telnet_send_will(telnet, client, TELOPT_SGA);
-  network_telnet_send_do(telnet, client, TELOPT_SGA);
+  network_telnet_send_do(telnet, client, TELOPT_ECHO);
 }
 
 /**
@@ -182,9 +181,9 @@ int network_telnet_on_input(client_t* client, void* protocol, char* input, size_
       ps->op = 0;
       ps->option = 0;
 
-      int j = move_index + cmd_len + 1;
+      int j = move_index + cmd_len;
 
-      if (j > len) {
+      if (j + 1 > len) {
         memset(input + move_index, 0, cmd_len);
       } else {
         memmove(input + move_index, input + j, len - i);
@@ -579,11 +578,13 @@ void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
   
   switch(*state) {
     case NO: // Option disabled and we're not currently negotiating, respond will and enable 
-      if (config->accept_do) {
+      if (config->accept_do) {        
         if (send_raw_will(client, option) == -1) {
           LOG(ERROR, "Failed to send WILL response for supported DO [%d]", option);
           return;
         }
+
+        LOG(INFO, "Client [%d] enabled local [%s] telnet option", client->fd, get_option_string(option));
 
         *state = YES;
       } else {
@@ -646,6 +647,8 @@ void process_dont_incoming(telnet_t* telnet, client_t* client, int option) {
 
     case YES: // Option is enabled and there is no negotiation.  Send WONT, disable option    
       *state = NO;
+
+      LOG(INFO, "Client [%d] disabled local [%s] telnet option", client->fd, get_option_string(option));
 
       if (send_raw_wont(client, option) == -1) {
         LOG(ERROR, "Failed to send WONT response for supported DONT [%d]", option);
@@ -712,6 +715,8 @@ void process_will_incoming(telnet_t* telnet, client_t* client, int option) {
           return;
         }
 
+        LOG(INFO, "Client [%d] enabled client [%s] telnet option", client->fd, get_option_string(option));
+
         *state = YES;
       } else {
         if (send_raw_dont(client, option) == -1) {
@@ -774,6 +779,8 @@ void process_wont_incoming(telnet_t* telnet, client_t* client, int option) {
 
     case YES: // Option is enabled and there is no negotiation.  Send DONT, disable option
       *state = NO;
+
+      LOG(INFO, "Client [%d] disabled client [%s] telnet option", client->fd, get_option_string(option));
 
       if (send_raw_dont(client, option) == -1) {
         LOG(ERROR, "Failed to send DONT response for supported WONT [%d]", option);
@@ -896,15 +903,14 @@ static int send_raw_wont(client_t* client, int option) {
  * Retrieves option if found or NULL
 **/
 telnet_option_t* get_option(telnet_t* telnet, int option) {
-  if (option == TELOPT_SGA) {
-    return &telnet->suppress_go_ahead;
+  switch(option) {
+    case TELOPT_SGA:
+      return &telnet->suppress_go_ahead;
+    case TELOPT_ECHO:
+      return &telnet->echo;
+    default:
+      return NULL;
   }
-
-  if (option == TELOPT_ECHO) {
-    return &telnet->echo;
-  }
-
-  return NULL;
 }
 
 /**
@@ -969,9 +975,9 @@ telnet_config_t* get_option_config(int option) {
 **/
 void log_telnet_parse(telnet_parse_t* ps, size_t len, bool in) {
   if (len == 2) {
-    LOG(INFO, "[%s] IAC %s", in == true ? "IN" : "OUT", get_op_string(ps->op));
+    LOG(DEBUG, "[%s] IAC %s", in == true ? "IN" : "OUT", get_op_string(ps->op));
   } else {
-    LOG(INFO, "[%s] IAC %s %s", in == true ? "IN" : "OUT", get_op_string(ps->op), get_option_string(ps->option));    
+    LOG(DEBUG, "[%s] IAC %s %s", in == true ? "IN" : "OUT", get_op_string(ps->op), get_option_string(ps->option));    
   }
 }
 
