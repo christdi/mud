@@ -25,6 +25,8 @@ for _, goable in ipairs(entities) do
       local success, data = actions.execute("move_room", entity, {from = current_room, to = new_room, portal = goable})
 
       if success then
+        player.send_gmcp(p, "Room", "{ \"uuid\": \"" .. new_room.uuid.. "\" }")
+
         commands.execute("look", p)
       end
 

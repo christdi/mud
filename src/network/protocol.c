@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "mud/log.h"
 #include "mud/network/client.h"
 #include "mud/network/protocol.h"
 

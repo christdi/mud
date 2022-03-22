@@ -170,22 +170,25 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
   assert(player);
   assert(arguments);
 
-  script_t script;
+  script_t* script = create_script_t();
 
-  if (db_script_load(game->database, uuid, &script) != 0) {
+  if (db_script_load(game->database, uuid, script) != 0) {
     LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+    free_script_t(script);
 
     return -1;
   }
 
-  if (luaL_loadfile(game->lua_state, script.filepath) != 0) {
+  if (luaL_loadfile(game->lua_state, script->filepath) != 0) {
     LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
+    free_script_t(script);
 
     return -1;
   }
 
-  if (build_environment_table(game, uuid_str(&script.uuid)) != 0) {
+  if (build_environment_table(game, uuid_str(&script->uuid)) != 0) {
     LOG(ERROR, "Error building script white list environment");
+    free_script_t(script);
 
     return -1;
   }
@@ -206,6 +209,8 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
     return -1;
   }
 
+  free_script_t(script);
+
   return 0;
 }
 
@@ -224,22 +229,25 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, i
   assert(uuid);
   assert(entity);
 
-  script_t script;
+  script_t* script = create_script_t();
 
-  if (db_script_load(game->database, uuid, &script) != 0) {
+  if (db_script_load(game->database, uuid, script) != 0) {
     LOG(ERROR, "Failed to load script with uuid [%s]", uuid);
+    free_script_t(script);
 
     return -1;
   }
 
-  if (luaL_loadfile(game->lua_state, script.filepath) != 0) {
+  if (luaL_loadfile(game->lua_state, script->filepath) != 0) {
     LOG(ERROR, "Error while loading Lua game script [%s].\n\r", lua_tostring(game->lua_state, -1));
+    free_script_t(script);
 
     return -1;
   }
 
-  if (build_environment_table(game, uuid_str(&script.uuid)) != 0) {
+  if (build_environment_table(game, uuid_str(&script->uuid)) != 0) {
     LOG(ERROR, "Error building script white list environment");
+    free_script_t(script);
 
     return -1;
   }
@@ -259,6 +267,8 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, i
 
     return -1;
   }
+
+  free_script_t(script);
 
   return 0;
 }

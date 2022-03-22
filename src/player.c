@@ -8,6 +8,7 @@
 #include "mud/lua/hooks.h"
 #include "mud/lua/script.h"
 #include "mud/network/client.h"
+#include "mud/network/gmcp.h"
 #include "mud/network/telnet.h"
 #include "mud/state.h"
 #include "mud/util/mudhash.h"
@@ -70,7 +71,10 @@ void deallocate_player(void* value) {
 void player_connected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
-  network_add_client_protocol(client, network_new_telnet_protocol_t());
+  protocol_t* telnet = network_new_telnet_protocol_t();
+  network_register_telnet_extension(telnet->data, network_new_gmcp_telnet_extension(game, player_gmcp));
+
+  network_add_client_protocol(client, telnet);
 
   player_t* player = create_player_t();
   player->client = client;
@@ -119,6 +123,17 @@ void player_output(client_t* client, void* context) {
   if (lua_call_state_output_hook(game->lua_state, player, player->state, client->output) == -1) {
     LOG(ERROR, "Error calling state output hook");
   };
+}
+
+/**
+ * Callback when the GMCP extension has received an incoming GMCP message.
+ *
+ * client - the client that has sent the GMCP message
+ * context - void pointer to a game_t instance
+ * topic - the topic of the GMCP message
+ * message - the message of the GMCP message
+**/
+void player_gmcp(client_t* client, void* context, const char* topic, const char* message) {
 }
 
 /**
@@ -281,6 +296,28 @@ void send_to_player(player_t* player, const char* fmt, ...) {
   va_end(args);
 
   write_to_player(player, output);
+}
+
+/**
+ * Attempts to send a GMCP message to a player.  If the player client does not have
+ * the telnet protocol with the GMCP extension this is a no-op.
+ *
+ * player - player to send the gmcp message to
+ * topic - null terminated string containing the topic of the gmcp message
+ * msg - null terminated string containing the msg of the gmcp message, may be NULL
+**/
+void send_gmcp_to_player(player_t* player, char* topic, char* msg) {
+  assert(player);
+  assert(topic);
+
+  if (!network_client_has_protocol(player->client, TELNET)) {
+    return;
+  }
+
+  size_t topic_len = strnlen(topic, TOPIC_LEN);
+  size_t msg_len = msg != NULL ? strnlen(msg, MSG_LEN) : 0;
+
+  network_send_gmcp_message(player->client, topic, topic_len, msg, msg_len);
 }
 
 void send_to_players(linked_list_t* players, const char* fmt, ...) {

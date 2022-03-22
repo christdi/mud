@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "lauxlib.h"
 #include "lua.h"
@@ -29,6 +31,7 @@ static int lua_send_to_player(lua_State* l);
 static int lua_disconnect(lua_State* l);
 static int lua_disable_echo(lua_State* l);
 static int lua_enable_echo(lua_State* l);
+static int lua_send_gmcp(lua_State* l);
 
 static const struct luaL_Reg player_lib[] = {
   { "authenticate", lua_authenticate },
@@ -42,6 +45,7 @@ static const struct luaL_Reg player_lib[] = {
   { "disconnect", lua_disconnect },
   { "disable_echo", lua_disable_echo },
   { "enable_echo", lua_enable_echo },
+  { "send_gmcp", lua_send_gmcp },
   { NULL, NULL }
 };
 
@@ -328,5 +332,48 @@ static int lua_enable_echo(lua_State* l) {
 
   player_request_enable_echo(player);
 
+  return 0;
+}
+
+/**
+ * API method to send a GMCP message to a player.
+ * l - The current Lua state
+ *
+ * player.send_gmcp(p, "topic", "msg")
+ *
+ * Returns 0 or calls luaL_error on error
+**/
+static int lua_send_gmcp(lua_State* l) {
+  char* msg = NULL;
+  char* topic = NULL;
+  player_t* player = NULL;
+
+  luaL_checktype(l, -1, LUA_TSTRING);
+
+  if (lua_type(l, -2) == LUA_TSTRING) {
+    luaL_checktype(l, -3, LUA_TTABLE);
+
+    msg = strdup(lua_tostring(l, -1));
+    topic = strdup(lua_tostring(l, -2));
+    player = lua_to_player(l, -3);
+
+    lua_pop(l, 3);
+  } else if (lua_type(l, -2) == LUA_TTABLE) {
+    topic = strdup(lua_tostring(l, -1));
+    player = lua_to_player(l, -2);
+
+    lua_pop(l, 2);
+  } else {
+    return luaL_error(l, "Invalid parameters to send_gmcp");
+  }  
+
+  send_gmcp_to_player(player, topic, msg);
+
+  free(topic);
+
+  if (msg != NULL) {
+    free(msg);
+  }
+  
   return 0;
 }

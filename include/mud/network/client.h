@@ -41,7 +41,7 @@ typedef struct client {
 client_t* create_client_t(void);
 void free_client_t(client_t* client);
 
-int send_to_client(client_t* client, char* data, size_t len);
+int send_to_client(client_t* client, const char* data, size_t len);
 int flush_client_output(client_t* client);
 int receive_from_client(client_t* client);
 int close_client(client_t* client);
