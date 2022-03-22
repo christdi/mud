@@ -11,10 +11,11 @@
 
 static void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index);
 
-static void process_do_incoming(telnet_t* telnet, client_t* client, int option);
-static void process_dont_incoming(telnet_t* telnet, client_t* client, int option);
-static void process_will_incoming(telnet_t* telnet, client_t* client, int option);
-static void process_wont_incoming(telnet_t* telnet, client_t* client, int option);
+static void process_do(telnet_t* telnet, client_t* client, int option);
+static void process_dont(telnet_t* telnet, client_t* client, int option);
+static void process_will(telnet_t* telnet, client_t* client, int option);
+static void process_wont(telnet_t* telnet, client_t* client, int option);
+static void process_se(telnet_t* telnet, client_t* client, int option, const char* data, size_t len);
 
 static int send_raw_do(client_t* client, int option);
 static int send_raw_dont(client_t* client, int option);
@@ -60,10 +61,12 @@ telnet_t* network_new_telnet_t() {
   telnet->incoming.state = READ_IAC;
   telnet->incoming.op = 0;
   telnet->incoming.option = 0;
+  telnet->incoming.len = 0;
 
   telnet->outgoing.state = READ_IAC;
   telnet->outgoing.op = 0;
   telnet->outgoing.option = 0;
+  telnet->outgoing.len = 0;
 
   telnet->echo.us = NO;
   telnet->echo.them = NO;
@@ -88,6 +91,8 @@ void network_free_telnet_t(telnet_t* telnet) {
     telnet_extension_t* next = ext->next;
 
     ext->deallocate(ext->extension);
+
+    free(ext);
 
     ext = next;
   }
@@ -203,24 +208,33 @@ int network_telnet_on_input(client_t* client, void* protocol, char* input, size_
 
       switch(ps->op) {
         case DO:
-          process_do_incoming(telnet, client, ps->option);
+          process_do(telnet, client, ps->option);
           break;
         
         case DONT:
-          process_dont_incoming(telnet, client, ps->option);
+          process_dont(telnet, client, ps->option);
           break;
 
         case WILL:
-          process_will_incoming(telnet, client, ps->option);
+          process_will(telnet, client, ps->option);
           break;
 
         case WONT:
-          process_wont_incoming(telnet, client, ps->option);
+          process_wont(telnet, client, ps->option);
+          break;
+        
+        case SE:      
+          process_se(telnet, client, ps->option, ps->buffer, ps->len);
           break;
       }
 
       ps->op = 0;
       ps->option = 0;
+
+      if (ps->len > 0) {
+        memset(ps->buffer, 0, ps->len);
+        ps->len = 0;
+      }
 
       int j = move_index + cmd_len;
 
@@ -552,11 +566,9 @@ void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index) {
           ps->state = READ_OP_VALUE;
           break;
         case SB:
-          ps->state = READ_SE;
+          ps->state = READ_SB_OPTION;
           break;
         case SE:
-          ps->state = DONE;
-          break;
         case GA:
         case EL:
         case EC:
@@ -577,12 +589,43 @@ void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index) {
           break;
       }
 
-
-    case READ_SE:
       break;
 
     case READ_OP_VALUE:
       ps->option = (unsigned int)(unsigned char) c;
+      ps->state = DONE;
+
+      break;
+
+    case READ_SB_OPTION:
+      ps->option = (unsigned int)(unsigned char) c;
+      ps->state = READ_SE_IAC;
+
+      break;
+
+    case READ_SE_IAC:
+      if (ps->len == (TELNET_BUFFER_SIZE - 1)) {
+        if (c == (char)IAC) {
+          ps->buffer[ps->len] = '\0';
+          ps->state = READ_SE;
+
+          LOG(WARN, "Telnet Subnegotiation buffer was full and data may have been truncated");
+        }
+      }
+
+      if (c == (char)IAC) {
+        ps->buffer[ps->len] = '\0';
+        ps->state = READ_SE;
+        break;
+      }
+
+      ps->buffer[ps->len] = c;
+      ps->len = ps->len + 1;
+
+      break;
+
+    case READ_SE:
+      ps->op = (unsigned int)(unsigned char)c;
       ps->state = DONE;
 
       break;
@@ -599,7 +642,7 @@ void update_parse_state(telnet_parse_t* ps, char c, int index, int* iac_index) {
  * client - client we may need to respond to
  * option - the option that has been asked to DO
 **/
-void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
+void process_do(telnet_t* telnet, client_t* client, int option) {
   option_state_t* state = get_local_option(telnet, option);
 
   if (state == NULL) {    
@@ -652,7 +695,6 @@ void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
       break;
 
     case WANT_YES: // We've sent a WILL, enable option
-      LOG(INFO, "Got DO for option [%d]", option);
       *state = YES;
 
       break;
@@ -676,7 +718,7 @@ void process_do_incoming(telnet_t* telnet, client_t* client, int option) {
  * client - client we may need to respond to
  * option - the option that has been asked to DO
 **/
-void process_dont_incoming(telnet_t* telnet, client_t* client, int option) {
+void process_dont(telnet_t* telnet, client_t* client, int option) {
   option_state_t* state = get_local_option(telnet, option);
 
   if (state == NULL) {
@@ -731,7 +773,7 @@ void process_dont_incoming(telnet_t* telnet, client_t* client, int option) {
  * client - client we may need to respond to
  * option - the option that has been asked to DO
 **/
-void process_will_incoming(telnet_t* telnet, client_t* client, int option) {
+void process_will(telnet_t* telnet, client_t* client, int option) {
   option_state_t* state = get_client_option(telnet, option);
 
   if (state == NULL) {
@@ -808,7 +850,7 @@ void process_will_incoming(telnet_t* telnet, client_t* client, int option) {
  * client - client we may need to respond to
  * option - the option that has been asked to DO
 **/
-void process_wont_incoming(telnet_t* telnet, client_t* client, int option) {
+void process_wont(telnet_t* telnet, client_t* client, int option) {
   option_state_t* state = get_client_option(telnet, option);
 
   if (state == NULL) {
@@ -853,6 +895,30 @@ void process_wont_incoming(telnet_t* telnet, client_t* client, int option) {
       *state = NO;
 
       break;
+  }
+}
+
+/**
+ * Processes a subnegotiation from the client.
+ *
+ * telnet - telnet_t instance containing extensions
+ * client - client_t instance representing remotely connected client
+ * option - the option being negotiated for
+ * data - the data for negotiation
+**/
+void process_se(telnet_t* telnet, client_t* client, int option, const char* data, size_t len) {
+  assert(telnet);
+  assert(client);
+  assert(data);
+
+  telnet_extension_t* ext = telnet->extensions;
+
+  while (ext != NULL) {
+    if (ext->subnegotiation != NULL) {
+      ext->subnegotiation(ext->extension, telnet, client, option, data, len);
+    }
+
+    ext = ext->next;
   }
 }
 

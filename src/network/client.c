@@ -49,7 +49,7 @@ void free_client_t(client_t* client) {
  *
  * Returns 0 on success or -1 on failure.
  **/
-int send_to_client(client_t* client, char* data, size_t len) {
+int send_to_client(client_t* client, const char* data, size_t len) {
   assert(client);
   assert(data);
 
@@ -59,7 +59,7 @@ int send_to_client(client_t* client, char* data, size_t len) {
     return -1;
   }
 
-  char* current = data;
+  const char* current = data;
   char* dest = client->output + client->output_length;
   size_t count = len;
 

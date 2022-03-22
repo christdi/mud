@@ -72,7 +72,7 @@ void player_connected(client_t* client, void* context) {
   game_t* game = (game_t*)context;
 
   protocol_t* telnet = network_new_telnet_protocol_t();
-  network_register_telnet_extension(telnet->data, network_new_gmcp_telnet_extension());
+  network_register_telnet_extension(telnet->data, network_new_gmcp_telnet_extension(game, player_gmcp));
 
   network_add_client_protocol(client, telnet);
 
@@ -123,6 +123,17 @@ void player_output(client_t* client, void* context) {
   if (lua_call_state_output_hook(game->lua_state, player, player->state, client->output) == -1) {
     LOG(ERROR, "Error calling state output hook");
   };
+}
+
+/**
+ * Callback when the GMCP extension has received an incoming GMCP message.
+ *
+ * client - the client that has sent the GMCP message
+ * context - void pointer to a game_t instance
+ * topic - the topic of the GMCP message
+ * message - the message of the GMCP message
+**/
+void player_gmcp(client_t* client, void* context, const char* topic, const char* message) {
 }
 
 /**

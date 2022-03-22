@@ -1,6 +1,8 @@
 #ifndef MUD_NETWORK_TELNET_H
 #define MUD_NETWORK_TELNET_H
 
+#define TELNET_BUFFER_SIZE (1024 * 1) + 1 // 1 KB + null terminator
+
 #include <stdbool.h>
 
 /**
@@ -17,12 +19,13 @@ typedef void (*telnet_deallocator_func_t)(void*);
 typedef void (*telnet_initialise_func_t)(void*, telnet_t*, client_t*);
 typedef telnet_option_t* (*telnet_option_func_t)(void*, int);
 typedef telnet_config_t* (*telnet_config_func_t)(void*, int);
+typedef void (*telnet_se_func_t)(void*, telnet_t*, client_t*, int, const char*, size_t);
 
 /**
  * Structs
 **/
 typedef enum parse_state {
-  READ_IAC, READ_OP, READ_OP_VALUE, READ_SE, DONE
+  READ_IAC, READ_OP, READ_OP_VALUE, READ_SB_OPTION, READ_SE_IAC, READ_SE, DONE
 } parse_state_t;
 
 typedef enum option_state {
@@ -38,6 +41,8 @@ typedef struct telnet_parse {
   parse_state_t state;
   unsigned int op;
   unsigned int option;
+  char buffer[TELNET_BUFFER_SIZE];
+  size_t len;
 } telnet_parse_t;
 
 typedef struct telnet_config {
@@ -52,6 +57,7 @@ typedef struct telnet_extension {
   telnet_initialise_func_t initialise;
   telnet_option_func_t get_option;
   telnet_config_func_t get_config;
+  telnet_se_func_t subnegotiation;
   telnet_extension_t* next;
 } telnet_extension_t;
 
