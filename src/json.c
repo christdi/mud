@@ -1,11 +1,16 @@
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "mud/json.h"
 #include "mud/log.h"
 
-json_value_t* parse_value(const char* input, size_t len, size_t pos, json_parse_t p, json_node_t* parent);
-void attach_node(json_node_t* parent, json_node_t* child);
+json_value_t* parse_object(const char** input, json_node_t* parent);
+json_value_t* parse_array(const char** input);
+json_value_t* parse_string(const char** input);
+json_value_t* parse_number(const char** input);
+json_value_t* parse_boolean(const char** input);
+json_value_t* parse_null(const char** input);
 
 json_node_t* json_new_json_node_t() {
   json_node_t* node = calloc(1, sizeof(json_node_t));
@@ -16,6 +21,10 @@ json_node_t* json_new_json_node_t() {
 void json_free_json_node_t(json_node_t* node) {
   assert(node);
 
+  if (node->key != NULL) {
+    free(node->key);  
+  }
+
   free(node);
 }
 
@@ -23,151 +32,153 @@ json_node_t* json_parse(const char* input, size_t len) {
   assert(input);
 
   json_node_t* parent = json_new_json_node_t();
-  parent->value = parse_value(input, len, 0, AWAIT_VALUE_START, parent);
-  
+  parent->value = parse_object(&input, parent);
+
   return parent;
 }
 
 void json_to_string(json_node_t* json, char* output) {
 }
 
-
-json_value_t* parse_value(const char* input, size_t len, size_t pos, json_parse_t p, json_node_t* parent) {
-  assert(input);
-  assert(len);
-  
-  json_parse_t p = AWAIT_VALUE_START;
+json_value_t* parse_object(const char** input, json_node_t* parent) {
+  const char* current = *input;
+  json_parse_t p = AWAIT_OBJECT_OPEN;
   json_node_t* node = NULL;
 
-  for (int i = pos; i < len; i++) {
-    char c = input[i];
-    char d = '_';
+  while (*current++) {
+    if (p == AWAIT_OBJECT_OPEN) {
+      if ((current = strchr(current, '{')) == NULL) {
+        LOG(ERROR, "Expected '{' but encountered EOF");
 
-    switch(p) {
-      case AWAIT_VALUE_START:
-        c = tolower(c);
+        return NULL;
+      }
 
-        if (c != ' ' && c != '{' && c != '[' && c != 'n' && c != 't' && c != 'f' && c != '"' && !isdigit(c)) {
-          LOG(ERROR, "Failed to parse json value, expected space, left brace, left square bracket, null, true, false, quote or number");
-          json_free_json_node_t(n);
+      p = AWAIT_KEY_OPEN;
 
-          return NULL;
-        }
+      continue;
+    }
 
-        if (c == ' ') {
-          continue;
-        }
+    if (p == AWAIT_KEY_OPEN) {
+      if ((current = strchr(current, '"')) == NULL) {
+        LOG(ERROR, "Expected '\"' but encountered EOF");
 
-        if (c == '{') {          
-          parse_value(input, len, i, AWAIT_FIELD_START, )
+        return NULL;
+      }
 
-          n->type = OBJECT;
-          p = AWAIT_FIELD_START;
-        }
+      p = AWAIT_KEY_CLOSE;
 
-        if (c == '[') {
-          n->type = ARRAY;
-          p = AWAIT_FIELD_START;
-        }
+      continue;
+    }
 
-        if (c == 'n') {
-          n->type = NIL;
-          p = AWAIT_VALUE_END;
-        }
+    if (p == AWAIT_KEY_CLOSE) {
+      node = json_new_json_node_t();
 
-        if (c == 't' || c == 'f') {
-          n->type = BOOLEAN;
-          p = AWAIT_VALUE_END;
-        }
+      const char* start = current;
+      char* end;
 
-        if (c == '"') {
-          n->type = STRING;
-          p = AWAIT_VALUE_END;
-        }
+      if ((end = strchr(current, '"')) == NULL) {
+        LOG(ERROR, "Expected '\"' but encountered EOF");
 
-        if (isdigit(c)) {
-          n->type = NUMBER;
-          p = AWAIT_VALUE_END;
-        }
+        json_free_json_node_t(node);
 
-        break;
+        return NULL;
+      }
 
-      case AWAIT_FIELD_START:
-        d = '_';
+      size_t len = 0;
 
-        if (n->type == ARRAY) {
-          d = ']';
-        }
-      
-        if (n->type == OBJECT) {
-          d = '}';
-        }
+      while (current++ != end) {
+        len = len + 1;
+      }
 
-        if (c != ' ' && c != '"' && c != d) {
-          LOG(ERROR, "Failed to parse json, expected ' ', '\"' or '%c'", d);;
-          json_free_json_node_t(n);
+      node->key = calloc(1, len + 1);
+      memcpy(node->key, start, len);
+      node->key[len + 1] = '\0';
+
+      current = end;
+
+      p = AWAIT_KEY_COLON;
+
+      continue;
+    }
+
+    if (p == AWAIT_KEY_COLON) {
+      if ((current = strchr(current, ':')) == NULL) {
+        LOG(ERROR, "Expected ':' but encountered EOF");
+
+        return NULL;
+      }
+
+      p = AWAIT_VALUE_OPEN;
+
+      continue;
+    }
+
+    if (p == AWAIT_VALUE_OPEN) {
+      char c = tolower(*current);
+
+      if (c != ' ' && c != '{' && c != '[' && c != '"' && c != 't' && c != 'f' && c != 'n' && !isdigit(c)) {
+        LOG(ERROR, "Expected \"{, [, \", true, false, null or number but encountered [%c]", c);
+
+        json_free_json_node_t(node);
+
+        return NULL;
+      }
+
+      json_value_t* value;
+
+      if (c == '{') {
+        value = parse_object(&current, node);      
+      }
+
+      if (c == '[') {
+        value = parse_array(&current);
+      }
+
+      if (c == '"') {
+        value = parse_string(&current);
+      }
+
+      if (c == 't' || c == 'f') {
+        value = parse_boolean(&current);
+      }
+
+      if (c == 'n') {
+        value = parse_null(&current);
+      }
+
+      if (isdigit(c)) {
+        value = parse_number(&current);
+      }
+
+      if (value == NULL) {
+        json_free_json_node_t(node);
+
+        return NULL;
+      }
   
-          return NULL;
-        }
-
-        if (c == ' ') {
-          continue;
-        }
-
-        if (c == '"') {
-          p = AWAIT_FIELD_END;
-        }
-
-        if (c == d) {
-          
-        }
-
-        break;
-
-      case AWAIT_FIELD_END:
-        if (c == '"') {
-          p = AWAIT_COLON;
-        }
-
-        break;
-
-      case AWAIT_COLON:
-        if (c != ' ' && c != ':') {
-          LOG(ERROR, "Failed to parse json, expected ' ' or ':'");
-          json_free_json_node_t(n);
-        }
-
-        if (c == ' ') {
-          continue;
-        }
-
-        if (c == ':') {
-          p = AWAIT_VALUE_START;
-        }
-
-        break;
-
-      case AWAIT_VALUE_END:        
-
-        break;
+      node->value = value;
     }
   }
 
-  return n;
+  return NULL;
 }
 
-void attach_node(json_node_t* parent, json_node_t* child) {
-  child->parent = parent;
+json_value_t* parse_array(const char** input) {
+  return NULL;
+}
 
-  if (parent->child == NULL) {
-    parent->child = child;
-  }
+json_value_t* parse_string(const char** input) {
+  return NULL;
+}
 
-  json_node_t* last_child = parent->child;
+json_value_t* parse_number(const char** input) {
+  return NULL;
+}
 
-  while (parent->child->next != NULL) {
-    last_child = parent->child->next;
-  }
+json_value_t* parse_boolean(const char** input) {
+  return NULL;
+}
 
-  last_child->next = child;
+json_value_t* parse_null(const char** input) {
+  return NULL;
 }

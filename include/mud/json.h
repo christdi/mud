@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /**
  * Typedef
@@ -15,7 +16,7 @@ typedef union json_data json_data_t;
  * Structs
 **/
 typedef enum json_parse {
-  AWAIT_VALUE_START, AWAIT_FIELD_START, AWAIT_FIELD_END, AWAIT_COLON, AWAIT_VALUE_END
+  AWAIT_OBJECT_OPEN, AWAIT_KEY_OPEN, AWAIT_KEY_CLOSE, AWAIT_KEY_COLON, AWAIT_VALUE_OPEN
 } json_parse_t;
 
 typedef enum json_type {
