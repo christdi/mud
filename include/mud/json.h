@@ -13,7 +13,7 @@ typedef struct json_node json_node_t;
 typedef union json_data json_data_t; 
 
 /**
- * Structs
+ * Enums
 **/
 typedef enum json_parse {
   AWAIT_OBJECT_OPEN, AWAIT_KEY_OPEN, AWAIT_KEY_CLOSE, AWAIT_KEY_COLON, AWAIT_VALUE_OPEN, AWAIT_VALUE_CLOSE, AWAIT_ARRAY_OPEN, AWAIT_ARRAY_VALUE, AWAIT_ARRAY_CLOSE
@@ -23,6 +23,9 @@ typedef enum json_type {
   UNDEFINED, OBJECT, ARRAY, STRING, NUMBER, BOOLEAN, NIL
 } json_type_t;
 
+/**
+ * Structs
+**/
 typedef struct json_node {
   char* key;
   json_value_t* value;
@@ -44,7 +47,7 @@ typedef union json_data {
 } json_data_t;
 
 /**
- * Function prototypes
+ * Module methods
 **/
 json_node_t* json_new_json_node_t();
 void json_free_json_node_t(json_node_t* node);

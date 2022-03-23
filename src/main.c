@@ -30,6 +30,8 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
+  LOG(INFO, "JSON Output:");
+
   print_object(root->value);
 
   json_free_json_node_t(root);
@@ -42,8 +44,10 @@ int main(int argc, char* argv[]) {
 }
 
 static void print_object(json_value_t* object) {
+  printf("{");
+
   for (json_node_t* children = object->data->children; children != NULL; children = children->next) {
-    LOG(INFO, "Key: [%s]", children->key);
+    printf("\"%s\":", children->key);
     if (children->value->type == OBJECT) {
       print_object(children->value);
     } else if (children->value->type == ARRAY) {
@@ -51,14 +55,21 @@ static void print_object(json_value_t* object) {
     } else {
       print_value(children->value);
     }
+
+    if(children->next != NULL) {
+      printf(",");
+    }
   }
+
+  printf("}");
 }
 
 static void print_array(json_value_t* array) {
   size_t i = 0;
-  for (json_value_t* item = array->data->array; item != NULL; item = item->next) {
-    LOG(INFO, "Array [%d]", i);
 
+  printf("[");
+
+  for (json_value_t* item = array->data->array; item != NULL; item = item->next) {
     if (item->type == OBJECT) {
       print_object(item);
     } else if (item->type == ARRAY) {
@@ -67,29 +78,31 @@ static void print_array(json_value_t* array) {
       print_value(item);
     }
 
+    if(item->next != NULL) {
+      printf(",");
+    }
+
     i++;
   }
+
+  printf("]");
 }
 
 void print_value(json_value_t* value) {
   switch(value->type) {
     case STRING:
-      LOG(INFO, "  Value [%s]", value->data->str);
+      printf("\"%s\"", value->data->str);
       break;
     case BOOLEAN:
-      LOG(INFO, "  Value [%d]", value->data->boolean);
+      printf("%d", value->data->boolean);
       break;
     case NIL:
-      LOG(INFO, "  Value [nil]");
+      printf("null");
       break;
     case NUMBER:
-      LOG(INFO, "  Value [%d]", value->data->number);
-      break;
-    case ARRAY:
-      LOG(INFO, "  Value [array]");
+      printf("%d", value->data->number);
       break;
     default:
-      LOG(INFO, "  Value [unknown]");
       break;
   }
 }

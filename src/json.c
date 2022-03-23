@@ -13,6 +13,13 @@ json_value_t* parse_number(const char* input, size_t len, size_t* pos);
 json_value_t* parse_boolean(const char* input, size_t len, size_t* pos);
 json_value_t* parse_null(const char* input, size_t len, size_t* pos);
 
+void object_to_string(json_node_t* node, char* buffer);
+void array_to_string(json_node_t* node, char* buffer);
+void string_to_string(json_node_t* node, char* buffer);
+void number_to_string(json_node_t* node, char* buffer);
+void boolean_to_string(json_node_t* node, char* buffer);
+void null_to_string(json_node_t* node, char* buffer);
+
 void attach_child(json_value_t* parent, json_node_t* child);
 void attach_array(json_value_t* array, json_value_t* item);
 
