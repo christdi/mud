@@ -18,7 +18,8 @@ static void print_value(json_value_t* value);
  * configuration or initialise logging.  Otherwise, starts the game.
  **/
 int main(int argc, char* argv[]) {
-  const char* json = "{ \"field\": \"hello\", \"blah\": \"meh\", \"hmm\": null, \"true\": true, \"false\": false, \"number\": 1234567, \"array\": [\"string\", 12345, null, true, false, { \"test\": \"meh\", \"test2\": [123, 456, 789]}] }";
+  //const char* json = "{ \"field\": \"hello\", \"blah\": \"meh\", \"hmm\": null, \"true\": true, \"false\": false, \"number\": 1234567890, \"array\": [\"string\", 12345, null, true, false, { \"test\": \"meh\", \"test2\": [123, 456, 789]}] }";
+  const char* json = "{\"problems\":[{\"Diabetes\":[{\"medications\":[{\"medicationsClasses\":[{\"className\":[{\"associatedDrug\":[{\"name\":\"asprin\",\"dose\":\"\",\"strength\":\"500 mg\"}],\"associatedDrug#2\":[{\"name\":\"somethingElse\",\"dose\":\"\",\"strength\":\"500 mg\"}]}],\"className2\":[{\"associatedDrug\":[{\"name\":\"asprin\",\"dose\":\"\",\"strength\":\"500 mg\"}],\"associatedDrug#2\":[{\"name\":\"somethingElse\",\"dose\":\"\",\"strength\":\"500 mg\"}]}]}]}],\"labs\":[{\"missing_field\":\"missing_value\"}]}],\"Asthma\":[{}]}]}";
 
   LOG(INFO, "JSON input: [%s]", json);
 
