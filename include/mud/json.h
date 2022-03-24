@@ -8,9 +8,8 @@
 /**
  * Typedef
 **/
-typedef struct json_value json_value_t;
+typedef union json_value json_value_t;
 typedef struct json_node json_node_t;
-typedef union json_data json_data_t; 
 
 /**
  * Enums
@@ -27,35 +26,28 @@ typedef enum json_type {
  * Structs
 **/
 typedef struct json_node {
-  char* key;
+  json_type_t type;
   json_value_t* value;
   json_node_t* next;
+
+  char* key;
 } json_node_t;
 
-typedef struct json_value {
-  json_type_t type;
-  json_data_t* data;
-  json_value_t* next;
-} json_value_t;
-
-typedef union json_data {
+typedef union json_value {
   char* str;
-  uint32_t number;
+  double number;
   bool boolean;
-  json_value_t* array;
+  json_node_t* array;
   json_node_t* children;
-} json_data_t;
+} json_value_t;
 
 /**
  * Module methods
 **/
-json_node_t* json_new_json_node_t();
+json_node_t* json_new_json_node_t(json_type_t type);
 void json_free_json_node_t(json_node_t* node);
 
-json_value_t* json_new_json_value_t(json_type_t type);
-void json_free_json_value_t(json_value_t* value);
-
-int json_parse(const char* input, size_t len, json_node_t* node);
-void json_to_string(json_node_t* json, char* output);
+json_node_t* json_deserialize(const char* input, size_t len);
+int json_serialize(json_node_t* json, char* output, size_t len);
 
 #endif

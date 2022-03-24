@@ -1,38 +1,42 @@
 #include <assert.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "mud/json.h"
 #include "mud/log.h"
 
-json_value_t* parse_value(const char* input, size_t len, size_t* pos);
-json_value_t* parse_object(const char* input, size_t len, size_t* pos);
-json_value_t* parse_array(const char* input, size_t len, size_t* pos);
-json_value_t* parse_string(const char* input, size_t len, size_t* pos);
-json_value_t* parse_number(const char* input, size_t len, size_t* pos);
-json_value_t* parse_boolean(const char* input, size_t len, size_t* pos);
-json_value_t* parse_null(const char* input, size_t len, size_t* pos);
+#define TRUE_STR "true"
+#define FALSE_STR "false"
+#define NULL_STR "null"
 
-void object_to_string(json_node_t* node, char* buffer);
-void array_to_string(json_node_t* node, char* buffer);
-void string_to_string(json_node_t* node, char* buffer);
-void number_to_string(json_node_t* node, char* buffer);
-void boolean_to_string(json_node_t* node, char* buffer);
-void null_to_string(json_node_t* node, char* buffer);
+json_node_t* parse_value(const char* input, size_t len, size_t* pos);
+json_node_t* parse_object(const char* input, size_t len, size_t* pos);
+json_node_t* parse_array(const char* input, size_t len, size_t* pos);
+json_node_t* parse_string(const char* input, size_t len, size_t* pos);
+json_node_t* parse_number(const char* input, size_t len, size_t* pos);
+json_node_t* parse_boolean(const char* input, size_t len, size_t* pos);
+json_node_t* parse_null(const char* input, size_t len, size_t* pos);
 
-void attach_child(json_value_t* parent, json_node_t* child);
-void attach_array(json_value_t* array, json_value_t* item);
+int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos);
+
+void attach_child(json_node_t* parent, json_node_t* child);
+void attach_array(json_node_t* array, json_node_t* item);
 
 /**
  * Creates a new instance of json_node_t.
  *
  * Returns the new instance
 **/
-json_node_t* json_new_json_node_t() {
+json_node_t* json_new_json_node_t(json_type_t type) {
   json_node_t* node = calloc(1, sizeof(json_node_t));
-
+  
+  node->type = type;
   node->key = NULL;
-  node->value = NULL;
+  node->next = NULL;
+
+  node->value = calloc(1, sizeof(json_value_t));
+
 
   return node;
 }
@@ -45,46 +49,8 @@ json_node_t* json_new_json_node_t() {
 void json_free_json_node_t(json_node_t* node) {
   assert(node);
 
-  if (node->key != NULL) {
-    free(node->key);  
-  }
-
-  if (node->value != NULL) {
-    json_free_json_value_t(node->value);
-  }
-
-  free(node);
-}
-
-/**
- * Creates a new instance of json_value_t.  This also allocates memory for the data field as
- * the json_data_t union type should never exist independently of a json_value_t.
- *
- * type - the type of the json value
- *
- * Returns the new instance
-**/
-json_value_t* json_new_json_value_t(json_type_t type) {
-  assert(type != UNDEFINED);
-
-  json_value_t* value = calloc(1, sizeof(json_value_t));
-  value->data = calloc(1, sizeof(json_data_t));
-  value->type = type;
-
-  return value;
-}
-
-/**
- * Frees an allocated instance of json_value_t.  If there is children, it'll recursively
- * free all of them.  If there are siblings, it will recursivel free all of them.
- *
- * value - the json_value_t instance to be freed.
-**/
-void json_free_json_value_t(json_value_t* value) {
-  assert(value);
-
-  if (value->type == OBJECT) {
-    json_node_t* child = value->data->children;
+  if (node->type == OBJECT) {
+    json_node_t* child = node->value->children;
 
     while(child != NULL) {
       json_node_t* next = child->next;
@@ -95,57 +61,67 @@ void json_free_json_value_t(json_value_t* value) {
     }
   }
 
-  if(value->type == ARRAY) {
-    json_value_t* child = value->data->array;
+  if(node->type == ARRAY) {
+    json_node_t* child = node->value->array;
 
     while (child != NULL) {
-      json_value_t* next = child->next;
+      json_node_t* next = child->next;
 
-      json_free_json_value_t(child);
+      json_free_json_node_t(child);
 
       child = next;
     }
   }
 
-  if (value->type == STRING) {
-    free(value->data->str);
+  if (node->type == STRING) {
+    free(node->value->str);
   }
 
-  free(value->data);
-  free(value);
+  if (node->value != NULL) {
+    free(node->value);
+  }
+
+  if (node->key != NULL) {
+    free(node->key);  
+  }
+
+  free(node);
 }
 
 /**
- * Parses a string of JSON into a json_node_t.
+ * Deserializes a JSON string into a json_node_t.
  *
  * input - null terminated string containing the JSON to be parsed
  * len - length of the data to be parsed
  * node - the node to be populated with parsed json from the string
  *
- * Returns 0 on success or -1 on failure.
+ * Returns populated json_node_t or NULL
 **/
-int json_parse(const char* input, size_t len, json_node_t* node) {
+json_node_t* json_deserialize(const char* input, size_t len) {
   assert(input);
-  assert(node);
 
   size_t pos = 0;
 
-  node->value = parse_value(input, len, &pos);
-
-  if (node->value == NULL) {
-    return -1;
-  }
-
-  return 0;
+  return parse_value(input, len, &pos);
 }
 
 /**
- * Steps through a json_node_t instance and constructs a JSON string from it.
+ * Serializes a json_node_t instance into a JSON string.
  *
- * json - the node to step through
+ * json - the node to serialize
  * output - a pointer to a character array sufficient to hold the JSON string
+ * len - the length of the buffer
 **/
-void json_to_string(json_node_t* json, char* output) {
+int json_serialize(json_node_t* json, char* output, size_t len) {
+  size_t pos = 0;
+
+  if (write_node_value(json, output, len, &pos) == -1) {
+    return -1;
+  }
+
+  output[pos] = '\0';
+
+  return 0;
 }
 
 /**
@@ -156,16 +132,16 @@ void json_to_string(json_node_t* json, char* output) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_value(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_value(const char* input, size_t len, size_t* pos) {
   size_t i = 0;
 
   for(; *pos < len; (*pos)++) {
     i = *pos;
     char c = input[i];
 
-    if (c != ' ' && c != '{' && c != '[' && c != '"' && c != 't' && c != 'f' && c != 'n' && !isdigit(c)) {
+    if (c != ' ' && c != '{' && c != '[' && c != '"' && c != 't' && c != 'f' && c != 'n' && c != '-' && !isdigit(c)) {
       LOG(ERROR, "Expected \"{, [, \", true, false, null or number but encountered [%c] at position [%d]", c, i);
 
       break;
@@ -175,23 +151,23 @@ json_value_t* parse_value(const char* input, size_t len, size_t* pos) {
       continue;
     }
 
-    json_value_t* value = NULL;
+    json_node_t* node = NULL;
 
     if (c == '{') {
-      value = parse_object(input, len, pos);
+      node = parse_object(input, len, pos);
     } else if (c == '[') {
-      value = parse_array(input, len, pos);
+      node = parse_array(input, len, pos);
     } else if (c == '"') {
-      value = parse_string(input, len, pos);
+      node = parse_string(input, len, pos);
     } else if (c == 't' || c == 'f') {
-      value = parse_boolean(input, len, pos);
+      node = parse_boolean(input, len, pos);
     } else if (c == 'n') {
-      value = parse_null(input, len, pos);
-    } else if (isdigit(c)) {
-      value = parse_number(input, len, pos);
+      node = parse_null(input, len, pos);
+    } else if (isdigit(c) || c == '-') {
+      node = parse_number(input, len, pos);
     }
 
-    return value;
+    return node;
   }
 
   LOG(ERROR, "Reached EOF before object was closed");
@@ -206,16 +182,19 @@ json_value_t* parse_value(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_object(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
   json_parse_t p = AWAIT_OBJECT_OPEN;
-  json_value_t* obj = json_new_json_value_t(OBJECT);
-  json_node_t* node = NULL;
+  json_node_t* obj = json_new_json_node_t(OBJECT);
 
   size_t key_start = 0;
   size_t key_len = 0;
+  char* key_buffer = NULL;
+
   size_t i = 0;
+
+
 
   for(; *pos < len; (*pos)++) {
     i = *pos;
@@ -258,10 +237,9 @@ json_value_t* parse_object(const char* input, size_t len, size_t* pos) {
       if (c == '"') {
         const char* start = input + key_start;
 
-        node = json_new_json_node_t();
-        node->key = calloc(1, key_len + 1);
-        memcpy(node->key, start, key_len);
-        node->key[key_len + 1] = '\0';
+        key_buffer = calloc(1, key_len + 1);
+        memcpy(key_buffer, start, key_len);
+        key_buffer[key_len + 1] = '\0';
 
         key_start = 0;
         key_len = 0;
@@ -291,13 +269,15 @@ json_value_t* parse_object(const char* input, size_t len, size_t* pos) {
     }
 
     if (p == AWAIT_VALUE_OPEN) {
-      json_value_t* value = parse_value(input, len, pos);
+      json_node_t* node = parse_value(input, len, pos);
 
-      if (value == NULL) {
+      if (node == NULL) {
         break;
       }
 
-      node->value = value;
+      node->key = key_buffer;
+      key_buffer = NULL;
+
       attach_child(obj, node);
 
       p = AWAIT_VALUE_CLOSE;
@@ -326,13 +306,11 @@ json_value_t* parse_object(const char* input, size_t len, size_t* pos) {
     }
   }
 
-  LOG(ERROR, "Reached EOF before object was closed");
-
-  json_free_json_value_t(obj);
-
-  if (node != NULL) {
-    json_free_json_node_t(node);
+  if (key_buffer != NULL) {
+    free(key_buffer);  
   }
+
+  json_free_json_node_t(obj);
 
   return NULL;
 }
@@ -344,12 +322,12 @@ json_value_t* parse_object(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_array(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_array(const char* input, size_t len, size_t* pos) {
   assert(input);
 
-  json_value_t* array = json_new_json_value_t(ARRAY);
+  json_node_t* array = json_new_json_node_t(ARRAY);
   json_parse_t p = AWAIT_ARRAY_OPEN;
 
   size_t i = 0;
@@ -381,13 +359,13 @@ json_value_t* parse_array(const char* input, size_t len, size_t* pos) {
         return array;
       }
 
-      json_value_t* value = parse_value(input, len, pos);
+      json_node_t* node = parse_value(input, len, pos);
 
-      if (value == NULL) {
+      if (node == NULL) {
         break;
       }
 
-      attach_array(array, value);
+      attach_array(array, node);
 
       p = AWAIT_ARRAY_CLOSE;
 
@@ -417,7 +395,7 @@ json_value_t* parse_array(const char* input, size_t len, size_t* pos) {
     }
   }
 
-  json_free_json_value_t(array);
+  json_free_json_node_t(array);
 
   return NULL;
 }
@@ -429,12 +407,12 @@ json_value_t* parse_array(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_string(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_string(const char* input, size_t len, size_t* pos) {
   assert(input);
 
-  json_value_t* value = json_new_json_value_t(STRING);
+  json_node_t* node = json_new_json_node_t(STRING);
   json_parse_t p = AWAIT_VALUE_OPEN;
   size_t str_start = 0;
   size_t str_len = 0;
@@ -461,20 +439,19 @@ json_value_t* parse_string(const char* input, size_t len, size_t* pos) {
 
     if (p == AWAIT_VALUE_CLOSE) {
       if (c == '"') {
-        value->data->str = calloc(1, str_len + 1);
-        memcpy(value->data->str, input + str_start, str_len);
-        value->data->str[str_len + 1] = '\0';
+        node->value->str = calloc(1, str_len + 1);
+        memcpy(node->value->str, input + str_start, str_len);
+        node->value->str[str_len + 1] = '\0';
         *pos = i;
 
-        return value;
+        return node;
       }
 
       str_len++;
     }
   }
 
-  json_free_json_value_t(value);
-  LOG(ERROR, "Encountered EOF while parsing JSON string");
+  json_free_json_node_t(node);
 
   return NULL;
 }
@@ -486,46 +463,46 @@ json_value_t* parse_string(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_number(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_number(const char* input, size_t len, size_t* pos) {
   assert(input);
 
   size_t i = 0;
   size_t num_start = *pos;
-  size_t num_len = 0;
-
   bool seen_number = false;
-  bool read_number = false;
 
   for(; *pos < len; (*pos)++) {
     i = *pos;
     char c = input[i];
 
-    if (isdigit(c) && !read_number) {
-      seen_number = true;
-
-      num_len++;
-
+    if (c == ' ' && !seen_number) {
       continue;
     }
 
     if (c == ' ' && seen_number) {
-      read_number = true;
+      break;
+    }
+
+    if (c == '-' || c == 'e' || c == 'E' || c == '+' || c == '.' || isdigit(c)) {
+      seen_number = true;
 
       continue;
     }
 
     if (c == ',' || c == '}' || c == ']') {
-      char tmp[num_len + 1];
-      memcpy(tmp, input + num_start, num_len);
+      double value = strtod(input + num_start, NULL);
 
-      json_value_t* value = json_new_json_value_t(NUMBER);
-      value->data->number = strtoul(tmp, NULL, 10);
+      if (value == 0.0 && strncmp(input + num_start, "0.0", 3) != 0) {
+        break;
+      }
+
+      json_node_t* node = json_new_json_node_t(NUMBER);
+      node->value->number = value;
 
       *pos = *pos - 1;
 
-      return value;
+      return node;
     }
 
     break;
@@ -543,33 +520,33 @@ json_value_t* parse_number(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_boolean(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_boolean(const char* input, size_t len, size_t* pos) {
   assert(input);
 
-  json_value_t* value = json_new_json_value_t(BOOLEAN);
+  json_node_t* node = json_new_json_node_t(BOOLEAN);
   const char* current = input + *pos;
 
   if (strncmp(current, "true", 4) == 0) {
-    value->data->boolean = true;
+    node->value->boolean = true;
 
     *pos = *pos + 3;
 
-    return value;
+    return node;
   }
 
   if (strncmp(current, "false", 5) == 0) {
-    value->data->boolean = false;
+    node->value->boolean = false;
 
     *pos = *pos + 4;
 
-    return value;
+    return node;
   }
 
   LOG(ERROR, "Expected \"true or false\" but encountered [%c] at position [%i]", input[*pos], *pos);
 
-  json_free_json_value_t(value);
+  json_free_json_node_t(node);
 
   return NULL;
 }
@@ -581,46 +558,209 @@ json_value_t* parse_boolean(const char* input, size_t len, size_t* pos) {
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
  *
- * Returns an instance of json_value_t or NULL if parsing failed.
+ * Returns an instance of json_node_t or NULL if parsing failed.
 **/
-json_value_t* parse_null(const char* input, size_t len, size_t* pos) {
+json_node_t* parse_null(const char* input, size_t len, size_t* pos) {
   assert(input);
 
-  json_value_t* value = json_new_json_value_t(NIL);
+  json_node_t* node = json_new_json_node_t(NIL);
   const char* current = input + *pos;
 
   if ((strncmp(current, "null", 4) != 0)) {
     LOG(ERROR, "Expected \"null\" but encountered [%c] at position [%i]", input[*pos], *pos);
 
-    json_free_json_value_t(value);
+    json_free_json_node_t(node);
 
     return NULL;
   }
 
   *pos = *pos + 3;
-  return value;
+  return node;
+}
+
+/**
+ * Module internal method that writes the JSON data represented by node into a character
+ * buffer.
+ *
+ * node - json_node_t instance with JSON data we want to write
+ * buffer - preallocated character array we will write data to
+ * len - the length of the buffer, effectively the maximum amount of characters we will write
+ * pos - the current position in the buffer for writing
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
+  assert(node);
+  assert(buffer);
+
+  size_t val_len = 0;
+
+  switch(node->type) {
+    case STRING:  
+      if ((val_len = snprintf(NULL, 0, "\"%s\"", node->value->str)) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "\"%s\"", node->value->str);
+
+      *pos += val_len;
+
+      break;
+
+    case NUMBER:
+      if ((val_len = snprintf(NULL, 0, "%g", node->value->number)) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%g", node->value->number);
+
+      *pos += val_len;
+      
+      break;
+
+    case BOOLEAN:
+      if (node->value->boolean == true) {
+        if ((val_len = snprintf(NULL, 0, "%s", TRUE_STR)) > len - *pos) {
+          return -1;
+        }
+
+        sprintf(buffer + *pos, "%s", TRUE_STR);
+
+        *pos += val_len;
+
+        break;
+      }
+
+      if (node->value->boolean == false) {
+        if ((val_len = snprintf(NULL, 0, "%s", FALSE_STR)) > len - *pos) {
+          return -1;
+        }
+
+        sprintf(buffer + *pos, "%s", FALSE_STR);
+
+        *pos += val_len;
+
+        break;
+      }
+
+      break;
+
+    case NIL:
+      if ((val_len = snprintf(NULL, 0, "%s", NULL_STR)) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%s", NULL_STR);
+
+      *pos += val_len;
+      
+      break;
+
+    case OBJECT:
+      if ((val_len = snprintf(NULL, 0, "%s", "{ ")) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%s", "{ ");
+
+      *pos += val_len;
+
+      for (json_node_t* child = node->value->children; child != NULL; child = child->next) {
+        if ((val_len = snprintf(NULL, 0, "\"%s\": ", child->key)) > len - *pos) {
+          return -1;
+        }
+
+        sprintf(buffer + *pos, "\"%s\": ", child->key);
+
+        *pos += val_len;
+
+        if (write_node_value(child, buffer, len, pos) == -1) {
+          return -1;
+        }
+
+        if (child->next != NULL) {
+          if ((val_len = snprintf(NULL, 0, "%s", ", ")) > len - *pos) {
+            return -1;
+          }
+
+          sprintf(buffer + *pos, "%s", ", ");
+
+          *pos += val_len;
+        }
+      }
+
+      if ((val_len = snprintf(NULL, 0, "%s", " }")) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%s", " }");
+
+      *pos += val_len;
+
+      break;
+
+    case ARRAY:
+      if ((val_len = snprintf(NULL, 0, "%s", "[ ")) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%s", "[ ");
+
+      *pos += val_len;
+
+      for (json_node_t* item = node->value->array; item != NULL; item = item->next) {
+        if (write_node_value(item, buffer, len, pos) == -1) {
+          return -1;
+        }
+
+        if (item->next != NULL) {
+          if ((val_len = snprintf(NULL, 0, "%s", ", ")) > len - *pos) {
+            return -1;
+          }
+
+          sprintf(buffer + *pos, "%s", ", ");
+
+          *pos += val_len;
+        }
+      }
+
+      if ((val_len = snprintf(NULL, 0, "%s", " ]")) > len - *pos) {
+        return -1;
+      }
+
+      sprintf(buffer + *pos, "%s", " ]");
+
+      *pos += val_len;
+
+      break;
+
+    default:
+      return -1;
+
+      break;
+  }
+
+  return 0;
 }
 
 /**
  * Module internal method to attach a child node to a parent.
  *
- * parent - a json_value_t representing the parent node
+ * parent - a json_node_t representing the parent node
  * child - a json_node_t to be attached to the parent
 **/
-void attach_child(json_value_t* parent, json_node_t* child) {
+void attach_child(json_node_t* parent, json_node_t* child) {
   assert(parent);
   assert(child);
   assert(parent->type == OBJECT);
 
-  json_data_t* data = parent->data;
-
-  if (data->children == NULL) {
-    data->children = child;
+  if (parent->value->children == NULL) {
+    parent->value->children = child;
 
     return;
   }
 
-  json_node_t* children = data->children;
+  json_node_t* children = parent->value->children;
 
   while (children->next != NULL) {
     children = children->next;
@@ -632,21 +772,21 @@ void attach_child(json_value_t* parent, json_node_t* child) {
 /**
  * Module internal method to attach a value to an array.
  *
- * array a json_value_t representing the array to be attached to
- * item - a json_value_t to be added to the array.
+ * array a json_node_t representing the array to be attached to
+ * item - a json_node_t to be added to the array.
 **/
-void attach_array(json_value_t* array, json_value_t* item) {
+void attach_array(json_node_t* array, json_node_t* item) {
   assert(array);
   assert(item);
   assert(array->type == ARRAY);
 
-  if (array->data->array == NULL) {
-    array->data->array = item;
+  if (array->value->array == NULL) {
+    array->value->array = item;
 
     return;
   }
 
-  json_value_t* next = array->data->array;
+  json_node_t* next = array->value->array;
 
   while(next->next != NULL) {
     next = next->next;
