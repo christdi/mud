@@ -168,7 +168,7 @@ void process_se(void* extension, telnet_t* telnet, client_t* client, int option,
         msg = msg + 1;
       }
   
-      gmcp->on_gmcp(gmcp->context, client, topic, msg);
+      gmcp->on_gmcp(client, gmcp->context, topic, msg);
     }
   }
 }

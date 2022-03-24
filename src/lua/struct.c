@@ -5,6 +5,7 @@
 #include "mud/command.h"
 #include "mud/ecs/entity.h"
 #include "mud/ecs/system.h"
+#include "mud/json.h"
 #include "mud/log.h"
 #include "mud/lua/struct.h"
 #include "mud/player.h"
@@ -31,6 +32,10 @@
 
 #define TASK_NAME_FIELD "name"
 #define TASK_EXECUTE_AT "execute_at"
+
+#define JSON_NODE_VALUE_FIELD "node"
+
+static void lua_push_json_value(lua_State* l, json_node_t* node);
 
 /**
  * Converts an entity structure to a Lua table and pushes it on top of the stack.
@@ -232,6 +237,88 @@ void lua_push_task(lua_State* l, task_t* task) {
   lua_pushstring(l, TASK_EXECUTE_AT);
   lua_pushnumber(l, task->execute_at);
   lua_rawset(l, -3);
+}
+
+/**
+ * Converts a json_node_t instance to a Lua table and pushes it on top of the stack.
+ *
+ * l - Lua state instance
+ * task - task to be converted
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+void lua_push_json_node(lua_State* l, json_node_t* node) {
+  assert(l);
+  assert(node);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_JSON_NODE);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, JSON_NODE_VALUE_FIELD);
+  lua_push_json_value(l, node);
+  lua_rawset(l, -3);
+}
+
+/**
+ * Module internal recursive method to step through a json_node_t and assign
+ * them to a table on the stack.
+**/
+void lua_push_json_value(lua_State* l, json_node_t* node) {
+  assert(l);
+  assert(node);
+  
+  int index = 1;
+
+  switch(node->type) {
+    case OBJECT:
+      lua_newtable(l);
+
+      for (json_node_t* child = node->value->children; child != NULL; child = child->next) {
+        lua_pushstring(l, child->key);
+        lua_push_json_value(l, child);
+        lua_rawset(l, -3);
+      }
+
+      break;
+
+    case ARRAY:
+      lua_newtable(l);
+
+      for (json_node_t* item = node->value->array; item != NULL; item = item->next) {
+        lua_pushnumber(l, index);
+        lua_push_json_value(l, item);
+        lua_rawset(l, -3);
+        index++;
+      }
+
+      break;
+
+    case STRING:
+      lua_pushstring(l, node->value->str);
+
+      break;
+
+    case NUMBER:
+      lua_pushnumber(l, node->value->number);
+
+      break;
+
+    case BOOLEAN:
+      lua_pushboolean(l, node->value->boolean);
+
+      break;
+
+    case NIL:
+      lua_pushnil(l);
+
+      break;
+
+    default:
+      break;
+  }
 }
 
 /**

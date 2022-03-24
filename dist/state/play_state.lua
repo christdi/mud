@@ -7,6 +7,7 @@ local on_exit
 local on_input
 local on_output
 local on_event
+local on_gmcp
 
 local state
 
@@ -54,6 +55,9 @@ on_event = function(p, event)
   player.narrate(p, event);
 end
 
+on_gmcp = function(p, topic, msg)
+end
+
 interface = {
   register = register,
   use = use,
@@ -61,7 +65,8 @@ interface = {
   on_exit = on_exit,
   on_input = on_input,
   on_output = on_output,
-  on_event = on_event
+  on_event = on_event,
+  on_gmcp = on_gmcp
 }
 
 return interface

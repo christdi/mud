@@ -5,6 +5,7 @@ local interface
 local on_enter
 local on_exit
 local on_input
+local on_gmcp
 local populate_characters
 local display_characters
 local get_username
@@ -65,6 +66,27 @@ on_input = function(p, arg)
    data.login.substate(p, arg, data)
 end
 
+
+on_gmcp = function(p, topic, msg)
+   log.info("Topic: " .. dump(topic .. ", Msg: " .. dump(msg)))
+
+   if topic == "Game.Login" then
+      if not msg then
+         log.error("Game.Login GMCP topic but data was NULL")
+         return
+      end
+
+      local data = game.players[p.uuid];
+      
+      data.login.username = msg.node.username
+      
+      get_password(p, msg.node.password, data)
+
+      return
+   end
+
+   log.info("Topic: " .. topic .. ", Msg: " .. dump(msg))
+end
 
 -- Populate player data with entities available to them
 --
@@ -198,7 +220,8 @@ interface = {
    use = use,
    on_enter = on_enter,
    on_exit = on_exit,
-   on_input = on_input
+   on_input = on_input,
+   on_gmcp = on_gmcp
 }
 
 return interface

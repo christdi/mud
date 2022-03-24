@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "lauxlib.h"
 #include "lua.h"
@@ -8,6 +9,7 @@
 #include "mud/ecs/entity.h"
 #include "mud/ecs/system.h"
 #include "mud/log.h"
+#include "mud/json.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/hooks.h"
@@ -36,6 +38,7 @@
 #define STATE_INPUT_HOOK_FUNCTION "on_input"
 #define STATE_OUTPUT_HOOK_FUNCTION "on_output"
 #define STATE_EVENT_HOOK_FUNCTION "on_event"
+#define STATE_GMCP_HOOK_FUNCTION "on_gmcp"
 
 #define SYSTEM_EXECUTE_HOOK_FUNCTION "execute"
 
@@ -518,6 +521,63 @@ int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, ev
 
     return -1;
   }
+
+  return 0;
+}
+
+/**
+ * Calls the on_event method associated with the provided Lua state module.
+ *
+ * Parameters
+ *   l - The Lua state
+ *   player - The player whom we're calling this state for
+ *   state - The state we're calling
+ *   topic - the topic of the GMCP message
+ *   msg - the message of the GMCP message, may be null
+ *
+ * Returns 0 on success or returns luaL_error on error.
+ **/
+int lua_call_state_gmcp_hook(lua_State* l, player_t* player, state_t* state, const char* topic, const char* msg) {
+  assert(l);
+  assert(player);
+  assert(state);
+  assert(topic);
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, state->ref); // -1 = state module table
+  lua_pushstring(l, STATE_GMCP_HOOK_FUNCTION); // -2 = state module table, -1 = on_gmcp method name
+
+  if (lua_gettable(l, -2) != LUA_TFUNCTION) { // -2 = state module table, -1 = on_gmcp method
+    lua_pop(l, 2);
+
+    return 0;
+  }
+
+  lua_remove(l, -2); // -1 = on_gmcp method
+
+  lua_push_player(l, player); // -2 = on_gmcp method, -1 = player table
+  lua_pushstring(l, topic); // -3 = on_gmcp method, -2 = player table, -1 = topic
+
+  if (msg != NULL) {
+    json_node_t* node = NULL;
+
+    if ((node = json_deserialize(msg, strlen(msg))) == NULL) {
+      LOG(ERROR, "Failed to deserialize GMCP JSON data [%s]", msg);
+      lua_pop(l, 3);
+      
+      return -1;
+    }
+
+    lua_push_json_node(l, node); // -4 = on_gmcp method, -3 player table, -2 = topic, -1 msg
+    json_free_json_node_t(node);
+  }
+
+  if (lua_pcall(l, msg == NULL ? 2 : 3, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling state gmcp hook [%s]", lua_tostring(l, -1));
+
+    return -1;
+  }
+
+  
 
   return 0;
 }
