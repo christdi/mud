@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "mud/config.h"
 #include "mud/game.h"
-#include "mud/log.h"
-#include "mud/util/mudstring.h"
 
 /**
  * Entry point for the application.  Will exit if unable to load to
