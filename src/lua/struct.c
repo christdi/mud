@@ -34,6 +34,7 @@
 #define TASK_EXECUTE_AT "execute_at"
 
 #define JSON_NODE_VALUE_FIELD "node"
+#define JSON_NODE_TYPE_FIELD "_type"
 
 static void lua_push_json_value(lua_State* l, json_node_t* node);
 
@@ -276,7 +277,15 @@ void lua_push_json_value(lua_State* l, json_node_t* node) {
     case OBJECT:
       lua_newtable(l);
 
+      lua_pushstring(l, JSON_NODE_TYPE_FIELD);
+      lua_pushstring(l, json_get_type_str(node->type));
+      lua_rawset(l, -3);
+
       for (json_node_t* child = node->value->children; child != NULL; child = child->next) {
+        lua_pushstring(l, JSON_NODE_TYPE_FIELD);
+        lua_pushstring(l, json_get_type_str(child->type));
+        lua_rawset(l, -3);
+
         lua_pushstring(l, child->key);
         lua_push_json_value(l, child);
         lua_rawset(l, -3);
@@ -287,7 +296,15 @@ void lua_push_json_value(lua_State* l, json_node_t* node) {
     case ARRAY:
       lua_newtable(l);
 
+      lua_pushstring(l, JSON_NODE_TYPE_FIELD);
+      lua_pushstring(l, json_get_type_str(node->type));
+      lua_rawset(l, -3);
+
       for (json_node_t* item = node->value->array; item != NULL; item = item->next) {
+        lua_pushstring(l, JSON_NODE_TYPE_FIELD);
+        lua_pushstring(l, json_get_type_str(item->type));
+        lua_rawset(l, -3);
+
         lua_pushnumber(l, index);
         lua_push_json_value(l, item);
         lua_rawset(l, -3);
@@ -529,4 +546,35 @@ task_t* lua_to_task(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return task;
+}
+
+/**
+ * Covnerts the table at index into a json_node_t representation.
+ *
+ * l - Lua state instance
+ *
+ * Returns a pointer to an allocated json_node_t instance.
+**/
+json_node_t* lua_to_json_node(lua_State* l, int index) {
+  assert(l);
+
+  int type = lua_type(l, index);
+  json_node_t* node = NULL;
+
+  if (type == LUA_TSTRING) {
+    node = json_new_string(lua_tostring(l, index));
+    lua_remove(l, index);
+  } else if (type == LUA_TNUMBER) {
+    node = json_new_number(lua_tonumber(l, index));
+    lua_remove(l, index);
+  } else if (type == LUA_TBOOLEAN) {
+    node = json_new_boolean(lua_toboolean(l, index));
+    lua_remove(l, index);
+  } else if (type == LUA_TNIL) {
+    node = json_new_null();
+    lua_remove(l, index);
+  } else if (type == LUA_TTABLE) {
+  }
+
+  return node;
 }
