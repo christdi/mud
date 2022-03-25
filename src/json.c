@@ -20,9 +20,6 @@ json_node_t* parse_null(const char* input, size_t len, size_t* pos);
 
 int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos);
 
-void attach_child(json_node_t* parent, json_node_t* child);
-void attach_array(json_node_t* array, json_node_t* item);
-
 static const json_type_str_t json_type_strs[] = {
   { OBJECT, "object"},
   { ARRAY, "array" },
@@ -405,7 +402,7 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
       node->key = key_buffer;
       key_buffer = NULL;
 
-      attach_child(obj, node);
+      json_attach_child(obj, node);
 
       p = AWAIT_VALUE_CLOSE;
 
@@ -492,7 +489,7 @@ json_node_t* parse_array(const char* input, size_t len, size_t* pos) {
         break;
       }
 
-      attach_array(array, node);
+      json_attach_array(array, node);
 
       p = AWAIT_ARRAY_CLOSE;
 
@@ -871,12 +868,12 @@ int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
 }
 
 /**
- * Module internal method to attach a child node to a parent.
+ * Attach a child node to a parent.
  *
  * parent - a json_node_t representing the parent node
  * child - a json_node_t to be attached to the parent
 **/
-void attach_child(json_node_t* parent, json_node_t* child) {
+void json_attach_child(json_node_t* parent, json_node_t* child) {
   assert(parent);
   assert(child);
   assert(parent->type == OBJECT);
@@ -897,12 +894,12 @@ void attach_child(json_node_t* parent, json_node_t* child) {
 }
 
 /**
- * Module internal method to attach a value to an array.
+ * Attach a node to an array.
  *
  * array a json_node_t representing the array to be attached to
  * item - a json_node_t to be added to the array.
 **/
-void attach_array(json_node_t* array, json_node_t* item) {
+void json_attach_array(json_node_t* array, json_node_t* item) {
   assert(array);
   assert(item);
   assert(array->type == ARRAY);

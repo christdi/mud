@@ -68,7 +68,7 @@ end
 
 
 on_gmcp = function(p, topic, msg)
-   log.info("Topic: " .. dump(topic .. ", Msg: " .. dump(msg)))
+   log.info("Topic: " .. topic .. ", Msg: " .. dump(msg))
 
    if topic == "Game.Login" then
       if not msg then
@@ -84,8 +84,6 @@ on_gmcp = function(p, topic, msg)
 
       return
    end
-
-   log.info("Topic: " .. topic .. ", Msg: " .. dump(msg))
 end
 
 -- Populate player data with entities available to them

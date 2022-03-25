@@ -65,4 +65,7 @@ json_node_t* json_new_null();
 const char* json_get_type_str(json_type_t type);
 json_type_t json_get_str_type(const char* str);
 
+void json_attach_child(json_node_t* parent, json_node_t* child);
+void json_attach_array(json_node_t* array, json_node_t* item);
+
 #endif

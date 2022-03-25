@@ -14,6 +14,8 @@ function main()
   game.players = {}
   game.config = {}
 
+  game.test({key1 = true, key2 = false, key3 = {null, "two", 3}, key4 = {innerKeyOne = null, innerkeyTwo = "blah"}});
+
   log.info("Demo MUD initialising")
 
   states.register()
@@ -24,9 +26,13 @@ function main()
 
   game.config.default_room = room_entity.new("Valhalla", "Home of the Gods", "This is the place where gods come to celebrate and rejoice with fallen warriors.")
   game.config.second_room = room_entity.new("Hel", "Recluse of the Damned", "This is the place where lost souls come to be forgotten.")
+  game.config.third_room = room_entity.new("Mount Celestia", "Home of the Platinum Dragon", "This is the place where the truly good come to live in harmony.")
 
   portal_entity.new("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel"} )
   portal_entity.new("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla"} )
+
+  portal_entity.new("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia"})
+  portal_entity.new("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla"} )
 end
 
 function shutdown()

@@ -5,7 +5,7 @@
 
 #include "mud/log.h"
 
-static log_level_t min_log_level = INFO;
+static log_level_t min_log_level = DEBUG;
 
 static const char* log_get_level(log_level_t level);
 
