@@ -108,20 +108,6 @@ int lua_game_register_api(lua_State* l) {
  * Lua API method which does nothing in particular but can be changed to test functionality.
 **/
 static int lua_test(lua_State* l) {
-  char buffer[1024];
-  json_node_t* node = lua_to_json_node(l, -1);
-
-  if (json_serialize(node, buffer, 1024) == -1) {
-    json_free_json_node_t(node);
-
-    return luaL_error(l, "Failed to serialize JSON node");
-  }
-
-  lua_pop(l, 1);
-  json_free_json_node_t(node);
-
-  LOG(INFO, "JSON: %s", buffer);
-
   return 0;
 }
 

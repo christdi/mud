@@ -314,7 +314,7 @@ void lua_push_json_value(lua_State* l, json_node_t* node) {
       break;
 
     case NIL:
-      lua_pushnil(l);
+      lua_pushlightuserdata(l, NULL);
 
       break;
 

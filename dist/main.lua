@@ -14,8 +14,6 @@ function main()
   game.players = {}
   game.config = {}
 
-  game.test({key1 = true, key2 = false, key3 = {null, "two", 3}, key4 = {innerKeyOne = null, innerkeyTwo = "blah"}});
-
   log.info("Demo MUD initialising")
 
   states.register()
