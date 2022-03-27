@@ -1,12 +1,15 @@
 local component
 
-component = function()
+component = function(extension)
+  extension = extension or {}
+
   local register
   local add
   local get
   local has
   local entities
   local component
+  local index;
 
   local c
 
@@ -38,15 +41,26 @@ component = function()
     return c
   end
 
+  index = function()
+  end
+
   c = game.register_component();
 
-  return {
+  local interface = {
     add = add,
     get = get,
     has = has,
     entities = entities,
     component = component
   }
+
+  setmetatable(interface, {
+    __index = function(_, v)
+      return extension[v]
+    end
+  })
+
+  return interface
 end
 
 return component;

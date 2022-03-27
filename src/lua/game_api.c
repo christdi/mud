@@ -26,6 +26,9 @@ static int lua_test(lua_State* l);
 static int lua_get_entities(lua_State* l);
 static int lua_new_entity(lua_State* l);
 static int lua_get_entity(lua_State* l);
+static int lua_save_entity(lua_State* l);
+static int lua_delete_entity(lua_State* l);
+
 static int lua_do_command(lua_State* l);
 static int lua_do_action(lua_State* l);
 static int lua_register_component(lua_State* l);
@@ -57,6 +60,8 @@ static const struct luaL_Reg game_lib[] = {
   { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
+  { "save_entity", lua_save_entity },
+  { "delete_entity", lua_delete_entity },
 
   { "do_command", lua_do_command },
   { "do_action", lua_do_action },
@@ -237,6 +242,24 @@ static int lua_get_entity(lua_State* l) {
   lua_push_entity(l, entity);
 
   return 1;
+}
+
+/**
+ * Lua API method to persist an entity to the database.
+ *
+ * l - Lua state instance
+**/
+static int lua_save_entity(lua_State* l) {
+  return 0;
+}
+
+/**
+ * Lua API method to delete an entity in the database.
+ *
+ * l - Lua state instance
+**/
+static int lua_delete_entity(lua_State* l) {
+  return 0;
 }
 
 /**

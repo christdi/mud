@@ -150,7 +150,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
       return 0;
     }
 
-    entity_t* entity = ecs_create_entity_t();
+    entity_t* entity = ecs_new_entity_t();
 
     strlcpy(entity->id.raw, (char*)sqlite3_column_text(res, 0), sizeof(entity->id.raw));
 
@@ -216,7 +216,7 @@ int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* resu
 }
 
 /**
- * Persists an entity to the database.  If the entity exists already it will be updated.
+ * Persists an entity to the database.
  *
  * Parameters
  *   db - Handle to sqlite database
@@ -256,6 +256,12 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
   sqlite3_finalize(res);
 
   return 0;
+}
+
+/**
+ * Deletes an entity from the database.
+**/
+int db_entity_delete(sqlite3* db, entity_t* entity) {
 }
 
 /**

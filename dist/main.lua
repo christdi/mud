@@ -16,13 +16,15 @@ function main()
 
   log.info("Demo MUD initialising")
 
-  description_component = component();
-  inventory_component = component();
-  location_component = component();
-  room_ref_component = component();
-  tag_component = component();
-  name_component = component();
-  room_component = component();
+  description_component = component(require('component/description'))
+  inventory_component = component()
+  location_component = component()
+  room_ref_component = component()
+  tag_component = component()
+  name_component = component()
+  room_component = component()
+
+  description_component.save()
 
   states.register()
   systems.register()
