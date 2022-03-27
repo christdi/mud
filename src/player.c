@@ -81,7 +81,6 @@ void player_connected(client_t* client, void* context) {
   client->userdata = player;
 
   hash_table_insert(game->players, uuid_str(&player->uuid), player);
-
   lua_call_player_connected_hook(game->lua_state, player);
 }
 
@@ -134,6 +133,16 @@ void player_output(client_t* client, void* context) {
  * message - the message of the GMCP message
 **/
 void player_gmcp(client_t* client, void* context, const char* topic, const char* message) {
+  assert(client);
+  assert(context);
+  assert(topic);
+
+  game_t* game = context;
+  player_t* player = client->userdata;
+
+  if (lua_call_state_gmcp_hook(game->lua_state, player, player->state, topic, message) == -1) {
+    LOG(ERROR, "Error calling state gmcp hook");
+  }
 }
 
 /**

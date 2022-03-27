@@ -1,3 +1,6 @@
+#include <assert.h>
+#include <string.h>
+
 #include "lauxlib.h"
 #include "lua.h"
 
@@ -5,13 +8,13 @@
 #include "mud/command.h"
 #include "mud/ecs/entity.h"
 #include "mud/ecs/system.h"
+#include "mud/json.h"
 #include "mud/log.h"
+#include "mud/lua/common.h"
 #include "mud/lua/struct.h"
 #include "mud/player.h"
 #include "mud/task.h"
 #include "mud/util/muduuid.h"
-
-#include <assert.h>
 
 #define PTR_FIELD "_ptr"
 #define TYPE_FIELD "_type"
@@ -31,6 +34,10 @@
 
 #define TASK_NAME_FIELD "name"
 #define TASK_EXECUTE_AT "execute_at"
+
+#define JSON_NODE_VALUE_FIELD "node"
+
+static void lua_push_json_value(lua_State* l, json_node_t* node);
 
 /**
  * Converts an entity structure to a Lua table and pushes it on top of the stack.
@@ -232,6 +239,88 @@ void lua_push_task(lua_State* l, task_t* task) {
   lua_pushstring(l, TASK_EXECUTE_AT);
   lua_pushnumber(l, task->execute_at);
   lua_rawset(l, -3);
+}
+
+/**
+ * Converts a json_node_t instance to a Lua table and pushes it on top of the stack.
+ *
+ * l - Lua state instance
+ * task - task to be converted
+ *
+ * Returns 0 on success or -1 on failure
+ **/
+void lua_push_json_node(lua_State* l, json_node_t* node) {
+  assert(l);
+  assert(node);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_JSON_NODE);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, JSON_NODE_VALUE_FIELD);
+  lua_push_json_value(l, node);
+  lua_rawset(l, -3);
+}
+
+/**
+ * Module internal recursive method to step through a json_node_t and assign
+ * them to a table on the stack.
+**/
+void lua_push_json_value(lua_State* l, json_node_t* node) {
+  assert(l);
+  assert(node);
+  
+  int index = 1;
+
+  switch(node->type) {
+    case OBJECT:
+      lua_newtable(l);
+
+      for (json_node_t* child = node->value->children; child != NULL; child = child->next) {
+        lua_pushstring(l, child->key);
+        lua_push_json_value(l, child);
+        lua_rawset(l, -3);
+      }
+
+      break;
+
+    case ARRAY:
+      lua_newtable(l);
+
+      for (json_node_t* item = node->value->array; item != NULL; item = item->next) {
+        lua_pushnumber(l, index);
+        lua_push_json_value(l, item);
+        lua_rawset(l, -3);
+        index++;
+      }
+
+      break;
+
+    case STRING:
+      lua_pushstring(l, node->value->str);
+
+      break;
+
+    case NUMBER:
+      lua_pushnumber(l, node->value->number);
+
+      break;
+
+    case BOOLEAN:
+      lua_pushboolean(l, node->value->boolean);
+
+      break;
+
+    case NIL:
+      lua_pushlightuserdata(l, NULL);
+
+      break;
+
+    default:
+      break;
+  }
 }
 
 /**
@@ -442,4 +531,84 @@ task_t* lua_to_task(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return task;
+}
+
+/**
+ * Covnerts the table at index into a json_node_t representation.
+ *
+ * l - Lua state instance
+ *
+ * Returns a pointer to an allocated json_node_t instance.
+**/
+json_node_t* lua_to_json_node(lua_State* l, int index) {
+  assert(l);
+
+  int type = lua_type(l, index);
+  json_node_t* node = NULL;
+
+  if (type == LUA_TSTRING) {
+    node = json_new_string(lua_tostring(l, index));
+  } else if (type == LUA_TNUMBER) {
+    node = json_new_number(lua_tonumber(l, index));
+  } else if (type == LUA_TBOOLEAN) {
+    node = json_new_boolean(lua_toboolean(l, index));
+  } else if (type == LUA_TNIL) {
+    node = json_new_null();
+  } else if (type == LUA_TLIGHTUSERDATA) {
+    void* ctype = lua_touserdata(l, index);
+
+    if (ctype == NULL) {
+      node = json_new_null();
+    }
+  } else if (type == LUA_TTABLE) {
+    lua_pushnil(l);
+
+    int table_index = index > 0 ? index : index - 1;
+
+    if (lua_next(l, table_index) == 0) {
+      return NULL;
+    }
+
+    int table_key_type = lua_type(l, -2);
+
+    if (table_key_type != LUA_TNUMBER && table_key_type != LUA_TSTRING)  {
+      LOG(ERROR, "Unexpected key type [%s] in table, expected number or string", lua_typename(l, table_key_type));
+
+      lua_pop(l, 2);
+
+      return NULL;
+    }
+
+    if (table_key_type == LUA_TNUMBER) {
+      node = json_new_json_node_t(ARRAY);
+    } else if (table_key_type == LUA_TSTRING) {
+      node = json_new_json_node_t(OBJECT);
+    }
+
+    lua_pop(l, 2);
+    lua_pushnil(l);
+
+    while (lua_next(l, table_index) != 0) {
+      if (lua_type(l, -2) != table_key_type) {
+        LOG(ERROR, "Expected key type [%s] but was [%s]", lua_typename(l, table_key_type), lua_typename(l, -2));
+
+        lua_pop(l, 2);
+
+        return NULL;
+      }
+
+      if (table_key_type == LUA_TNUMBER) {
+        json_attach_array(node, lua_to_json_node(l, -1));
+      } else {
+        json_node_t* child = lua_to_json_node(l, -1);
+        child->key = strdup(lua_tostring(l, -2));
+
+        json_attach_child(node, child);
+      }
+
+      lua_pop(l, 1);
+    }
+  }
+
+  return node;
 }

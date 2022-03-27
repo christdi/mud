@@ -9,6 +9,7 @@
 
 #define GLOBAL_GAME_FIELD_NAME "gptr"
 #define GLOBAL_DB_FIELD_NAME "dbptr"
+#define GLOBAL_C_NULL_FIELD_NAME "cnull"
 #define MAX_ERROR_LINE_LENGTH 128
 #define LOG_STACK_TYPE_SIZE 128
 
@@ -30,6 +31,9 @@ int lua_common_initialise_state(lua_State* l, game_t* game) {
 
   lua_pushlightuserdata(l, game->database);
   lua_setglobal(l, GLOBAL_DB_FIELD_NAME);
+
+  lua_pushlightuserdata(l, NULL);
+  lua_setglobal(l, GLOBAL_C_NULL_FIELD_NAME);
 
   return 0;
 }

@@ -20,8 +20,15 @@ json_node_t* parse_null(const char* input, size_t len, size_t* pos);
 
 int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos);
 
-void attach_child(json_node_t* parent, json_node_t* child);
-void attach_array(json_node_t* array, json_node_t* item);
+static const json_type_str_t json_type_strs[] = {
+  { OBJECT, "object"},
+  { ARRAY, "array" },
+  { STRING, "string" },
+  { NUMBER, "number" },
+  { BOOLEAN, "boolean" },
+  { NIL, "null" },
+  { UNDEFINED, "undefined"}
+};
 
 /**
  * Creates a new instance of json_node_t.
@@ -106,6 +113,80 @@ json_node_t* json_deserialize(const char* input, size_t len) {
 }
 
 /**
+ * Creates a new JSON object node.
+ *
+ * Returns the JSON object node.
+**/
+json_node_t* json_new_object() {
+  return json_new_json_node_t(OBJECT);
+}
+
+/**
+ * Creates a new JSON array node.
+ *
+ * Returns the JSON array node.
+**/
+json_node_t* json_new_array() {
+  return json_new_json_node_t(ARRAY);
+}
+
+/**
+ * Creates a new JSON string node.
+ *
+ * str - the string value associated with the node
+ * 
+ * Returns the JSON string node.
+**/
+json_node_t* json_new_string(const char* str) {
+  json_node_t* node = json_new_json_node_t(STRING);
+
+  node->value->str = strdup(str);
+
+  return node;
+}
+
+
+/**
+ * Creates a new JSON number node.
+ *
+ * number - the number value associated with the node
+ * 
+ * Returns the JSON number node.
+**/
+json_node_t* json_new_number(double number) {
+  json_node_t* node = json_new_json_node_t(NUMBER);
+
+  node->value->number = number;
+
+  return node;
+}
+
+/**
+ * Creates a new JSON boolean node.
+ *
+ * boolean - the boolean value associated with the node
+ * 
+ * Returns the JSON boolean node.
+**/
+json_node_t* json_new_boolean(bool boolean) {
+  json_node_t* node = json_new_json_node_t(BOOLEAN);
+
+  node->value->boolean = boolean;
+
+  return node;
+}
+
+
+/**
+ * Creates a new JSON null node.
+ *
+ * Returns the JSON null node.
+**/
+json_node_t* json_new_null() {
+  return json_new_json_node_t(NIL);
+}
+
+/**
  * Serializes a json_node_t instance into a JSON string.
  *
  * json - the node to serialize
@@ -125,9 +206,52 @@ int json_serialize(json_node_t* json, char* output, size_t len) {
 }
 
 /**
+ * Returns a string representation of a JSON type.
+ *
+ * type - the type to find a representation for
+ *
+ * Returns the representation
+**/
+const char* json_get_type_str(json_type_t type) {
+  const json_type_str_t* type_str = &json_type_strs[0];
+
+  while (type_str->type != UNDEFINED) {
+    if (type_str->type == type) {
+      return type_str->str;
+    }
+
+    type_str++;
+  }
+
+  return type_str->str;
+}
+
+/**
+ * Returns the enum for a JSON type given the string representation.
+ *
+ * str - the type to find a representation for
+ *
+ * Returns the representation
+**/
+json_type_t json_get_str_type(const char* str) {
+  const json_type_str_t* type_str = &json_type_strs[0];
+
+  while (type_str->type != UNDEFINED) {
+    if (strncmp(type_str->str, str, strlen(type_str->str)) == 0) {
+      return type_str->type;
+    }
+
+    type_str++;
+  }
+
+  return type_str->type;
+}
+
+/**
  * Module internal method called to parse a JSON value.  This method will
  * delegate to another parse method based on the characters it encounters.
  *
+
  * input - null terminated string containing the JSON to be parsed
  * len - length of the data to be parsed
  * pos - current position of the parser in the JSON string
@@ -278,7 +402,7 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
       node->key = key_buffer;
       key_buffer = NULL;
 
-      attach_child(obj, node);
+      json_attach_child(obj, node);
 
       p = AWAIT_VALUE_CLOSE;
 
@@ -365,7 +489,7 @@ json_node_t* parse_array(const char* input, size_t len, size_t* pos) {
         break;
       }
 
-      attach_array(array, node);
+      json_attach_array(array, node);
 
       p = AWAIT_ARRAY_CLOSE;
 
@@ -744,12 +868,12 @@ int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
 }
 
 /**
- * Module internal method to attach a child node to a parent.
+ * Attach a child node to a parent.
  *
  * parent - a json_node_t representing the parent node
  * child - a json_node_t to be attached to the parent
 **/
-void attach_child(json_node_t* parent, json_node_t* child) {
+void json_attach_child(json_node_t* parent, json_node_t* child) {
   assert(parent);
   assert(child);
   assert(parent->type == OBJECT);
@@ -770,12 +894,12 @@ void attach_child(json_node_t* parent, json_node_t* child) {
 }
 
 /**
- * Module internal method to attach a value to an array.
+ * Attach a node to an array.
  *
  * array a json_node_t representing the array to be attached to
  * item - a json_node_t to be added to the array.
 **/
-void attach_array(json_node_t* array, json_node_t* item) {
+void json_attach_array(json_node_t* array, json_node_t* item) {
   assert(array);
   assert(item);
   assert(array->type == ARRAY);

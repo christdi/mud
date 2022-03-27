@@ -8,6 +8,8 @@
 #include "mud/ecs/ecs.h"
 #include "mud/event.h"
 #include "mud/game.h"
+#include "mud/json.h"
+#include "mud/log.h"
 #include "mud/lua/common.h"
 #include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
@@ -18,6 +20,8 @@
 #include "mud/task.h"
 
 #define API_TABLE_NAME "game"
+
+static int lua_test(lua_State* l);
 
 static int lua_get_entities(lua_State* l);
 static int lua_new_entity(lua_State* l);
@@ -48,6 +52,8 @@ static int lua_event(lua_State* l);
 static int lua_shutdown(lua_State* l);
 
 static const struct luaL_Reg game_lib[] = {
+  { "test", lua_test },
+
   { "get_entities", lua_get_entities },
   { "new_entity", lua_new_entity },
   { "get_entity", lua_get_entity },
@@ -95,6 +101,13 @@ int lua_game_register_api(lua_State* l) {
   luaL_newlib(l, game_lib);
   lua_setglobal(l, API_TABLE_NAME);
 
+  return 0;
+}
+
+/**
+ * Lua API method which does nothing in particular but can be changed to test functionality.
+**/
+static int lua_test(lua_State* l) {
   return 0;
 }
 

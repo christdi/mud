@@ -35,6 +35,7 @@ int lua_call_state_exit_hook(lua_State* l, player_t* player, state_t* state);
 int lua_call_state_input_hook(lua_State* l, player_t* player, state_t* state, const char* input);
 int lua_call_state_output_hook(lua_State* l, player_t* player, state_t* state, const char* output);
 int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, event_t* event);
+int lua_call_state_gmcp_hook(lua_State*l, player_t* player, state_t* state, const char* topic, const char* msg);
 
 int lua_call_system_execute_hook(lua_State* l, system_t* system);
 int lua_call_task_execute_hook(lua_State* l, task_t* task);
