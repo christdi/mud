@@ -1,6 +1,6 @@
 players = require('players')
 entities = require ('entities')
-components = require('components')
+component = require('components')
 systems = require('systems')
 commands = require('commands')
 actions = require('actions')
@@ -16,8 +16,15 @@ function main()
 
   log.info("Demo MUD initialising")
 
+  description_component = component();
+  inventory_component = component();
+  location_component = component();
+  room_ref_component = component();
+  tag_component = component();
+  name_component = component();
+  room_component = component();
+
   states.register()
-  components.register()
   systems.register()
   archetypes.register()
   narrators.register()

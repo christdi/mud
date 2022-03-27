@@ -1,21 +1,52 @@
-description_component = require('component/description')
-inventory_component = require('component/inventory')
-location_component = require('component/location')
-room_ref_component = require('component/room_ref')
-tag_component = require('component/tag')
-name_component = require('component/name')
-room_component = require('component/room')
+local component
 
-register = function()
-  description_component.register()
-  inventory_component.register()
-  location_component.register()
-  room_ref_component.register()
-  tag_component.register()
-  name_component.register()
-  room_component.register()
+component = function()
+  local register
+  local add
+  local get
+  local has
+  local entities
+  local component
+
+  local c
+
+  add = function(entity, data)
+    data.entity = entity.uuid;
+
+    game.add_component(entity, c, data)
+  end
+
+  get = function(entity)
+    return game.get_component(entity, c)
+  end
+
+  has = function(entity)
+    return game.has_component(entity, c)
+  end
+
+  entities = function(filter)
+    local entities = game.get_component_entities(c)
+
+    if filter ~= nil then
+      filter_array(entities, filter)
+    end
+
+    return entities
+  end
+
+  component = function()
+    return c
+  end
+
+  c = game.register_component();
+
+  return {
+    add = add,
+    get = get,
+    has = has,
+    entities = entities,
+    component = component
+  }
 end
 
-return {
-  register = register
-} 
+return component;
