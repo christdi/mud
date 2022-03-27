@@ -68,11 +68,10 @@ end
 
 
 on_gmcp = function(p, topic, msg)
-   log.info("Topic: " .. topic .. ", Msg: " .. dump(msg))
-
    if topic == "Game.Login" then
       if not msg then
          log.error("Game.Login GMCP topic but data was NULL")
+
          return
       end
 

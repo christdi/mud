@@ -168,7 +168,6 @@ void process_se(void* extension, telnet_t* telnet, client_t* client, int option,
         msg = msg + 1;
       }
 
-      LOG(INFO, "Received GMCP: %s", topic);
       gmcp->on_gmcp(client, gmcp->context, topic, msg);
     }
   }
