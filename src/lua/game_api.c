@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "lauxlib.h"
 #include "lua.h"
 
@@ -250,6 +252,18 @@ static int lua_get_entity(lua_State* l) {
  * l - Lua state instance
 **/
 static int lua_save_entity(lua_State* l) {
+  assert(l);
+
+  luaL_checktype(l, -1, LUA_TTABLE);
+  entity_t* entity = lua_to_entity(l, -1);
+  lua_pop(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+
+  if (ecs_save_entity(game, entity) == -1) {
+    return luaL_error(l, "Failed to save entity");
+  }
+  
   return 0;
 }
 
@@ -259,6 +273,18 @@ static int lua_save_entity(lua_State* l) {
  * l - Lua state instance
 **/
 static int lua_delete_entity(lua_State* l) {
+  assert(l);
+
+  luaL_checktype(l, -1, LUA_TTABLE);
+  entity_t* entity = lua_to_entity(l, -1);
+  lua_pop(l, 1);
+
+  game_t* game = lua_common_get_game(l);
+
+  if (ecs_delete_entity(game, entity) == -1) {
+    return luaL_error(l, "Failed to delete entity");
+  }
+
   return 0;
 }
 

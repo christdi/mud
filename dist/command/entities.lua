@@ -1,5 +1,5 @@
 if (arg == nil or arg == "") then
-  player.send(p, "Syntax: entities <list>\n\r")
+  player.send(p, "Syntax: entities <delete|list>\n\r")
 
   return;
 end
@@ -50,4 +50,35 @@ if subcommand:lower() == "list" then
 
     player.send(p, "\n\r")
   end
+
+  return
+end
+
+if subcommand:lower() == "delete" then
+  local uuid, arg = one_argument(arg)
+
+  if uuid == nil or uuid == "" then
+    player.send(p, "Syntax: entities delete <uuid>")
+
+    return
+  end
+
+  local entities = game.get_entities()
+  local entity = nil;
+
+  for _, v in ipairs(entities) do
+    if (v.uuid == uuid) then
+      entity = v
+      break
+    end
+  end
+
+  if entity == nil then
+    player.send(p, "No entity found matching uuid found")
+    return
+  end 
+
+  game.delete_entity(entity)
+
+  player.send(p, "Entity deleted")
 end

@@ -15,6 +15,40 @@
 #include "mud/player.h"
 
 /**
+ * Begins a trasnaction.
+ *
+ * db - sqlite3 handle to database
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int db_begin_transaction(sqlite3* db) {
+  if (sqlite3_exec(db, "BEGIN", 0, 0, 0) != 0) {
+    LOG(ERROR, "Failed to begin database transaction: [%s]", sqlite3_errmsg(db));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Ends a transaction, committing the results.
+ *
+ * db - sqlite3 handle to database
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int db_end_transaction(sqlite3* db) {
+  if (sqlite3_exec(db, "COMMIT", 0, 0, 0) != 0) {
+    LOG(ERROR, "Failed to begin database transaction: [%s]", sqlite3_errmsg(db));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
  * Retrieves a command via it's name
  *
  * Parameters:
@@ -216,6 +250,48 @@ int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* resu
 }
 
 /**
+ * Deletes any entries in user_entity matching a given entity UUID.
+ *
+ * sqlite - sqlite3 handle to database
+ * entity - the entity to be deleted to identify rows to delete
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int db_entity_delete_user_entity(sqlite3* db, entity_t* entity) {
+  assert(db);
+  assert(entity);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "DELETE FROM user_entity WHERE entity_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, entity->id.raw, (int)strlen(entity->id.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
  * Persists an entity to the database.
  *
  * Parameters
@@ -260,8 +336,43 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
 
 /**
  * Deletes an entity from the database.
+ *   db - Handle to sqlite database
+ *   entity - Entity to be saved
+ *
+ * Returns 0 on success or -1 on failure.
 **/
 int db_entity_delete(sqlite3* db, entity_t* entity) {
+  assert(db);
+  assert(entity);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "DELETE FROM entity WHERE uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to delete entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, entity->id.raw, (int)strlen(entity->id.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to delete entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to delete entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
 }
 
 /**

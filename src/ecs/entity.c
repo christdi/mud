@@ -154,8 +154,36 @@ int ecs_save_entity(game_t* game, entity_t* entity) {
  * entity - the entity to be deleted
  *
  * Returns 0 on success or -1 on failure
-**/
+**/ 
 int ecs_delete_entity(game_t* game, entity_t* entity) {
   assert(game);
   assert(entity);
+
+  hash_table_delete(game->entities, uuid_str(&entity->id));
+
+  if (db_begin_transaction(game->database) == -1) {
+    LOG(ERROR, "Failed to begin transaction");
+
+    return -1;
+  }
+
+  if (db_entity_delete_user_entity(game->database, entity) == -1) {
+    LOG(ERROR, "Unable to delete user entity [%s]", uuid_str(&entity->id));
+
+    return -1;
+  }
+
+  if (db_entity_delete(game->database, entity) == -1) {
+    LOG(ERROR, "Unable to delete entity [%s]", uuid_str(&entity->id));
+
+    return -1;
+  }
+
+  if (db_end_transaction(game->database) == -1) {
+    LOG(ERROR, "Failed to end transaxtion");
+
+    return -1;
+  }
+
+  return 0;
 }

@@ -15,6 +15,9 @@ typedef struct action action_t;
 /**
  * Function prototypes
  **/
+int db_begin_transaction(sqlite3* db);
+int db_end_transaction(sqlite3* db);
+
 int db_command_find_all(sqlite3* db, linked_list_t* results);
 
 int db_action_find_all(sqlite3* db, linked_list_t* results);
@@ -23,6 +26,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities);
 int db_entity_save(sqlite3* db, entity_t* entity);
 int db_entity_delete(sqlite3* db, entity_t* entity);
 int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* results);
+int db_entity_delete_user_entity(sqlite3* db, entity_t* entity);
 
 int db_script_load(sqlite3* db, const char* uuid, script_t* script);
 int db_script_load_all(sqlite3* db, linked_list_t* scripts);

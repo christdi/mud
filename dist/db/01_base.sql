@@ -26,6 +26,7 @@ INSERT INTO script_sandbox_permission VALUES('bdd147a4-0126-426c-bbb1-f2225a0109
 INSERT INTO script_sandbox_permission VALUES('7699dc87-439e-4278-92f7-7fb3274cc361', 'player', 'send_gmcp');
 INSERT INTO script_sandbox_permission VALUES('4d62f24e-d421-45a2-8000-4a24218e5d1a', 'game', 'get_entities');
 INSERT INTO script_sandbox_permission VALUES('60d7a4b5-0db0-4fe2-8db1-4d9544384c6a', 'game', 'get_entity');
+INSERT INTO script_sandbox_permission VALUES('cda69d21-5082-4617-b4bc-1dd73f331a9a', 'game', 'delete_entity');
 INSERT INTO script_sandbox_permission VALUES('13014295-405a-4d28-bab9-235f26ae40eb', 'game', 'shutdown');
 INSERT INTO script_sandbox_permission VALUES('2aa20983-6781-4700-84bb-9f57462d14e5', 'log', 'trace');
 INSERT INTO script_sandbox_permission VALUES('313cb8fb-b357-4046-a32b-ed8660a84c31', 'log', 'debug');
@@ -76,6 +77,7 @@ INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '7699dc87-439e-4278-92f7-7fb3274cc361');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '4d62f24e-d421-45a2-8000-4a24218e5d1a');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '60d7a4b5-0db0-4fe2-8db1-4d9544384c6a');
+INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'cda69d21-5082-4617-b4bc-1dd73f331a9a');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '98c80490-0735-47a0-a7b9-bf43a85c297b');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '13014295-405a-4d28-bab9-235f26ae40eb');
 INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2aa20983-6781-4700-84bb-9f57462d14e5');
