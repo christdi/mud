@@ -38,9 +38,7 @@ int lua_db_register_api(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_db_prepare_statement(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   const char* sql = luaL_checkstring(l, 1);
 
@@ -61,9 +59,7 @@ static int lua_db_prepare_statement(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_db_bind(lua_State* l) {
-  lua_common_assert_n_arguments(l, 3);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
@@ -99,9 +95,7 @@ static int lua_db_bind(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_db_step(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
@@ -132,8 +126,6 @@ static int lua_db_step(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_db_column_text(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
-
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   sqlite3_stmt* res = lua_touserdata(l, 1);
@@ -149,8 +141,6 @@ static int lua_db_column_text(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_db_finalize(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   sqlite3_stmt* res = lua_touserdata(l, 1);

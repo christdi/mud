@@ -1,6 +1,6 @@
 .DS_STORE
 build
-dist/mud
-dist/mud.db
+mud
+mud.db
 *.sublime-workspace
 *.o

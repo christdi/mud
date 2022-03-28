@@ -22,7 +22,7 @@
  *
  * Returns 0 on success.
  **/
-int lua_common_initialise_state(lua_State* l, game_t* game) {
+int lua_initialise_state(lua_State* l, game_t* game) {
   assert(l);
   assert(game);
 
@@ -44,7 +44,7 @@ int lua_common_initialise_state(lua_State* l, game_t* game) {
  *
  * Returns a pointer to the game struct.
  **/
-game_t* lua_common_get_game(lua_State* l) {
+game_t* lua_get_game(lua_State* l) {
   assert(l);
 
   lua_getglobal(l, GLOBAL_GAME_FIELD_NAME);
@@ -63,7 +63,7 @@ game_t* lua_common_get_game(lua_State* l) {
  *
  * Returns a pointer to the sqlite3 database.
  **/
-sqlite3* lua_common_get_database(lua_State* l) {
+sqlite3* lua_get_database(lua_State* l) {
   assert(l);
 
   lua_getglobal(l, GLOBAL_DB_FIELD_NAME);
@@ -85,7 +85,7 @@ sqlite3* lua_common_get_database(lua_State* l) {
  *
  * Returns a copy of the Lua debug struct
  **/
-lua_Debug lua_common_get_debug(lua_State* l) {
+lua_Debug lua_get_debug(lua_State* l) {
   assert(l);
 
   lua_Debug debug;
@@ -96,34 +96,12 @@ lua_Debug lua_common_get_debug(lua_State* l) {
 }
 
 /**
- * Asserts the amount of elements on the Lua stack, intended to be used to determine
- * an API function has received the expected amount of parameters.
- *
- * Parameters
- *   l - Lua state which is currently active
- *   n - the amount of expected elements on the stack
- *
- * Returns 0 on success or a Lua error on failure.
- **/
-int lua_common_assert_n_arguments(lua_State* l, int n) {
-  assert(l);
-
-  int count = lua_gettop(l);
-
-  if (count != n) {
-    return luaL_error(l, "Expected %d arguments but received %d", n, count);
-  }
-
-  return 0;
-}
-
-/**
  * Outputs the contents a Lua state stack to logging.
  *
  * Parameters
  *   l - The lua state whose stack should be printed
  **/
-void lua_common_log_stack(lua_State* l) {
+void lua_log_stack(lua_State* l) {
   int top = lua_gettop(l);
 
   int i = 1;

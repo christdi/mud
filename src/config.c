@@ -14,9 +14,8 @@
 
 int config_parse_line(char* line, config_t* config);
 
-int set_game_script_file(const char* value, config_t* config);
-int set_lua_common_script(const char* value, config_t* config);
-int set_log_config_file(const char* value, config_t* config);
+int set_game_script(const char* value, config_t* config);
+int set_lib_script(const char* value, config_t* config);
 int set_database_file(const char* value, config_t* config);
 int set_game_port(const char* value, config_t* config);
 int set_ticks_per_second(const char* value, config_t* config);
@@ -28,10 +27,9 @@ int set_ticks_per_second(const char* value, config_t* config);
  **/
 config_t* config_new(void) {
   config_t* config = calloc(1, sizeof *config);
-  config->game_script_file = strdup("main.lua");
-  config->lua_common_script = strdup("common.lua");
-  config->log_config_file = strdup("log.ini");
-  config->database_file = strdup("mud.db");
+  config->game_script = strdup("dist/main.lua");
+  config->lib_script = strdup("lib/main.lua");
+  config->database_file = strdup("dist/mud.db");
   config->game_port = DEFAULT_PORT;
   config->ticks_per_second = DEFAULT_TICKS_PER_SECOND;
 
@@ -44,16 +42,12 @@ config_t* config_new(void) {
 void config_free(config_t* config) {
   assert(config);
 
-  if (config->game_script_file != NULL) {
-    free(config->game_script_file);
+  if (config->game_script != NULL) {
+    free(config->game_script);
   }
 
-  if (config->lua_common_script != NULL) {
-    free(config->lua_common_script);
-  }
-
-  if (config->log_config_file != NULL) {
-    free(config->log_config_file);
+  if (config->lib_script != NULL) {
+    free(config->lib_script);
   }
 
   if (config->database_file != NULL) {
@@ -69,17 +63,17 @@ void config_free(config_t* config) {
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, ":s:c:d:p:t:h")) != -1) {
+  while ((opt = getopt(argc, argv, ":s:l:d:p:t:h")) != -1) {
     switch (opt) {
     case 's':
-      if (set_game_script_file(optarg, config) == -1) {
+      if (set_game_script(optarg, config) == -1) {
         return -1;
       }
 
       break;
 
-    case 'c':
-      if (set_lua_common_script(optarg, config) == 1) {
+    case 'l':
+      if (set_lib_script(optarg, config) == 1) {
         return -1;
       }
 
@@ -107,7 +101,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
       break;
 
     case 'h':
-      printf("%s [-s game script file] [-c common lua script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+      printf("%s [-s game script] [-l lib script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
 
       return -1;
 
@@ -155,16 +149,16 @@ int load_configuration(const char* filename, config_t* config) {
     return -1;
   }
 
-  lua_getglobal(l, "game_script_file");
+  lua_getglobal(l, "game_script");
 
   if (lua_isstring(l, -1)) {
-    set_game_script_file(lua_tostring(l, -1), config);
+    set_game_script(lua_tostring(l, -1), config);
   }
 
-  lua_getglobal(l, "lua_common_script");
+  lua_getglobal(l, "lib_script");
 
   if (lua_isstring(l, -1)) {
-    set_lua_common_script(lua_tostring(l, -1), config);
+    set_lib_script(lua_tostring(l, -1), config);
   }
 
   lua_pop(l, 1);
@@ -181,14 +175,6 @@ int load_configuration(const char* filename, config_t* config) {
 
   if (lua_isstring(l, -1)) {
     set_database_file(lua_tostring(l, -1), config);
-  }
-
-  lua_pop(l, 1);
-
-  lua_getglobal(l, "log_config_file");
-
-  if (lua_isstring(l, -1)) {
-    set_log_config_file(lua_tostring(l, -1), config);
   }
 
   lua_pop(l, 1);
@@ -211,37 +197,22 @@ int load_configuration(const char* filename, config_t* config) {
  *
  * Returns 0 on success.
  **/
-int set_game_script_file(const char* value, config_t* config) {
-  if (config->game_script_file != NULL) {
-    free(config->game_script_file);
+int set_game_script(const char* value, config_t* config) {
+  if (config->game_script != NULL) {
+    free(config->game_script);
   }
 
-  config->game_script_file = strdup(value);
+  config->game_script = strdup(value);
 
   return 0;
 }
 
-int set_lua_common_script(const char* value, config_t* config) {
-  if (config->lua_common_script != NULL) {
-    free(config->lua_common_script);
+int set_lib_script(const char* value, config_t* config) {
+  if (config->lib_script != NULL) {
+    free(config->lib_script);
   }
 
-  config->lua_common_script = strdup(value);
-
-  return 0;
-}
-
-/**
- * Sets the filename of the log configuration file in the configuration.
- *
- * Returns 0 on success.
- **/
-int set_log_config_file(const char* value, config_t* config) {
-  if (config->log_config_file != NULL) {
-    free(config->log_config_file);
-  }
-
-  config->log_config_file = strdup(value);
+  config->lib_script = strdup(value);
 
   return 0;
 }

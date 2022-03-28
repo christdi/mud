@@ -1,3 +1,3 @@
-character_entity = require('entity/character')
-room_entity = require('entity/room')
-portal_entity = require('entity/portal')
+character_entity = require('dist/entity/character')
+room_entity = require('dist/entity/room')
+portal_entity = require('dist/entity/portal')

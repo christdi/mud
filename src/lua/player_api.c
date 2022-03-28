@@ -80,7 +80,7 @@ static int lua_authenticate(lua_State* l) {
 
   lua_pop(l, 3);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_authenticate(player, game, username, password) == -1) {
     lua_pop(l, 3);
@@ -111,7 +111,7 @@ static int lua_narrate(lua_State* l) {
   event_t* event = lua_touserdata(l, -1);
   lua_pop(l, 2);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_narrate(player, game, event) != 0) {
     return luaL_error(l, "Unable to narrate to player");
@@ -178,7 +178,7 @@ static int lua_set_state(lua_State* l) {
   lua_ref_t* state = lua_touserdata(l, -1);
   lua_pop(l, 2);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_change_state(player, game, state) == -1) {
     return luaL_error(l, "Failed to change player state");
@@ -221,7 +221,7 @@ static int lua_get_entities(lua_State* l) {
   player_t* player = lua_to_player(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   linked_list_t* results = create_linked_list_t();
   results->deallocator = deallocate;

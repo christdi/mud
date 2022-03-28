@@ -249,7 +249,7 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  if (lua_common_initialise_state(game->lua_state, game) == -1) {
+  if (lua_initialise_state(game->lua_state, game) == -1) {
     LOG(ERROR, "Failed to initialise Lua state");
     return -1;
   }
@@ -281,15 +281,25 @@ int initialise_lua(game_t* game, config_t* config) {
     return -1;
   }
 
-  if (game->config->lua_common_script != NULL) {
-    if (luaL_dofile(game->lua_state, game->config->lua_common_script) != 0) {
-      LOG(ERROR, "Error while loading Lua common script [%s].\n\r", lua_tostring(game->lua_state, -1));
+  if (config->lib_script == NULL) {
+    LOG(ERROR, "Lua library script was not defined");
 
-      return -1;
-    }
+    return -1;
   }
 
-  if (luaL_dofile(game->lua_state, config->game_script_file) != 0) {
+  if (luaL_dofile(game->lua_state, config->lib_script) != 0) {
+    LOG(ERROR, "Error while running Lua library script [%s].\n\r", lua_tostring(game->lua_state, -1));
+
+    return -1;
+  }
+
+  if (config->game_script == NULL) {
+    LOG(ERROR, "Lua game script was not defined");
+
+    return -1;
+  }
+
+  if (luaL_dofile(game->lua_state, config->game_script) != 0) {
     LOG(ERROR, "Error while loading Lua main script [%s].\n\r", lua_tostring(game->lua_state, -1));
 
     return -1;

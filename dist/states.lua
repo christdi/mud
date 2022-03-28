@@ -1,6 +1,6 @@
-login_state = require('state/login_state')
-play_state = require('state/play_state')
-lua_state = require('state/lua_state')
+login_state = require('dist/state/login_state')
+play_state = require('dist/state/play_state')
+lua_state = require('dist/state/lua_state')
 
 local register
 local deregister

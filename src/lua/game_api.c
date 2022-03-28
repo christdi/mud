@@ -135,7 +135,7 @@ static int lua_test(lua_State* l) {
  * Returns 0 on success
  **/
 static int lua_get_entities(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   lua_newtable(l);
 
@@ -163,7 +163,7 @@ static int lua_get_entities(lua_State* l) {
  * Returns 0 on success
  **/
 static int lua_new_entity(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   entity_t* entity = ecs_new_entity(game);
 
@@ -192,7 +192,7 @@ static int lua_do_command(lua_State* l) {
 
   lua_pop(l, 3);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (script_run_command_script(game, uuid_str(&command->script), player, arguments) == -1) {
     return luaL_error(l, "Failed to execute command script");
@@ -221,7 +221,7 @@ static int lua_do_action(lua_State* l) {
   entity_t* entity = lua_to_entity(l, -2);
   lua_pop(l, 2);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (script_run_action_script(game, uuid_str(&action->script), entity, ref) == -1) {
     lua_free_lua_ref_t(ref);
@@ -243,7 +243,7 @@ static int lua_get_entity(lua_State* l) {
   const char* uuid = luaL_checkstring(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
   entity_t* entity = ecs_get_entity(game, uuid);
 
   if (entity == NULL) {
@@ -267,7 +267,7 @@ static int lua_save_entity(lua_State* l) {
   entity_t* entity = lua_to_entity(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (ecs_save_entity(game, entity) == -1) {
     return luaL_error(l, "Failed to save entity");
@@ -288,7 +288,7 @@ static int lua_delete_entity(lua_State* l) {
   entity_t* entity = lua_to_entity(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   ecs_remove_entity_from_all_components(game->components, game->archetypes, entity);
 
@@ -303,7 +303,7 @@ static int lua_delete_entity(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_register_component(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   component_t* component = ecs_create_component_t();
 
@@ -405,7 +405,7 @@ static int lua_register_archetype(lua_State* l) {
 
   lua_settop(l, 0);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
   list_add(game->archetypes, archetype);
 
   lua_pushlightuserdata(l, archetype);
@@ -433,7 +433,7 @@ static int lua_register_system(lua_State *l) {
 
   system_t* system = ecs_new_system_t(name, ref);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   list_add(game->systems, system);
 
@@ -455,7 +455,7 @@ static int lua_deregister_system(lua_State *l) {
 
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   list_remove(game->systems, system);
 
@@ -520,7 +520,7 @@ static int lua_schedule_task(lua_State *l) {
   lua_pop(l, 2);
 
   task_t* task = task_new_task_t(name, execute_in, ref);
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   task_schedule_task(game->tasks, task);
 
@@ -544,7 +544,7 @@ static int lua_cancel_task(lua_State* l) {
   task_t* task = lua_to_task(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   task_cancel_task(game->tasks, game, task);
 
@@ -561,7 +561,7 @@ static int lua_cancel_task(lua_State* l) {
  * Returns 0 on success or calls luaL_error on error
 **/
 static int lua_get_tasks(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   it_t it = list_begin(game->tasks);
   task_t* task = NULL;
@@ -625,7 +625,7 @@ static int lua_add_component(lua_State* l) {
   component_data->entity = entity;
   component_data->ref = ref;
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   ecs_add_entity_to_component(component, component_data, game->archetypes, entity);
 
@@ -749,7 +749,7 @@ static int lua_matches_archetype(lua_State* l) {
  * Returns 0 on success or calls luaL_error on failure
  **/
 static int lua_event(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   event_submit_event(game->event_broker, event_new_event_t(LUA_EVENT, lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX)), lua_deallocate_lua_ref_t));
 
@@ -764,7 +764,7 @@ static int lua_event(lua_State* l) {
  * Returns 0 on success
  **/
 static int lua_shutdown(lua_State* l) {
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   game->shutdown = 1;
 

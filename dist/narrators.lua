@@ -1,4 +1,4 @@
-default_narrator = require('narrator/default')
+default_narrator = require('dist/narrator/default')
 
 local register
 local deregister

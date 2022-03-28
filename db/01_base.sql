@@ -113,17 +113,17 @@ CREATE TABLE IF NOT EXISTS script (
   filepath TEXT NOT NULL
 );
 
-INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './command/quit.lua');
-INSERT INTO script VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', './command/shutdown.lua');
-INSERT INTO script VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', './command/script.lua');
-INSERT INTO script VALUES('ff1b46dd-79aa-4a46-a767-46d281d5c5d0', './command/look.lua');
-INSERT INTO script VALUES('d755f666-29e1-458d-8a7d-c6f0439bd3d4', './command/say.lua');
-INSERT INTO script VALUES('358776f6-f135-49c0-bb68-9c5f9ef7cd3c', './command/go.lua');
-INSERT INTO script VALUES('411c46fb-c819-45e3-94e0-3b22b2ac0edb', './command/entities.lua');
-INSERT INTO script VALUES('de20a2df-3d08-4444-a9f2-d01dfe6e0a4d', './command/systems.lua');
-INSERT INTO script VALUES('d34c381c-97b9-4df0-8378-9d7ea69455e0', './action/move_room.lua');
-INSERT INTO script VALUES('35994580-01fc-4e29-af0c-cabf5c3540b9', './action/speak_room.lua');
-INSERT INTO script VALUES('9a162283-addf-4e5e-98b9-0c51d91612d4', './action/teleport_room.lua');
+INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './dist/command/quit.lua');
+INSERT INTO script VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', './dist/command/shutdown.lua');
+INSERT INTO script VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', './dist/command/script.lua');
+INSERT INTO script VALUES('ff1b46dd-79aa-4a46-a767-46d281d5c5d0', './dist/command/look.lua');
+INSERT INTO script VALUES('d755f666-29e1-458d-8a7d-c6f0439bd3d4', './dist/command/say.lua');
+INSERT INTO script VALUES('358776f6-f135-49c0-bb68-9c5f9ef7cd3c', './dist/command/go.lua');
+INSERT INTO script VALUES('411c46fb-c819-45e3-94e0-3b22b2ac0edb', './dist/command/entities.lua');
+INSERT INTO script VALUES('de20a2df-3d08-4444-a9f2-d01dfe6e0a4d', './dist/command/systems.lua');
+INSERT INTO script VALUES('d34c381c-97b9-4df0-8378-9d7ea69455e0', './dist/action/move_room.lua');
+INSERT INTO script VALUES('35994580-01fc-4e29-af0c-cabf5c3540b9', './dist/action/speak_room.lua');
+INSERT INTO script VALUES('9a162283-addf-4e5e-98b9-0c51d91612d4', './dist/action/teleport_room.lua');
 
 
 CREATE TABLE IF NOT EXISTS script_group (

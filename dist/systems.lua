@@ -1,4 +1,4 @@
-random_teleport_system = require('system/random_teleport')
+random_teleport_system = require('dist/system/random_teleport')
 
 local register
 local deregister

@@ -31,9 +31,7 @@ int lua_script_register_api(lua_State* l) {
  * TODO(Chris I)
  **/
 static int lua_script_available(lua_State* l) {
-  lua_common_assert_n_arguments(l, 0);
-
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   linked_list_t* scripts = create_linked_list_t();
   scripts->deallocator = deallocate_script;

@@ -1,6 +1,6 @@
-observable_archetype = require('archetype/observable')
-goable_archetype = require('archetype/goable')
-teleportable_archetype = require('archetype/teleportable')
+observable_archetype = require('dist/archetype/observable')
+goable_archetype = require('dist/archetype/goable')
+teleportable_archetype = require('dist/archetype/teleportable')
 
 local register
 

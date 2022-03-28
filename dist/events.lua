@@ -1,7 +1,7 @@
-character_looked_event = require('event/character_looked')
-communicate_event = require('event/communicate')
-moved_event = require('event/moved')
-teleport_event = require('event/teleport')
+character_looked_event = require('dist/event/character_looked')
+communicate_event = require('dist/event/communicate')
+moved_event = require('dist/event/moved')
+teleport_event = require('dist/event/teleport')
 
 local dispatch
 

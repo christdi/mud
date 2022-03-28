@@ -7,10 +7,10 @@ local narrate
 
 local narrator
 
-local moved_handler = require('narrator/default/moved')
-local communicate_handler = require('narrator/default/communicate')
-local character_looked_handler = require('narrator/default/communicate')
-local teleport_handler = require('narrator/default/teleport')
+local moved_handler = require('dist/narrator/default/moved')
+local communicate_handler = require('dist/narrator/default/communicate')
+local character_looked_handler = require('dist/narrator/default/communicate')
+local teleport_handler = require('dist/narrator/default/teleport')
 
 register = function()
   narrator = game.register_narrator(interface)
