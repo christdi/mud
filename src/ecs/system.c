@@ -6,6 +6,7 @@
 #include "mud/ecs/system.h"
 #include "mud/log.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/ref.h"
 #include "mud/game.h"
 
 /**
@@ -16,7 +17,7 @@
  *
  * Returns new instance of system_t
 **/
-system_t* ecs_new_system_t(const char* name, int ref) {
+system_t* ecs_new_system_t(const char* name, lua_ref_t* ref) {
   system_t* system = calloc(1, sizeof(system_t));
 
   system->uuid = new_uuid();
@@ -37,6 +38,10 @@ void ecs_free_system_t(system_t* system) {
 
   if (system->name != NULL) {
     free(system->name);
+  }
+
+  if (system->ref != NULL) {
+    lua_free_lua_ref_t(system->ref);
   }
 
   free(system);

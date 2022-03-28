@@ -121,8 +121,6 @@ entity_t* ecs_new_entity(game_t* game) {
 
   hash_table_insert(game->entities, uuid_str(&entity->id), entity);
 
-  LOG(INFO, "New entity created uuid: [%s]", uuid_str(&entity->id));
-
   return entity;
 }
 
@@ -180,7 +178,7 @@ int ecs_delete_entity(game_t* game, entity_t* entity) {
   }
 
   if (db_end_transaction(game->database) == -1) {
-    LOG(ERROR, "Failed to end transaxtion");
+    LOG(ERROR, "Failed to end transaction");
 
     return -1;
   }

@@ -1,4 +1,5 @@
 local register
+local deregister
 local use
 local interface
 
@@ -13,6 +14,10 @@ local teleport_handler = require('narrator/default/teleport')
 
 register = function()
   narrator = game.register_narrator(interface)
+end
+
+deregister = function()
+  game.deregister_narrator(narrator)
 end
 
 use = function(p)
@@ -38,6 +43,7 @@ end
 
 interface = {
   register = register,
+  deregister = deregister,
   use = use,
   narrate = narrate
 }

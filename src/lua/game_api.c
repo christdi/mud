@@ -13,12 +13,10 @@
 #include "mud/json.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
-#include "mud/lua/event.h"
 #include "mud/lua/game_api.h"
+#include "mud/lua/ref.h"
 #include "mud/lua/script.h"
 #include "mud/lua/struct.h"
-#include "mud/narrator.h"
-#include "mud/state.h"
 #include "mud/task.h"
 
 #define API_TABLE_NAME "game"
@@ -33,9 +31,15 @@ static int lua_delete_entity(lua_State* l);
 
 static int lua_do_command(lua_State* l);
 static int lua_do_action(lua_State* l);
+
 static int lua_register_component(lua_State* l);
+
 static int lua_register_state(lua_State* l);
+static int lua_deregister_state(lua_State* l);
+
 static int lua_register_narrator(lua_State* l);
+static int lua_deregister_narrator(lua_State* l);
+
 static int lua_register_archetype(lua_State* l);
 
 static int lua_register_system(lua_State *l);
@@ -69,8 +73,13 @@ static const struct luaL_Reg game_lib[] = {
   { "do_action", lua_do_action },
 
   { "register_component", lua_register_component },
+
   { "register_state", lua_register_state },
+  { "deregister_state", lua_deregister_state },
+
   { "register_narrator", lua_register_narrator },
+  { "deregister_narrator", lua_deregister_narrator },
+
   { "register_archetype", lua_register_archetype },
 
   { "register_system", lua_register_system },
@@ -206,7 +215,7 @@ static int lua_do_action(lua_State* l) {
   luaL_checktype(l, -2, LUA_TTABLE);
   luaL_checktype(l, -3, LUA_TTABLE);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
 
   action_t* action = lua_to_action(l, -1);
   entity_t* entity = lua_to_entity(l, -2);
@@ -215,12 +224,12 @@ static int lua_do_action(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
   if (script_run_action_script(game, uuid_str(&action->script), entity, ref) == -1) {
-    luaL_unref(l, LUA_REGISTRYINDEX, ref);
+    lua_free_lua_ref_t(ref);
 
     return luaL_error(l, "Failed to execute action script");
   }
 
-  luaL_unref(l, LUA_REGISTRYINDEX, ref);
+  lua_free_lua_ref_t(ref);
 
   return 2;
 }
@@ -281,6 +290,8 @@ static int lua_delete_entity(lua_State* l) {
 
   game_t* game = lua_common_get_game(l);
 
+  ecs_remove_entity_from_all_components(game->components, game->archetypes, entity);
+
   if (ecs_delete_entity(game, entity) == -1) {
     return luaL_error(l, "Failed to delete entity");
   }
@@ -306,7 +317,7 @@ static int lua_register_component(lua_State* l) {
 }
 
 /**
- * Creates a new state_t userdata with a reference to a Lua state module.
+ * Creates a new lua_ref_t userdata with a reference to a Lua state module.
  *
  * Parameters
  *   l - The Lua state being called from
@@ -316,16 +327,30 @@ static int lua_register_component(lua_State* l) {
 static int lua_register_state(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
-
-  state_t* state = lua_newuserdata(l, sizeof(state_t));
-  state->ref = ref;
+  lua_init_lua_ref_t(lua_newuserdata(l, sizeof(lua_ref_t)), l, luaL_ref(l, LUA_REGISTRYINDEX));
 
   return 1;
 }
 
 /**
- * Creates a new narrator_t userdata with a reference to a Lua narration module.
+ * Lua API method that deallocates a lua_ref_t userdata referencing a Lua state module.
+ *
+ * l - the lua state that called the API method
+ *
+ * Returns 0r  on success or luaL_error on error.
+**/
+static int lua_deregister_state(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TUSERDATA);
+
+  lua_ref_t* ref = lua_touserdata(l, -1);
+
+  lua_release_lua_ref_t(ref);
+
+  return 0;
+}
+
+/**
+ * Creates a new lua_ref_t userdata with a reference to a Lua narration module.
  *
  * Parameters
  *   l - The Lua state being called from
@@ -335,12 +360,26 @@ static int lua_register_state(lua_State* l) {
 static int lua_register_narrator(lua_State* l) {
   luaL_checktype(l, -1, LUA_TTABLE);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
-
-  narrator_t* narrator = lua_newuserdata(l, sizeof(narrator_t));
-  narrator->ref = ref;
+  lua_init_lua_ref_t(lua_newuserdata(l, sizeof(lua_ref_t)), l, luaL_ref(l, LUA_REGISTRYINDEX));
 
   return 1;
+}
+
+/**
+ * API method that takes a lua_ref_t userdata and deallocates the reference.
+ *
+ * l - Lua state that method was called from
+ *
+ * Returns 0 on success or calls luaL_error on error.
+**/
+static int lua_deregister_narrator(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TUSERDATA);
+
+  lua_ref_t* ref = lua_touserdata(l, -1);
+
+  lua_release_lua_ref_t(ref);
+
+  return 0;
 }
 
 /**
@@ -387,7 +426,7 @@ static int lua_register_system(lua_State *l) {
   luaL_checktype(l, -1, LUA_TTABLE);
   luaL_checktype(l, -2, LUA_TSTRING);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
   const char* name = lua_tostring(l, -1);
 
   lua_pop(l, 1);
@@ -418,7 +457,6 @@ static int lua_deregister_system(lua_State *l) {
 
   game_t* game = lua_common_get_game(l);
 
-  luaL_unref(l, LUA_REGISTRYINDEX, system->ref);
   list_remove(game->systems, system);
 
   return 1;
@@ -474,7 +512,7 @@ static int lua_schedule_task(lua_State *l) {
   luaL_checktype(l, -2, LUA_TNUMBER);
   luaL_checktype(l, -3, LUA_TSTRING);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
 
   int execute_in = lua_tonumber(l, -1);
   const char* name = lua_tostring(l, -2);
@@ -579,7 +617,7 @@ static int lua_add_component(lua_State* l) {
   entity_t* entity = lua_to_entity(l, -3);
   component_t* component = lua_touserdata(l, -2);
 
-  int ref = luaL_ref(l, LUA_REGISTRYINDEX);
+  lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
 
   lua_pop(l, 2);
 
@@ -615,7 +653,7 @@ static int lua_get_component(lua_State* l) {
   if (component_data == NULL) {
     lua_pushnil(l);
   } else {
-    lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref);
+    lua_rawgeti(l, LUA_REGISTRYINDEX, component_data->ref->ref);
   }
 
   return 1;
@@ -713,9 +751,7 @@ static int lua_matches_archetype(lua_State* l) {
 static int lua_event(lua_State* l) {
   game_t* game = lua_common_get_game(l);
 
-  lua_event_data_t* lua_event_data = lua_new_lua_event_data_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
-
-  event_submit_event(game->event_broker, event_new_event_t(LUA_EVENT, lua_event_data, lua_deallocate_lua_event_data_t));
+  event_submit_event(game->event_broker, event_new_event_t(LUA_EVENT, lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX)), lua_deallocate_lua_ref_t));
 
   return 0;
 }

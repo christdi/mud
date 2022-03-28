@@ -44,6 +44,8 @@ end
 
 function shutdown()
   systems.deregister()
+  states.deregister()
+  narrators.deregister()
 end
 
 function entities_loaded(entities)

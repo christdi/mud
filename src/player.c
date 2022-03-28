@@ -10,7 +10,6 @@
 #include "mud/network/client.h"
 #include "mud/network/gmcp.h"
 #include "mud/network/telnet.h"
-#include "mud/state.h"
 #include "mud/util/mudhash.h"
 #include "mud/util/mudstring.h"
 #include "mud/util/muduuid.h"
@@ -153,12 +152,12 @@ void player_gmcp(client_t* client, void* context, const char* topic, const char*
  *   game - the game struct
  *   state - the name of the state to be found
  **/
-int player_change_state(player_t* player, game_t* game, state_t* state) {
+int player_change_state(player_t* player, game_t* game, lua_ref_t* state) {
   assert(player);
   assert(game);
   assert(state);
 
-  state_t* old_state = player->state;
+  lua_ref_t* old_state = player->state;
   player->state = state;
 
   if (old_state != NULL) {

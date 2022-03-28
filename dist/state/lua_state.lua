@@ -1,4 +1,5 @@
 local register
+local deregister
 local use
 local interface
 
@@ -11,6 +12,10 @@ local state
 -- Register this state
 register = function()
    state = game.register_state(interface)
+end
+
+deregister = function()
+  game.deregister_state(state)
 end
 
 -- Switches a player to this state
@@ -41,6 +46,7 @@ end
 
 interface = {
   register = register,
+  deregister = deregister,
   instance = instance,
   on_enter = on_enter,
   on_output = on_output,

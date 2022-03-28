@@ -11,6 +11,7 @@
 #include "mud/game.h"
 #include "mud/log.h"
 #include "mud/lua/common.h"
+#include "mud/lua/ref.h"
 #include "mud/lua/script.h"
 #include "mud/lua/struct.h"
 
@@ -224,7 +225,7 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
  *
  * Returns 0 on success or -1 on failure
  **/
-int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, int ref) {
+int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, lua_ref_t* ref) {
   assert(game);
   assert(uuid);
   assert(entity);
@@ -257,7 +258,7 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, i
   lua_settable(game->lua_state, -3);
 
   lua_pushstring(game->lua_state, "data");
-  lua_rawgeti(game->lua_state, LUA_REGISTRYINDEX, ref);
+  lua_rawgeti(game->lua_state, LUA_REGISTRYINDEX, ref->ref);
   lua_settable(game->lua_state, -3);
 
   lua_setupvalue(game->lua_state, 1, 1);

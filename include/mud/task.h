@@ -10,6 +10,7 @@
  **/
 typedef struct game game_t;
 typedef struct linked_list linked_list_t;
+typedef struct lua_ref lua_ref_t;
 
 /**
  * Structs
@@ -18,13 +19,13 @@ typedef struct task {
   mud_uuid_t uuid;
   char* name;
   time_t execute_at;
-  int ref;
+  lua_ref_t* ref;
 } task_t;
 
 /**
  * Function prototypes
  **/
-task_t* task_new_task_t(const char* name, int execute_in, int ref);
+task_t* task_new_task_t(const char* name, int execute_in, lua_ref_t* ref);
 void task_free_task_t(task_t* task);
 void task_deallocate_task_t(void* value);
 

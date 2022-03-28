@@ -6,6 +6,7 @@
 #include "mud/ecs/archetype.h"
 #include "mud/ecs/component.h"
 #include "mud/ecs/entity.h"
+#include "mud/lua/ref.h"
 #include "mud/util/muduuid.h"
 
 /**
@@ -68,6 +69,10 @@ component_data_t* ecs_create_component_data_t() {
  **/
 void ecs_free_component_data_t(component_data_t* component_data) {
   assert(component_data);
+
+  if (component_data->ref != NULL) {
+    lua_free_lua_ref_t(component_data->ref);
+  }
 
   free(component_data);
 }
@@ -137,4 +142,26 @@ bool ecs_component_has_entity(component_t* component, entity_t* entity) {
   assert(entity);
 
   return hash_table_has(component->entities, uuid_str(&entity->id));
+}
+
+/**
+ * Removes an entity from all components.
+ *
+ * components - components to remove the entity from
+ * entity - the entity to be removed from the components
+**/
+void ecs_remove_entity_from_all_components(linked_list_t* components, linked_list_t* archetypes, entity_t* entity) {
+  assert(components);
+  assert(entity);
+
+  it_t it = list_begin(components);
+  component_t* component = NULL;
+
+  while ((component = it_get(it)) != NULL) {
+    if (ecs_component_has_entity(component, entity)) {
+      ecs_remove_entity_from_component(component, archetypes, entity);
+    }
+
+    it = it_next(it);
+  }
 }

@@ -8,6 +8,7 @@
  **/
 typedef struct entity entity_t;
 typedef struct hash_table hash_table_t;
+typedef struct lua_ref lua_ref_t;
 
 /**
  * Structs
@@ -18,7 +19,7 @@ typedef struct component {
 
 typedef struct component_data {
   entity_t* entity;
-  int ref;
+  lua_ref_t* ref;
 } component_data_t;
 
 /**
@@ -35,5 +36,6 @@ void ecs_deallocate_component_data_t(void* value);
 void ecs_add_entity_to_component(component_t* component, component_data_t* data, linked_list_t* archetypes, entity_t* entity);
 void ecs_remove_entity_from_component(component_t* component, linked_list_t* archetypes, entity_t* entity);
 bool ecs_component_has_entity(component_t* component, entity_t* entity);
+void ecs_remove_entity_from_all_components(linked_list_t* components, linked_list_t* archetypes, entity_t* entity);
 
 #endif

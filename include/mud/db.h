@@ -9,7 +9,6 @@ typedef struct player player_t;
 typedef struct sqlite3 sqlite3;
 typedef struct linked_list linked_list_t;
 typedef struct script script_t;
-typedef struct state state_t;
 typedef struct action action_t;
 
 /**

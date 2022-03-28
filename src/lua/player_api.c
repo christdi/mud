@@ -15,7 +15,6 @@
 #include "mud/lua/common.h"
 #include "mud/lua/player_api.h"
 #include "mud/lua/struct.h"
-#include "mud/narrator.h"
 #include "mud/network/client.h"
 #include "mud/player.h"
 #include "mud/util/muduuid.h"
@@ -176,7 +175,7 @@ static int lua_set_state(lua_State* l) {
   luaL_checktype(l, -2, LUA_TTABLE);
 
   player_t* player = lua_to_player(l, -2);
-  state_t* state = lua_touserdata(l, -1);
+  lua_ref_t* state = lua_touserdata(l, -1);
   lua_pop(l, 2);
 
   game_t* game = lua_common_get_game(l);
@@ -200,7 +199,7 @@ static int lua_set_narrator(lua_State* l) {
   luaL_checktype(l, -1, LUA_TUSERDATA);
   luaL_checktype(l, -2, LUA_TTABLE);
 
-  narrator_t* narrator = lua_touserdata(l, -1);
+  lua_ref_t* narrator = lua_touserdata(l, -1);
   player_t* player = lua_to_player(l, -2);
 
   lua_pop(l, 2);
