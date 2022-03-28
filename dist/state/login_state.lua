@@ -1,6 +1,3 @@
-local register
-local deregister
-local use
 local interface
 
 local on_enter
@@ -13,24 +10,6 @@ local get_username
 local get_password
 local get_entity_choice
 local get_entity_name
-
-local state
-
--- Register this state
-register = function()
-   state = game.register_state(interface)
-end
-
-deregister = function()
-   game.deregister_state(state)
-end
-
--- Switches a player to this state
---
--- p - instance of player userdata
-use = function(p)
-   player.set_state(p, state)
-end
 
 -- State hook for when state is entered
 --
@@ -178,7 +157,7 @@ get_entity_choice = function(p, arg, data)
             if entity.name:lower() == arg:lower() then
                player.set_entity(p, entity);
 
-               play_state.use(p)
+               play_state.switch(p)
 
                return
             end
@@ -213,14 +192,11 @@ get_entity_name = function(p, arg, data)
 
    player.set_entity(p, character)
 
-   play_state.use(p);
+   play_state.switch(p);
 end
 
 
 interface = {
-   register = register,
-   deregister = deregister,
-   use = use,
    on_enter = on_enter,
    on_exit = on_exit,
    on_input = on_input,

@@ -1,6 +1,3 @@
-local register
-local deregister
-local use
 local interface
 
 local on_enter
@@ -8,24 +5,6 @@ local on_exit
 local on_input
 local on_output
 local on_event
-
-local state
-
--- Register this state
-register = function()
-   state = game.register_state(interface)
-end
-
-deregister = function()
-  game.deregister_state(state)
-end
-
--- Switches a player to this state
---
--- p - instance of player userdata
-use = function(p)
-   player.set_state(p, state)
-end
 
 on_enter = function(p)
   player.send(p, "You are now playing!\n\r")
@@ -60,9 +39,6 @@ on_event = function(p, event)
 end
 
 interface = {
-  register = register,
-  deregister = deregister,
-  use = use,
   on_enter = on_enter,
   on_exit = on_exit,
   on_input = on_input,

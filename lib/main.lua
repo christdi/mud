@@ -1,3 +1,6 @@
+component = require('lib/component')
+state = require('lib/state')
+
 function one_argument(str)
   local index = str:find(" ")
 

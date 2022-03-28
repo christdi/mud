@@ -1,11 +1,9 @@
 players = require('dist/players')
 entities = require ('dist/entities')
-component = require('dist/components')
 systems = require('dist/systems')
 commands = require('dist/commands')
 actions = require('dist/actions')
 events = require('dist/events')
-states = require('dist/states')
 narrators = require('dist/narrators')
 archetypes = require('dist/archetypes')
 tasks = require('dist/tasks')
@@ -15,6 +13,10 @@ function main()
   game.config = {}
 
   log.info("Demo MUD initialising")
+
+  login_state = state(require('dist/state/login_state'))
+  play_state = state(require('dist/state/play_state'))
+  lua_state = state(require('dist/state/lua_state'))
 
   description_component = component(require('dist/component/description'))
   inventory_component = component()
@@ -26,7 +28,6 @@ function main()
 
   description_component.save()
 
-  states.register()
   systems.register()
   archetypes.register()
   narrators.register()
@@ -44,7 +45,6 @@ end
 
 function shutdown()
   systems.deregister()
-  states.deregister()
   narrators.deregister()
 end
 
@@ -64,7 +64,7 @@ function player_connected(p)
   game.players[p.uuid] = p
 
   default_narrator.use(p)
-  login_state.use(p)
+  login_state.switch(p)
 end
 
 
