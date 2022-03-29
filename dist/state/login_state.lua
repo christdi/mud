@@ -157,7 +157,7 @@ get_entity_choice = function(p, arg, data)
             if entity.name:lower() == arg:lower() then
                player.set_entity(p, entity);
 
-               play_state.switch(p)
+               lunac.state.play_state.switch(p)
 
                return
             end
@@ -192,7 +192,7 @@ get_entity_name = function(p, arg, data)
 
    player.set_entity(p, character)
 
-   play_state.switch(p);
+   lunac.state.play_state.switch(p);
 end
 
 

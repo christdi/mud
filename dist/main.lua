@@ -1,7 +1,6 @@
 players = require('dist/players')
 commands = require('dist/commands')
 actions = require('dist/actions')
-narrators = require('dist/narrators')
 
 function main()
   game.players = {}
@@ -9,9 +8,9 @@ function main()
 
   log.info("Demo MUD initialising")
 
-  login_state = lunac.state.new(require('dist/state/login_state'))
-  play_state = lunac.state.new(require('dist/state/play_state'))
-  lua_state = lunac.state.new(require('dist/state/lua_state'))
+  lunac.state.login_state = lunac.state.new(require('dist/state/login_state'))
+  lunac.state.play_state = lunac.state.new(require('dist/state/play_state'))
+  lunac.state.lua_state = lunac.state.new(require('dist/state/lua_state'))
 
   lunac.system.random_tp_system = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
   lunac.system.random_tp_system.disable()
@@ -33,7 +32,11 @@ function main()
   lunac.event.communicate = lunac.event.define('communicate', require('dist/event/communicate'))
   lunac.event.teleport = lunac.event.define('teleport')
 
-  narrators.register()
+  lunac.narrator.standard = lunac.narrator.define('standard')
+  lunac.narrator.standard.on(lunac.event.communicate, require('dist/narrator/standard/communicate'))
+  lunac.narrator.standard.on(lunac.event.character_looked, require('dist/narrator/standard/character_looked'))
+  lunac.narrator.standard.on(lunac.event.moved, require('dist/narrator/standard/moved'))
+  lunac.narrator.standard.on(lunac.event.teleport, require('dist/narrator/standard/teleport'))
 
   lunac.entity.character = lunac.entity.define(require('dist/entity/character'), { name = lunac.component.name, location = lunac.component.location, inventory = lunac.component.inventory, description = lunac.component.description })
   lunac.entity.room = lunac.entity.define(require('dist/entity/room'), { room = lunac.component.room, inventory = lunac.component.inventory, description = lunac.component.description} )
@@ -56,8 +59,7 @@ end
 
 function shutdown()
   lunac.system.random_tp_system.deregister();
-
-  narrators.deregister()
+  lunac.narrator.standard.deregister();
 end
 
 function entities_loaded(entities)
@@ -75,8 +77,8 @@ end
 function player_connected(p)
   game.players[p.uuid] = p
 
-  default_narrator.use(p)
-  login_state.switch(p)
+  lunac.narrator.standard.use(p)
+  lunac.state.login_state.switch(p)
 end
 
 

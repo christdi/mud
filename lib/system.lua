@@ -21,7 +21,16 @@ new = function(name, impl)
   deregister = function()
     log.info("Deregistering " .. _name .. " system")
 
-    game.deregister_system(system)
+    game.deregister_system(_system)
+
+    for i, system in ipairs(_systems) do
+      if system == _system then
+        table.remove(_systems, i)
+        break
+      end
+    end
+
+    _system = nil
   end
 
   enable = function()
