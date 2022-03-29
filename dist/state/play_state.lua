@@ -27,8 +27,8 @@ end
 on_output = function(p, output)
   local entity = player.get_entity(p)
 
-  if name_component.has(entity) then
-    local name = name_component.get(entity)
+  if lunac.component.name.has(entity) then
+    local name = lunac.component.name.get(entity)
 
     player.send(p, "\n\n\r[bgreen]" .. name.name .. " >[reset] ")
   end

@@ -177,8 +177,8 @@ end
 -- arg - arguments passed in by player
 -- data - reference to player data
 get_entity_name = function(p, arg, data)
-   if #name_component.entities(function(entity)       
-      return name_component.get(entity).name:lower() == arg:lower()
+   if #lunac.component.name.entities(function(entity)       
+      return lunac.component.name.get(entity).name:lower() == arg:lower()
    end) > 0 then
       player.send(p, "\n\rThat name is already in use.  Please enter another: ")
       
@@ -187,8 +187,8 @@ get_entity_name = function(p, arg, data)
 
    data.login.name = arg
 
-   local character = character_entity.new(arg, arg, "A generic looking individual")
-   character_entity.set_room(character, game.config.default_room);
+   local character = lunac.entity.character.new():initialise(arg, arg, "A generic looking individual")
+   character:set_room(game.config.default_room);
 
    player.set_entity(p, character)
 

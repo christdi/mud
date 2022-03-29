@@ -1,112 +1,11 @@
 CREATE TABLE IF NOT EXISTS script_sandbox_group (
   uuid TEXT PRIMARY KEY,
+  filepath TEXT NOT NULL,
   name TEXT NOT NULL,
-  description TEXT
+  description TEXT NOT NULL
 );
 
-INSERT INTO script_sandbox_group VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'standard', 'Standard script permissions');
-
-CREATE TABLE IF NOT EXISTS script_sandbox_permission (
-  uuid TEXT PRIMARY KEY,
-  module TEXT,
-  method TEXT
-);
-
-INSERT INTO script_sandbox_permission VALUES('e290caac-75e2-4928-9ef2-7a9a8aeccad0', NULL, 'ipairs');
-INSERT INTO script_sandbox_permission VALUES('3516bc9b-4f44-4783-8090-f1edbb55ce3a', NULL, 'dump');
-INSERT INTO script_sandbox_permission VALUES('d8cf45ed-3991-466e-b4d3-618b64c108fa', NULL, 'one_argument');
-INSERT INTO script_sandbox_permission VALUES('922e1784-a6a0-4453-b918-4d4768fde2f9', NULL, 'join');
-INSERT INTO script_sandbox_permission VALUES('7f77db8b-03f7-4aff-bf0c-8592a380c31a', NULL, 'tostring');
-INSERT INTO script_sandbox_permission VALUES('757fbaf1-dd12-40a8-9a79-63c5bab8aa14', 'table',  NULL);
-INSERT INTO script_sandbox_permission VALUES('49f313d5-f1fd-472a-8c7b-2fbc26884a0f', 'player', 'send');
-INSERT INTO script_sandbox_permission VALUES('98c80490-0735-47a0-a7b9-bf43a85c297b', 'player', 'disconnect');
-INSERT INTO script_sandbox_permission VALUES('98c3cc04-4096-4ff4-9b06-5c59efe8fc5c', 'player', 'get_entities');
-INSERT INTO script_sandbox_permission VALUES('e6457e13-94d6-4cd5-98d6-69a8301df2a9', 'player', 'set_entity');
-INSERT INTO script_sandbox_permission VALUES('bdd147a4-0126-426c-bbb1-f2225a01091e', 'player', 'get_entity');
-INSERT INTO script_sandbox_permission VALUES('7699dc87-439e-4278-92f7-7fb3274cc361', 'player', 'send_gmcp');
-INSERT INTO script_sandbox_permission VALUES('4d62f24e-d421-45a2-8000-4a24218e5d1a', 'game', 'get_entities');
-INSERT INTO script_sandbox_permission VALUES('60d7a4b5-0db0-4fe2-8db1-4d9544384c6a', 'game', 'get_entity');
-INSERT INTO script_sandbox_permission VALUES('cda69d21-5082-4617-b4bc-1dd73f331a9a', 'game', 'delete_entity');
-INSERT INTO script_sandbox_permission VALUES('13014295-405a-4d28-bab9-235f26ae40eb', 'game', 'shutdown');
-INSERT INTO script_sandbox_permission VALUES('2aa20983-6781-4700-84bb-9f57462d14e5', 'log', 'trace');
-INSERT INTO script_sandbox_permission VALUES('313cb8fb-b357-4046-a32b-ed8660a84c31', 'log', 'debug');
-INSERT INTO script_sandbox_permission VALUES('cd503b37-e646-4875-955d-4121ea6678a3', 'log', 'info');
-INSERT INTO script_sandbox_permission VALUES('a2986bb9-9646-4bbf-99c9-9daaf13b2f8c', 'log', 'warn');
-INSERT INTO script_sandbox_permission VALUES('fee86876-8c75-47fa-b246-60b6050c8517', 'log', 'error');
-INSERT INTO script_sandbox_permission VALUES('cf33d257-25a8-4b51-95de-2ad319d898ac', 'script', 'available');
-INSERT INTO script_sandbox_permission VALUES('51bfe9e5-9c51-43fe-8624-28d307ad0ccc', 'character_entity', NULL);
-INSERT INTO script_sandbox_permission VALUES('2a12fce4-cf21-4f08-b381-4c9a13f9184a', 'room_entity', NULL);
-INSERT INTO script_sandbox_permission VALUES('68560230-a64c-494b-ade9-39102bde4cf7', 'commands', NULL);
-INSERT INTO script_sandbox_permission VALUES('8039fa84-5b75-4b74-9893-6679a214cc7b', 'actions', NULL);
-INSERT INTO script_sandbox_permission VALUES('5e1f3800-b418-4893-8536-13de35746588', 'events', NULL);
-INSERT INTO script_sandbox_permission VALUES('e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5', 'archetypes', NULL);
-INSERT INTO script_sandbox_permission VALUES('36128ad7-88a8-4b23-81aa-e1f04693588a', 'systems', NULL);
-INSERT INTO script_sandbox_permission VALUES('c551dc14-5d8d-4e51-b1da-ad1a3b674053', 'tasks', NULL);
-INSERT INTO script_sandbox_permission VALUES('5d5f62db-5b4a-4d84-a24e-9da040b1d95c', 'players', NULL);
-INSERT INTO script_sandbox_permission VALUES('6b2bc1fc-70eb-4392-9181-fd68fe6b739a', 'character_looked_event', NULL);
-INSERT INTO script_sandbox_permission VALUES('2660099c-4bd7-4cda-8f6c-05dce4189ef4', 'communicate_event', NULL);
-INSERT INTO script_sandbox_permission VALUES('491c0a33-272b-447c-bf1d-1421a71205ea', 'moved_event', NULL);
-INSERT INTO script_sandbox_permission VALUES('f5485fc8-435f-4f5f-b93b-0a82cb21c400', 'teleport_event', NULL);
-INSERT INTO script_sandbox_permission VALUES('fcebfac1-a82c-41f5-b739-cc182865e14e', 'description_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('b136fea1-f68c-49da-b8af-1357e8708005', 'inventory_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('a7117f0a-e823-4d6d-bec5-da8d1103091b', 'location_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('f7814eb4-de10-4ee3-a6aa-7f73d779c0c0', 'tag_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('72c27730-27da-4abf-af94-598ce1bf571b', 'room_ref_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('69fdb888-7f63-4bbd-b0c1-4f22e4a75ff0', 'name_component', NULL);
-INSERT INTO script_sandbox_permission VALUES('c9f39e8b-f82e-44c5-87ca-7f18fa94fa17', 'observable_archetype', NULL);
-INSERT INTO script_sandbox_permission VALUES('4da6d6b3-26ac-4b47-bd5b-4beb95dc3147', 'goable_archetype', NULL);
-
-CREATE TABLE IF NOT EXISTS script_sandbox_group_permission (
-  group_uuid TEXT NOT NULL,
-  permission_uuid TEXT NOT NULL,
-  PRIMARY KEY(group_uuid, permission_uuid),
-  FOREIGN KEY(group_uuid) REFERENCES script_sandbox_group(uuid),
-  FOREIGN KEY(permission_uuid) REFERENCES script_sandbox_permission(uuid)
-);
-
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e290caac-75e2-4928-9ef2-7a9a8aeccad0');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '3516bc9b-4f44-4783-8090-f1edbb55ce3a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'd8cf45ed-3991-466e-b4d3-618b64c108fa');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '922e1784-a6a0-4453-b918-4d4768fde2f9');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '7f77db8b-03f7-4aff-bf0c-8592a380c31a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '757fbaf1-dd12-40a8-9a79-63c5bab8aa14');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '49f313d5-f1fd-472a-8c7b-2fbc26884a0f');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '98c3cc04-4096-4ff4-9b06-5c59efe8fc5c');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e6457e13-94d6-4cd5-98d6-69a8301df2a9');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'bdd147a4-0126-426c-bbb1-f2225a01091e');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '7699dc87-439e-4278-92f7-7fb3274cc361');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '4d62f24e-d421-45a2-8000-4a24218e5d1a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '60d7a4b5-0db0-4fe2-8db1-4d9544384c6a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'cda69d21-5082-4617-b4bc-1dd73f331a9a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '98c80490-0735-47a0-a7b9-bf43a85c297b');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '13014295-405a-4d28-bab9-235f26ae40eb');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2aa20983-6781-4700-84bb-9f57462d14e5');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '313cb8fb-b357-4046-a32b-ed8660a84c31');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'cd503b37-e646-4875-955d-4121ea6678a3');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'a2986bb9-9646-4bbf-99c9-9daaf13b2f8c');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'fee86876-8c75-47fa-b246-60b6050c8517');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'cf33d257-25a8-4b51-95de-2ad319d898ac');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '51bfe9e5-9c51-43fe-8624-28d307ad0ccc');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2a12fce4-cf21-4f08-b381-4c9a13f9184a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '68560230-a64c-494b-ade9-39102bde4cf7');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '8039fa84-5b75-4b74-9893-6679a214cc7b');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '5e1f3800-b418-4893-8536-13de35746588');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'e8fcd6a6-89d4-4c79-9095-57c9bb4cd3f5');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '36128ad7-88a8-4b23-81aa-e1f04693588a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'c551dc14-5d8d-4e51-b1da-ad1a3b674053');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '5d5f62db-5b4a-4d84-a24e-9da040b1d95c');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '6b2bc1fc-70eb-4392-9181-fd68fe6b739a');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '2660099c-4bd7-4cda-8f6c-05dce4189ef4');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '491c0a33-272b-447c-bf1d-1421a71205ea');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'f5485fc8-435f-4f5f-b93b-0a82cb21c400');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'fcebfac1-a82c-41f5-b739-cc182865e14e');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'b136fea1-f68c-49da-b8af-1357e8708005');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'a7117f0a-e823-4d6d-bec5-da8d1103091b');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'f7814eb4-de10-4ee3-a6aa-7f73d779c0c0');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '72c27730-27da-4abf-af94-598ce1bf571b');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '69fdb888-7f63-4bbd-b0c1-4f22e4a75ff0');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', 'c9f39e8b-f82e-44c5-87ca-7f18fa94fa17');
-INSERT INTO script_sandbox_group_permission VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', '4da6d6b3-26ac-4b47-bd5b-4beb95dc3147');
+INSERT INTO script_sandbox_group VALUES('85438e94-2d7c-437f-aa73-872b844df1cd', './dist/sandbox/standard.lua', 'standard', 'Standard script permissions');
 
 CREATE TABLE IF NOT EXISTS script (
   uuid TEXT PRIMARY KEY,

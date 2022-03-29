@@ -14,6 +14,7 @@
 #include "mud/lua/ref.h"
 #include "mud/lua/script.h"
 #include "mud/lua/struct.h"
+#include "mud/util/muduuid.h"
 
 static int build_environment_table(game_t* game, const char* script_uuid);
 
@@ -21,15 +22,21 @@ static int build_environment_table(game_t* game, const char* script_uuid);
  * Allocates a new instance of script_group_t.
  *
  * name - name of the script group
+ * filepath - file path to the permissions script
+ * name - name of the script group
+ * description - description of the script group
  *
  * Returns the allocated instance of script_group_t.
  **/
-script_group_t* script_new_script_group_t(const char* name) {
+script_group_t* script_new_script_group_t(const char* uuid, const char*filepath, const char* name, const char* description) {
   assert(name);
 
   script_group_t* script_group = calloc(1, sizeof(script_group_t));
 
+  script_group->uuid = str_uuid(uuid);
+  script_group->filepath = strdup(filepath);
   script_group->name = strdup(name);
+  script_group->description = strdup(description);
 
   return script_group;
 }
@@ -42,8 +49,16 @@ script_group_t* script_new_script_group_t(const char* name) {
 void script_free_script_group_t(script_group_t* script_group) {
   assert(script_group);
 
+  if (script_group->filepath != NULL) {
+    free(script_group->filepath);
+  }
+
   if (script_group->name != NULL) {
     free(script_group->name);
+  }
+
+  if (script_group->description != NULL) {
+    free(script_group->description);
   }
 
   free(script_group);
@@ -58,61 +73,6 @@ void script_deallocate_script_group_t(void* value) {
   assert(value);
 
   script_free_script_group_t(value);
-}
-
-/**
- * Allocates a new instance of script_permission_t.
- *
- * Parameters
- *   name - name to populate in the instance
- *   code - code to populate in the instance
- *
- * Returns the newly allocated instance.
- **/
-script_permission_t* script_new_script_permission_t(const char* module, const char* method) {
-  script_permission_t* script_permission = calloc(1, sizeof(script_permission_t));
-
-  if (module != NULL) {
-    script_permission->module = strdup(module);
-  }
-
-  if (method != NULL) {
-    script_permission->method = strdup(method);
-  }
-
-  return script_permission;
-}
-
-/**
- * Frees an allocated instance of script_permission_t.
- *
- * Parameters
- *   script_permisiont - The instance to be freed
- **/
-void script_free_script_permission_t(script_permission_t* script_permission) {
-  assert(script_permission);
-
-  if (script_permission->module != NULL) {
-    free(script_permission->module);
-  }
-
-  if (script_permission->method != NULL) {
-    free(script_permission->method);
-  }
-
-  free(script_permission);
-}
-
-/**
- * Deallocates a void pointer to script_permission.
- *
- * Parameters
- *   value - a void pointer to an instance of script_permission_t.
- **/
-void script_deallocate_script_permission_t(void* value) {
-  assert(value);
-
-  script_free_script_permission_t(value);
 }
 
 /**
@@ -283,81 +243,53 @@ int script_run_action_script(game_t* game, const char* uuid, entity_t* entity, l
  * Returns 0 on success or -1 on failure
  **/
 static int build_environment_table(game_t* game, const char* script_uuid) {
-  linked_list_t* permissions = create_linked_list_t();
-  permissions->deallocator = script_deallocate_script_permission_t;
+  linked_list_t* groups = create_linked_list_t();
+  groups->deallocator = script_deallocate_script_group_t;
 
-  if (db_script_sandbox_permission_by_script_id(game->database, script_uuid, permissions) < 0) {
-    LOG(ERROR, "Error retrieving script permissions");
+  if (db_script_script_group_by_script_id(game->database, script_uuid, groups) < 0) {
+    LOG(ERROR, "Error retrieving script groups");
 
-    free_linked_list_t(permissions);
+    free_linked_list_t(groups);
 
     return -1;
   }
 
   lua_newtable(game->lua_state);
 
-  it_t it = list_begin(permissions);
-  script_permission_t* script_permission = NULL;
+  it_t it = list_begin(groups);
+  script_group_t* group = NULL;
 
-  while ((script_permission = it_get(it)) != NULL) {
+  while ((group = it_get(it)) != NULL) {
+    if (luaL_dofile(game->lua_state, group->filepath) != 0) {
+      LOG(ERROR, "Error while running Lua sandbox script [%s]", lua_tostring(game->lua_state, -1));
 
-    if (script_permission->module != NULL) {
-      if (script_permission->method == NULL) { // copy entire module
-        lua_pushstring(game->lua_state, script_permission->module);
+      it = it_next(it);
 
-        if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
-          LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
-
-          return -1;
-        }
-
-        lua_settable(game->lua_state, -3);
-      } else { // copy specific method
-        lua_pushstring(game->lua_state, script_permission->module);
-
-        if (lua_gettable(game->lua_state, -2) != LUA_TTABLE) {
-          lua_pop(game->lua_state, 1);
-          lua_newtable(game->lua_state);
-        }
-
-        if (lua_getglobal(game->lua_state, script_permission->module) != LUA_TTABLE) {
-          LOG(ERROR, "Unable to find API module [%s] when building script environment table", script_permission->module);
-
-          return -1;
-        }
-
-        lua_pushstring(game->lua_state, script_permission->method);
-
-        if (lua_gettable(game->lua_state, -2) != LUA_TFUNCTION) {
-          LOG(ERROR, "Unable to obtain method [%s] from API module [%s] when building script environment table", script_permission->method, script_permission->module);
-
-          return -1;
-        }
-
-        lua_pushstring(game->lua_state, script_permission->method);
-        lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
-        lua_settable(game->lua_state, -4);
-        lua_pop(game->lua_state, 1);
-        lua_pushstring(game->lua_state, script_permission->module);
-        lua_insert(game->lua_state, lua_gettop(game->lua_state) - 1);
-        lua_settable(game->lua_state, -3);
-      }
-    } else {
-      lua_pushstring(game->lua_state, script_permission->method);
-
-      if (lua_getglobal(game->lua_state, script_permission->method) != LUA_TFUNCTION) {
-        LOG(ERROR, "Unable to retrieve method [%s] when building script environment table", script_permission->method);
-
-        return -1;
-      }
-
-      lua_settable(game->lua_state, -3);
+      continue;
     }
+
+    if (lua_type(game->lua_state, -1) != LUA_TTABLE) {
+      LOG(ERROR, "Script group script [%s] didn't return a table", group->filepath);
+
+      it = it_next(it);
+
+      continue;
+    }
+
+    lua_pushnil(game->lua_state);
+
+    while(lua_next(game->lua_state, -2) != 0) {
+      const char* key = lua_tostring(game->lua_state, -2);
+      lua_rawset(game->lua_state, -4); 
+      lua_pushstring(game->lua_state, key);
+    }
+
+    lua_pop(game->lua_state, 1);
 
     it = it_next(it);
   }
 
-  free_linked_list_t(permissions);
+  free_linked_list_t(groups);
 
   return 0;
 }

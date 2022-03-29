@@ -1,5 +1,10 @@
-component = require('lib/component')
-state = require('lib/state')
+lunac = {
+   component = require('lib/component'),
+   state = require('lib/state'),
+   task = require('lib/task'),
+   system = require('lib/system'),
+   entity = require('lib/entity')
+}
 
 function one_argument(str)
   local index = str:find(" ")

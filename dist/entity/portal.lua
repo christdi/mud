@@ -1,26 +1,18 @@
-local new;
+local initialise;
 
-new = function(name, origin, destination, short_description, long_description, tags)
-  local portal = game.new_entity();
+initialise = function(self, name, origin, destination, short_description, long_description, tags)
+  self.location.room_uuid = origin.uuid
+  self.room_ref.ref = destination.uuid
+  self.description.short = short_description
+  self.description.long = long_description
 
-  location_component.add(portal, {
-    room_uuid = origin.uuid
-  })
+  for k, v in ipairs(tags) do
+    self.tag[k] = v
+  end
 
-  room_ref_component.add(portal, {
-    ref = destination.uuid
-  })
-
-  description_component.add(portal, {
-    short = short_description,
-    long = long_description
-  })
-
-  tag_component.add(portal, tags)
-
-  return portal
+  return self;
 end
 
 return {
-  new = new
+  initialise = initialise
 }

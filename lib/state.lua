@@ -1,7 +1,6 @@
-local state
-local switch
+local new
 
-state = function(impl)
+new = function(impl)
   local impl = impl or {}
 
   local deregister
@@ -34,4 +33,6 @@ state = function(impl)
   return interface
 end
 
-return state
+return {
+  new = new
+}

@@ -1,6 +1,6 @@
-local component
+local new
 
-component = function(extension)
+new = function(extension)
   extension = extension or {}
 
   local register
@@ -63,4 +63,6 @@ component = function(extension)
   return interface
 end
 
-return component;
+return {
+  new = new
+};

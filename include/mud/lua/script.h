@@ -19,26 +19,20 @@ typedef struct lua_ref lua_ref_t;
  * Structs
  **/
 typedef struct script_group {
+  mud_uuid_t uuid;
+  char* filepath;
   char* name;
+  char* description;
 } script_group_t;
-
-typedef struct script_permission {
-  char* module;
-  char* method;
-} script_permission_t;
 
 typedef struct script {
   mud_uuid_t uuid;
   char* filepath;
 } script_t;
 
-script_group_t* script_new_script_group_t(const char* name);
+script_group_t* script_new_script_group_t(const char* uuid, const char*filepath, const char* name, const char* description);
 void script_free_script_group_t(script_group_t* script_group);
 void script_deallocate_script_group_t(void* value);
-
-script_permission_t* script_new_script_permission_t(const char* module, const char* method);
-void script_free_script_permission_t(script_permission_t* script_permission);
-void script_deallocate_script_permission_t(void* value);
 
 script_t* create_script_t();
 void free_script_t(script_t* script);

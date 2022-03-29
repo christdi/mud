@@ -5,7 +5,7 @@ local matches
 local a
 
 register = function()
-  a = game.register_archetype(name_component.component(), location_component.component(), description_component.component())
+  a = game.register_archetype(lunac.component.name.component(), lunac.component.location.component(), lunac.component.description.component())
 end
 
 entities = function(filter)
