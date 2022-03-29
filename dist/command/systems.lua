@@ -7,11 +7,10 @@ end
 local subcommand, arg = one_argument(arg)
 
 if subcommand:lower() == "list" then
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-    player.send(p, "\n\r[bcyan]" .. info.name .. "\n\r");
-    player.send(p, " [bgreen]uuid[reset] = " .. info.uuid .. "\n\r")
-    player.send(p, " [bgreen]enabled[reset] = " .. tostring(info.enabled) .. "\n\r")
+  for _, v in ipairs(lunac.system.all()) do
+    player.send(p, "\n\r[bcyan]" .. v.get_name() .. "\n\r");
+    player.send(p, " [bgreen]uuid[reset] = " .. v.get_uuid() .. "\n\r")
+    player.send(p, " [bgreen]enabled[reset] = " .. tostring(v.is_enabled()) .. "\n\r")
   end
 
   return
@@ -28,10 +27,8 @@ if subcommand:lower() == "enable" then
 
   local system
 
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-
-    if info.uuid == uuid then
+  for _, v in ipairs(lunac.system.all()) do
+    if v.get_uuid() == uuid then
       system = v
     end
   end
@@ -42,11 +39,9 @@ if subcommand:lower() == "enable" then
     return
   end
 
-  local info = system.info()
-
   system.enable()
 
-  player.send(p, "[bcyan]" .. info.name .. "[reset] system enabled")
+  player.send(p, "[bcyan]" .. system.get_name() .. "[reset] system enabled")
 end
 
 if subcommand:lower() == "disable" then
@@ -60,10 +55,8 @@ if subcommand:lower() == "disable" then
 
   local system
 
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-
-    if info.uuid == uuid then
+  for _, v in ipairs(lunac.system.all()) do
+    if v.get_uuid() == uuid then
       system = v
     end
   end
@@ -74,10 +67,8 @@ if subcommand:lower() == "disable" then
     return
   end
 
-  local info = system.info()
-
   system.disable()
 
-  player.send(p, "[bcyan]" .. info.name .. "[reset] system disabled")
+  player.send(p, "[bcyan]" .. system.get_name() .. "[reset] system disabled")
 end
 

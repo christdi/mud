@@ -1,4 +1,5 @@
-local location = location_component.get(data.entity)
+local location = lunac.component.location.get(data.entity)
+
 location.room_uuid = data.to.uuid
 
 lunac.event.teleport.dispatch({

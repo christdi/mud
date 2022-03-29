@@ -7,7 +7,7 @@ end
 local entity = lunac.entity.character.wrap(player.get_entity(p))
 local location = lunac.component.location.get(entity)
 
-local entities = goable_archetype.entities(function(goable)
+local entities = lunac.archetype.goable.entities(function(goable)
   local lc = lunac.component.location.get(goable)
   return lc.room_uuid == location.room_uuid
 end)

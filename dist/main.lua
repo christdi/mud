@@ -2,7 +2,6 @@ players = require('dist/players')
 commands = require('dist/commands')
 actions = require('dist/actions')
 narrators = require('dist/narrators')
-archetypes = require('dist/archetypes')
 
 function main()
   game.players = {}
@@ -14,8 +13,8 @@ function main()
   play_state = lunac.state.new(require('dist/state/play_state'))
   lua_state = lunac.state.new(require('dist/state/lua_state'))
 
-  random_tp_system = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
-  random_tp_system.disable()
+  lunac.system.random_tp_system = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
+  lunac.system.random_tp_system.disable()
 
   lunac.component.description = lunac.component.new(require('dist/component/description'))
   lunac.component.inventory = lunac.component.new(require('dist/component/inventory'))
@@ -25,12 +24,15 @@ function main()
   lunac.component.name = lunac.component.new(require('dist/component/name'))
   lunac.component.room = lunac.component.new(require('dist/component/room'))
 
+  lunac.archetype.goable = lunac.archetype.define('goable', lunac.component.location, lunac.component.room_ref, lunac.component.tag)
+  lunac.archetype.observable = lunac.archetype.define('observable', lunac.component.location, lunac.component.description)
+  lunac.archetype.teleportable = lunac.archetype.define('teleportable', lunac.component.name, lunac.component.location, lunac.component.description)
+
   lunac.event.character_looked = lunac.event.define('character_looked')
   lunac.event.moved = lunac.event.define('moved')
   lunac.event.communicate = lunac.event.define('communicate', require('dist/event/communicate'))
   lunac.event.teleport = lunac.event.define('teleport')
 
-  archetypes.register()
   narrators.register()
 
   lunac.entity.character = lunac.entity.define(require('dist/entity/character'), { name = lunac.component.name, location = lunac.component.location, inventory = lunac.component.inventory, description = lunac.component.description })
@@ -46,14 +48,14 @@ function main()
   game.config.third_room = lunac.entity.room.new()
   game.config.third_room:initialise("Home of the Platinum Dragon", "This is the place where the truly good come to live in harmony.")
 
-  lunac.entity.portal.new():initialise("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel"})
-  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla"} )
-  lunac.entity.portal.new():initialise("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia"})
-  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla"} )
+  lunac.entity.portal.new():initialise("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel" })
+  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
+  lunac.entity.portal.new():initialise("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia" })
+  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
 end
 
 function shutdown()
-  random_tp_system.deregister();
+  lunac.system.random_tp_system.deregister();
 
   narrators.deregister()
 end

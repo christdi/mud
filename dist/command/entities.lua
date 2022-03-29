@@ -15,11 +15,11 @@ if subcommand:lower() == "list" then
 
     local archetypes = {}
 
-    if goable_archetype.matches(v) then
+    if lunac.archetype.goable.matches(v) then
       table.insert(archetypes, "goable")
     end
 
-    if observable_archetype.matches(v) then
+    if lunac.archetype.observable.matches(v) then
       table.insert(archetypes, "observable")
     end
 

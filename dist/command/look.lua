@@ -1,7 +1,7 @@
 local character = lunac.entity.character.wrap(player.get_entity(p))
 local room = character:get_room()
 
-local entities = observable_archetype.entities(function(entity)
+local entities = lunac.archetype.observable.entities(function(entity)
   local location = lunac.component.location.get(entity)
 
   return location.room_uuid == room.uuid

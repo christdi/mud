@@ -1,7 +1,8 @@
 return {
   table = table,
   ipairs = ipairs,
-  dump = dump,
+  tostring = tostring,
+  dump = dump,  
   one_argument = one_argument,
   join = join,
   log = log,
@@ -11,7 +12,5 @@ return {
   events = events,
   commands = commands,
   players = players,
-  observable_archetype = observable_archetype,
-  goable_archetype = goable_archetype,
   lunac = lunac
 }
