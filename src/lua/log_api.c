@@ -25,7 +25,11 @@ static const struct luaL_Reg log_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Registers the log module with the Lua state.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success
  **/
 int lua_log_register_api(lua_State* l) {
   luaL_newlib(l, log_lib);
@@ -35,7 +39,11 @@ int lua_log_register_api(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to retrieve a debug structure.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static lua_Debug get_debug_info(lua_State* l) {
   lua_Debug debug;
@@ -46,7 +54,11 @@ static lua_Debug get_debug_info(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to log a trace message.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_log_trace(lua_State* l) {
   const char* message = luaL_checkstring(l, 1);
@@ -59,7 +71,11 @@ static int lua_log_trace(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to log a debug message.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_log_debug(lua_State* l) {
   const char* message = luaL_checkstring(l, 1);
@@ -72,7 +88,11 @@ static int lua_log_debug(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to log an info message.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_log_info(lua_State* l) {
   const char* message = luaL_checkstring(l, 1);
@@ -85,7 +105,11 @@ static int lua_log_info(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to log a warn message.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_log_warn(lua_State* l) {
   const char* message = luaL_checkstring(l, 1);
@@ -98,7 +122,11 @@ static int lua_log_warn(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to log an error message.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_log_error(lua_State* l) {
   const char* message = luaL_checkstring(l, 1);

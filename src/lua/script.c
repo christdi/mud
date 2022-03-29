@@ -246,7 +246,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
   linked_list_t* groups = create_linked_list_t();
   groups->deallocator = script_deallocate_script_group_t;
 
-  if (db_script_script_group_by_script_id(game->database, script_uuid, groups) < 0) {
+  if (db_script_sandbox_group_by_script_id(game->database, script_uuid, groups) < 0) {
     LOG(ERROR, "Error retrieving script groups");
 
     free_linked_list_t(groups);

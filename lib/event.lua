@@ -4,6 +4,13 @@ moved_event = require('dist/event/moved')
 teleport_event = require('dist/event/teleport')
 
 local dispatch
+local define
+
+define = function(impl)
+  impl = impl or {}
+
+  
+end
 
 dispatch = function(e)
   game.event(e)

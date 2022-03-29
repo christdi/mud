@@ -432,8 +432,13 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 }
 
 /**
- * TODO(Chris I)
- **/
+ * Loads all scripts from the database.
+ * 
+ * db - sqlite3 handle
+ * scripts - result set of scripts
+ * 
+ * Returns 0 on success or -1 on failure
+ */
 int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
   assert(db);
   assert(scripts);
@@ -482,7 +487,7 @@ int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
  *
  * Returns number of results or -1 on error.
  **/
-int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
+int db_script_sandbox_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
   assert(db);
   assert(uuid);
   assert(results);
@@ -525,6 +530,69 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
     script_group_t* script_group = script_new_script_group_t(uuid, filepath, name, description);
 
     list_add(results, script_group);
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Saves a script_group_t to the database.
+ * 
+ * db - sqlite3 db instance
+ * group - script_group_t to save
+ * 
+ * Returns 0 on success or -1 on failure.
+ */
+int db_script_sandbox_group_save(sqlite3* db, script_group_t* group) {
+  assert(db);
+  assert(group);
+
+  sqlite3_stmt* res = NULL;
+
+  const char *sql = "INSERT INTO script_sandbox_group (uuid, filepath, name, description) VALUES (?, ?, ?, ?)";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, group->uuid.raw, (int)strlen(group->uuid.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 2, group->filepath, (int)strlen(group->filepath), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind filepath to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 3, group->name, (int)strlen(group->name), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind name to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 4, group->description, (int)strlen(group->description), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind description to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
   }
 
   sqlite3_finalize(res);

@@ -52,7 +52,7 @@ static int lua_script_available(lua_State* l) {
     linked_list_t* groups = create_linked_list_t();
     groups->deallocator = script_deallocate_script_group_t;
 
-    if (db_script_script_group_by_script_id(game->database, uuid_str(&script->uuid), groups) == -1) {
+    if (db_script_sandbox_group_by_script_id(game->database, uuid_str(&script->uuid), groups) == -1) {
       LOG(ERROR, "Error retrieving script groups for script uuid [%s]", uuid_str(&script->uuid));
     }
 

@@ -274,7 +274,13 @@ int lua_call_player_disconnected_hook(lua_State* l, player_t* player) {
 }
 
 /**
- * TODO(Chris I)
+ * Hook method called when the engine has detected that a player has sent a command.
+ * 
+ * l - Lua state instance
+ * player - player_t instance of the player who sent the command
+ * input - Input string sent by the player
+ * 
+ * Returns 0 on success or -1 on failure.
  **/
 int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input) {
   assert(l);

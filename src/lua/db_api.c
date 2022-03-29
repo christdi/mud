@@ -25,7 +25,11 @@ static const struct luaL_Reg db_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Registers the db module with the Lua state.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success
  **/
 int lua_db_register_api(lua_State* l) {
   luaL_newlib(l, db_lib);
@@ -35,7 +39,11 @@ int lua_db_register_api(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for preparing a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_prepare_statement(lua_State* l) {
   sqlite3* db = lua_get_database(l);
@@ -56,8 +64,12 @@ static int lua_db_prepare_statement(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
- **/
+ * Lua API method for binding a value to a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
+ */
 static int lua_db_bind(lua_State* l) {
   sqlite3* db = lua_get_database(l);
 
@@ -92,7 +104,11 @@ static int lua_db_bind(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for stepping a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_step(lua_State* l) {
   sqlite3* db = lua_get_database(l);
@@ -123,7 +139,11 @@ static int lua_db_step(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for getting the text value of a column.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_column_text(lua_State* l) {
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
@@ -138,7 +158,11 @@ static int lua_db_column_text(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for finalizing a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success.
  **/
 static int lua_db_finalize(lua_State* l) {
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);

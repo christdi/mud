@@ -300,7 +300,11 @@ static int lua_delete_entity(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method to register a component with the game engine.
+ * 
+ * l - Lua state instance
+ * 
+ * Returns 0 on success or calls LuaL_error on error
  **/
 static int lua_register_component(lua_State* l) {
   game_t* game = lua_get_game(l);

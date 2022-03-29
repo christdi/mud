@@ -1,0 +1,6 @@
+{
+    "cmake.configureOnOpen": true,
+    "files.associations": {
+        "linked_list.h": "c"
+    }
+}
