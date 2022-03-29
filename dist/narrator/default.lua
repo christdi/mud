@@ -26,10 +26,10 @@ end
 
 narrate = function(plr, event)
   local handlers = {
-    { event = character_looked_event.TYPE, handler = character_looked_handler },
-    { event = communicate_event.TYPE, handler = communicate_handler },
-    { event = moved_event.TYPE, handler = moved_handler },
-    { event = teleport_event.TYPE, handler = teleport_handler }
+    { event = lunac.event.character_looked.type, handler = character_looked_handler },
+    { event = lunac.event.communicate.type, handler = communicate_handler },
+    { event = lunac.event.moved.type, handler = moved_handler },
+    { event = lunac.event.teleport.type, handler = teleport_handler }
   }
 
   for _, v in ipairs(handlers) do

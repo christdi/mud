@@ -1,7 +1,6 @@
 players = require('dist/players')
 commands = require('dist/commands')
 actions = require('dist/actions')
-events = require('dist/events')
 narrators = require('dist/narrators')
 archetypes = require('dist/archetypes')
 
@@ -25,6 +24,11 @@ function main()
   lunac.component.tag = lunac.component.new(require('dist/component/tag'))
   lunac.component.name = lunac.component.new(require('dist/component/name'))
   lunac.component.room = lunac.component.new(require('dist/component/room'))
+
+  lunac.event.character_looked = lunac.event.define('character_looked')
+  lunac.event.moved = lunac.event.define('moved')
+  lunac.event.communicate = lunac.event.define('communicate', require('dist/event/communicate'))
+  lunac.event.teleport = lunac.event.define('teleport')
 
   archetypes.register()
   narrators.register()

@@ -18,7 +18,11 @@ static const struct luaL_Reg script_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Registers the script API functions.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success
  **/
 int lua_script_register_api(lua_State* l) {
   luaL_newlib(l, script_lib);
@@ -28,7 +32,11 @@ int lua_script_register_api(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for retrieving all available scripts.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns the table on the stack or calls luaL_error on error.
  **/
 static int lua_script_available(lua_State* l) {
   game_t* game = lua_get_game(l);
@@ -39,7 +47,7 @@ static int lua_script_available(lua_State* l) {
   if (db_script_load_all(game->database, scripts) == -1) {
     LOG(ERROR, "Error loading scripts from database");
 
-    return -1;
+    return luaL_error(l, "Error loading scripts from database");
   }
 
   script_t* script = NULL;

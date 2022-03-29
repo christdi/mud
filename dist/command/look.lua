@@ -16,4 +16,4 @@ for _, entity in ipairs(entities) do
   player.send(p, description.long .. " [[bcyan]" .. description.short .. "[reset]]\n\r")
 end
 
-events.dispatch(character_looked_event.new(character))
+lunac.event.character_looked.dispatch({character = character})

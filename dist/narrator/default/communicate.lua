@@ -1,5 +1,5 @@
 return function(plr, event)
-  if event.scope == communicate_event.scope.ROOM then
+  if event.scope == lunac.event.communicate.scope.ROOM then
     if not location_component.has(event.origin) then
       log.error("Entity [" .. event.origin.uuid .. "] does not have location component for room scoped communication")
 

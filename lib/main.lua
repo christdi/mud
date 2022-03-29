@@ -3,7 +3,8 @@ lunac = {
    state = require('lib/state'),
    task = require('lib/task'),
    system = require('lib/system'),
-   entity = require('lib/entity')
+   entity = require('lib/entity'),
+   event = require('/lib/event')
 }
 
 function one_argument(str)
