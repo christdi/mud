@@ -1,7 +1,7 @@
 local player = lunac.player.get(p)
 
 local print_syntax = function()
-  player.send("Syntax: entities <delete|list>\n\r")
+  player.sendln("Syntax: entities <delete|list>")
 end
 
 if (arg == nil or arg == "") then
@@ -11,48 +11,28 @@ end
 local subcommand, arg = one_argument(arg)
 
 if subcommand:lower() == "list" then
-  local entities = game.get_entities()
+  local entities = lunac.entity.all()
 
   for _, v in ipairs(entities) do
-
     local archetypes = {}
 
-    if lunac.archetype.goable.matches(v) then
-      table.insert(archetypes, "goable")
+    for name, archetype in pairs(game.archetype) do
+      if archetype.matches(v) then
+        table.insert(archetypes, name)
+      end
     end
 
-    if lunac.archetype.observable.matches(v) then
-      table.insert(archetypes, "observable")
+    player.sendln("[bcyan]uuid[reset]: " .. v.uuid);
+
+    player.sendln("[bgreen]Archetypes[reset]: [bmagenta]" .. join(archetypes, "[reset],[bmagenta] ") .. "[reset]\n")
+
+    for name, component in pairs(game.component) do
+      if component.has(v) then
+        player.sendln("[bgreen]" .. name .. "[reset]: " .. dump(component.get(v)));
+      end
     end
 
-    player.send("[bcyan]uuid[reset]: " .. v.uuid .. " ([bmagenta]" .. join(archetypes, "[reset],[bmagenta] ") .. "[reset])\n\r");
-
-
-    if lunac.component.location.has(v) then
-      player.send(" [bgreen]location[reset] = " .. dump(lunac.component.location.get(v)) .. "\n\r")
-    end
-
-    if lunac.component.name.has(v) then
-      player.send(" [bgreen]name[reset] = " .. dump(lunac.component.name.get(v)) .. "\n\r")
-    end
-
-    if lunac.component.description.has(v) then
-      player.send(" [bgreen]description[reset] = " .. dump(lunac.component.description.get(v)) .. "\n\r")
-    end
-
-    if lunac.component.inventory.has(v) then
-      player.send(" [bgreen]inventory[reset] = " .. dump(lunac.component.inventory.get(v)) .. "\n\r")
-    end
-
-    if lunac.component.room_ref.has(v) then
-      player.send(" [bgreen]room ref[reset] = " .. dump(lunac.component.room_ref.get(v)) .. "\n\r")
-    end
-
-    if lunac.component.tag.has(v) then
-      player.send(" [bgreen]tag[reset] = " .. dump(lunac.component.tag.get(v)) .. "\n\r")
-    end
-
-    player.send("\n\r")
+    player.sendln()
   end
 
   return
@@ -62,7 +42,7 @@ if subcommand:lower() == "delete" then
   local uuid, arg = one_argument(arg)
 
   if uuid == nil or uuid == "" then
-    player.send("Syntax: entities delete <uuid>\n\r")
+    player.sendln("Syntax: entities delete <uuid>")
 
     return
   end
@@ -78,13 +58,13 @@ if subcommand:lower() == "delete" then
   end
 
   if entity == nil then
-    player.send("No entity found matching uuid found\n\r")
+    player.sendln("No entity found matching uuid found")
     return
   end 
 
   game.delete_entity(entity)
 
-  player.send("Entity deleted\n\r")
+  player.sendln("Entity deleted")
 
   return
 end

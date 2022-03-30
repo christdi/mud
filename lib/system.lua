@@ -19,9 +19,9 @@ new = function(name, impl)
   local _system
 
   deregister = function()
-    log.info("Deregistering " .. _name .. " system")
+    lunac.api.log.info("Deregistering " .. _name .. " system")
 
-    game.deregister_system(_system)
+    lunac.api.game.deregister_system(_system)
 
     for i, system in ipairs(_systems) do
       if system == _system then
@@ -34,15 +34,15 @@ new = function(name, impl)
   end
 
   enable = function()
-    log.info("Enabling " .. _name .. " system")
+    lunac.api.log.info("Enabling " .. _name .. " system")
 
-    _system = game.enable_system(_system)
+    _system = lunac.api.game.enable_system(_system)
   end
 
   disable = function()
-    log.info("Disabling " .. _name .. " system")
+    lunac.api.log.info("Disabling " .. _name .. " system")
 
-    _system = game.disable_system(_system)
+    _system = lunac.api.game.disable_system(_system)
   end
 
   get_name = function()
@@ -76,8 +76,8 @@ new = function(name, impl)
     end
   })
 
-  log.info("Registering " .. _name .. " system")
-  _system = game.register_system(name, _interface)
+  lunac.api.log.info("Registering " .. _name .. " system")
+  _system = lunac.api.game.register_system(name, _interface)
   table.insert(_systems, _interface)
 
   return _interface

@@ -36,9 +36,9 @@ define = function(name)
   end
 
   deregister = function()
-    log.info("Deregistering " .. _name .. " narrator")
+    lunac.api.log.info("Deregistering " .. _name .. " narrator")
 
-    game.deregister_narrator(_narrator)
+    lunac.api.game.deregister_narrator(_narrator)
 
     for i, narrator in ipairs(_narrators) do
       if narrator == _narrator then
@@ -62,8 +62,8 @@ define = function(name)
     get_instance = get_instance
   }
 
-  log.info("Registering " .. _name .. " narrator")
-  _narrator = game.register_narrator(_interface)
+  lunac.api.log.info("Registering " .. _name .. " narrator")
+  _narrator = lunac.api.game.register_narrator(_interface)
   table.insert(_narrators, _narrator)
 
   return _interface

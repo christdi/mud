@@ -6,23 +6,37 @@ local on_output
 
 on_enter = function(p)
   local player = lunac.player.get(p)
-  player.send("Lua Interpreter\n\n\r")
+
+  player.sendln("Lua Interpreter (enter .quit to quit)\n")
 end
 
 on_input = function(p, arg)
   local player = lunac.player.get(p)
-  local f, error = load(arg)
+
+  if arg == ".quit" then
+    player.set_state(game.state.play)
+    
+    return
+  end
+
+  local env = {}  
+  setmetatable(env, { __index = _ENV })
+
+  env.p = player
+
+  local f, error = load(arg, 'chunk', 't', env)
 
   if error ~= nil then
-    player.send("[bred]" .. error .. "[reset]\n\r")
+    player.sendln("[bred]" .. error .. "[reset]")
   else
     local result = f()
-    player.send("[bgreen]" .. arg .. " -> " .. tostring(result) .. "[reset]\n\r")
+    player.sendln("[bgreen]" .. arg .. " -> " .. tostring(result) .. "[reset]")
   end
 end
 
 on_output = function(p)
   local player = lunac.player.get(p)
+
   player.send("> ")
 end
 

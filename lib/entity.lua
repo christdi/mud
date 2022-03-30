@@ -1,4 +1,6 @@
 local define
+local get
+local all
 
 define = function(impl, components)
   local impl = impl or {}
@@ -25,7 +27,7 @@ define = function(impl, components)
   end
 
   new = function()
-    local entity = game.new_entity()
+    local entity = lunac.api.game.new_entity()
 
     for _, component in pairs(components) do
       component.add(entity, {})
@@ -35,7 +37,7 @@ define = function(impl, components)
   end
 
   get = function(uuid)
-    local entity = game.get_entity(uuid)
+    local entity = lunac.api.game.get_entity(uuid)
 
     return wrap(entity)
   end
@@ -47,6 +49,18 @@ define = function(impl, components)
   }
 end
 
+get = function(uuid)
+  if not uuid then error("uuid must be specified") end
+
+  return lunac.api.game.get_entity(uuid)
+end
+
+all = function()
+  return lunac.api.game.get_entities()
+end
+
 return {
-  define = define
+  define = define,
+  get = get,
+  all = all
 }

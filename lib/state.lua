@@ -12,7 +12,7 @@ new = function(impl)
   local _instance
 
   deregister = function()
-    game.deregister_state(_instance)
+    lunac.api.game.deregister_state(_instance)
   end
 
   get_instance = function()
@@ -34,7 +34,7 @@ new = function(impl)
     end
   })
 
-  _instance = game.register_state(_interface)
+  _instance = lunac.api.game.register_state(_interface)
 
   return _interface
 end

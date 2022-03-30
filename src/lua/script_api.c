@@ -10,6 +10,8 @@
 #include "mud/lua/script_api.h"
 #include "mud/util/muduuid.h"
 
+#define SCRIPT_LIB_NAME "script"
+
 static int lua_script_available(lua_State* l);
 
 static const struct luaL_Reg script_lib[] = {
@@ -25,8 +27,14 @@ static const struct luaL_Reg script_lib[] = {
  * Returns 0 on success
  **/
 int lua_script_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, SCRIPT_LIB_NAME);
   luaL_newlib(l, script_lib);
-  lua_setglobal(l, "script");
+  
+  lua_rawset(l, -3);
+
+  return 0;
 
   return 0;
 }

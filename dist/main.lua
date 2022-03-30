@@ -1,63 +1,72 @@
 commands = require('dist/commands')
 actions = require('dist/actions')
 
+game = {
+  state = {},
+  system = {},
+  component = {},
+  archetype = {},
+  event = {},
+  narrator = {},
+  entity = {},
+  config = {}
+}
+
 function main()
-  game.config = {}
+  lunac.api.log.info("Demo MUD initialising")
 
-  log.info("Demo MUD initialising")
+  game.state.login = lunac.state.new(require('dist/state/login_state'))
+  game.state.play = lunac.state.new(require('dist/state/play_state'))
+  game.state.lua = lunac.state.new(require('dist/state/lua_state'))
 
-  lunac.state.login = lunac.state.new(require('dist/state/login_state'))
-  lunac.state.play = lunac.state.new(require('dist/state/play_state'))
-  lunac.state.lua = lunac.state.new(require('dist/state/lua_state'))
+  game.system.random_tp = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
+  game.system.random_tp.disable()
 
-  lunac.system.random_tp_system = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
-  lunac.system.random_tp_system.disable()
+  game.component.description = lunac.component.new(require('dist/component/description'))
+  game.component.inventory = lunac.component.new(require('dist/component/inventory'))
+  game.component.location = lunac.component.new(require('dist/component/location'))
+  game.component.room_ref = lunac.component.new(require('dist/component/room_ref'))
+  game.component.tag = lunac.component.new(require('dist/component/tag'))
+  game.component.name = lunac.component.new(require('dist/component/name'))
+  game.component.room = lunac.component.new(require('dist/component/room'))
 
-  lunac.component.description = lunac.component.new(require('dist/component/description'))
-  lunac.component.inventory = lunac.component.new(require('dist/component/inventory'))
-  lunac.component.location = lunac.component.new(require('dist/component/location'))
-  lunac.component.room_ref = lunac.component.new(require('dist/component/room_ref'))
-  lunac.component.tag = lunac.component.new(require('dist/component/tag'))
-  lunac.component.name = lunac.component.new(require('dist/component/name'))
-  lunac.component.room = lunac.component.new(require('dist/component/room'))
+  game.archetype.goable = lunac.archetype.define('goable', game.component.location, game.component.room_ref, game.component.tag)
+  game.archetype.observable = lunac.archetype.define('observable', game.component.location, game.component.description)
+  game.archetype.teleportable = lunac.archetype.define('teleportable', game.component.name, game.component.location, game.component.description)
 
-  lunac.archetype.goable = lunac.archetype.define('goable', lunac.component.location, lunac.component.room_ref, lunac.component.tag)
-  lunac.archetype.observable = lunac.archetype.define('observable', lunac.component.location, lunac.component.description)
-  lunac.archetype.teleportable = lunac.archetype.define('teleportable', lunac.component.name, lunac.component.location, lunac.component.description)
+  game.event.character_looked = lunac.event.define('character_looked')
+  game.event.moved = lunac.event.define('moved')
+  game.event.communicate = lunac.event.define('communicate', require('dist/event/communicate'))
+  game.event.teleport = lunac.event.define('teleport')
 
-  lunac.event.character_looked = lunac.event.define('character_looked')
-  lunac.event.moved = lunac.event.define('moved')
-  lunac.event.communicate = lunac.event.define('communicate', require('dist/event/communicate'))
-  lunac.event.teleport = lunac.event.define('teleport')
+  game.narrator.standard = lunac.narrator.define('standard')
+  game.narrator.standard.on(game.event.communicate, require('dist/narrator/standard/communicate'))
+  game.narrator.standard.on(game.event.character_looked, require('dist/narrator/standard/character_looked'))
+  game.narrator.standard.on(game.event.moved, require('dist/narrator/standard/moved'))
+  game.narrator.standard.on(game.event.teleport, require('dist/narrator/standard/teleport'))
 
-  lunac.narrator.standard = lunac.narrator.define('standard')
-  lunac.narrator.standard.on(lunac.event.communicate, require('dist/narrator/standard/communicate'))
-  lunac.narrator.standard.on(lunac.event.character_looked, require('dist/narrator/standard/character_looked'))
-  lunac.narrator.standard.on(lunac.event.moved, require('dist/narrator/standard/moved'))
-  lunac.narrator.standard.on(lunac.event.teleport, require('dist/narrator/standard/teleport'))
+  game.entity.character = lunac.entity.define(require('dist/entity/character'), { name = game.component.name, location = game.component.location, inventory = game.component.inventory, description = game.component.description })
+  game.entity.room = lunac.entity.define(require('dist/entity/room'), { room = game.component.room, inventory = game.component.inventory, description = game.component.description} )
+  game.entity.portal = lunac.entity.define(require('dist/entity/portal'), { location = game.component.location, room_ref = game.component.room_ref, description = game.component.description, tag = game.component.tag })
 
-  lunac.entity.character = lunac.entity.define(require('dist/entity/character'), { name = lunac.component.name, location = lunac.component.location, inventory = lunac.component.inventory, description = lunac.component.description })
-  lunac.entity.room = lunac.entity.define(require('dist/entity/room'), { room = lunac.component.room, inventory = lunac.component.inventory, description = lunac.component.description} )
-  lunac.entity.portal = lunac.entity.define(require('dist/entity/portal'), { location = lunac.component.location, room_ref = lunac.component.room_ref, description = lunac.component.description, tag = lunac.component.tag })
-
-  game.config.default_room = lunac.entity.room.new()
+  game.config.default_room = game.entity.room.new()
   game.config.default_room:initialise("Home of the gods", "This is the place where gods come come to celebrate and rejoice with fallen warriors.")
 
-  game.config.second_room = lunac.entity.room.new()
+  game.config.second_room = game.entity.room.new()
   game.config.second_room:initialise("Recluse of the Damned", "This is the place where lost souls come to be forgotten.")
 
-  game.config.third_room = lunac.entity.room.new()
+  game.config.third_room = game.entity.room.new()
   game.config.third_room:initialise("Home of the Platinum Dragon", "This is the place where the truly good come to live in harmony.")
 
-  lunac.entity.portal.new():initialise("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel" })
-  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
-  lunac.entity.portal.new():initialise("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia" })
-  lunac.entity.portal.new():initialise("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
+  game.entity.portal.new():initialise("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel" })
+  game.entity.portal.new():initialise("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
+  game.entity.portal.new():initialise("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia" })
+  game.entity.portal.new():initialise("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
 end
 
 function shutdown()
-  lunac.system.random_tp_system.deregister();
-  lunac.narrator.standard.deregister();
+  game.system.random_tp.deregister();
+  game.narrator.standard.deregister();
 end
 
 function entities_loaded(entities)
@@ -75,8 +84,8 @@ end
 function player_connected(p)
   local plr = lunac.player.new(p)
 
-  plr.set_state(lunac.state.login)
-  plr.set_narrator(lunac.narrator.standard)
+  plr.set_state(game.state.login)
+  plr.set_narrator(game.narrator.standard)
 end
 
 

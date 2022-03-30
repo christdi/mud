@@ -1,14 +1,12 @@
-lunac = {
-   component = require('lib/component'),
-   state = require('lib/state'),
-   task = require('lib/task'),
-   system = require('lib/system'),
-   entity = require('lib/entity'),
-   event = require('/lib/event'),
-   archetype = require('/lib/archetype'),
-   narrator = require('/lib/narrator'),
-   player = require('/lib/player')
-}
+lunac.component = require('lib/component')
+lunac.state = require('lib/state')
+lunac.task = require('lib/task')
+lunac.system = require('lib/system')
+lunac.entity = require('lib/entity')
+lunac.event = require('lib/event')
+lunac.archetype = require('lib/archetype')
+lunac.narrator = require('lib/narrator')
+lunac.player = require('lib/player')
 
 function one_argument(str)
   local index = str:find(" ")

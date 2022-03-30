@@ -11,7 +11,7 @@ define = function(name, ...)
   local matches
   
   entities = function(filter)
-    local entities = game.get_archetype_entities(_archetype)
+    local entities = lunac.api.game.get_archetype_entities(_archetype)
   
     if filter ~= nil then
       filter_array(entities, filter)
@@ -21,7 +21,7 @@ define = function(name, ...)
   end
   
   matches = function(entity)
-    return game.matches_archetype(entity, _archetype)
+    return lunac.api.game.matches_archetype(entity, _archetype)
   end
 
   local components = {}
@@ -30,8 +30,8 @@ define = function(name, ...)
     _arg[k] = v.component()
   end
 
-  log.info("Registering " .. _name .. " archetype")
-  _archetype = game.register_archetype(table.unpack(_arg))
+  lunac.api.log.info("Registering " .. _name .. " archetype")
+  _archetype = lunac.api.game.register_archetype(table.unpack(_arg))
   
   return {
     entities = entities,

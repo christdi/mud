@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS script (
   filepath TEXT NOT NULL
 );
 
+INSERT INTO script VALUES('97e0937f-23fe-4f06-9d12-d21b22f79938', './dist/command/repl.lua');
 INSERT INTO script VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', './dist/command/quit.lua');
 INSERT INTO script VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', './dist/command/shutdown.lua');
 INSERT INTO script VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', './dist/command/script.lua');
@@ -33,6 +34,7 @@ CREATE TABLE IF NOT EXISTS script_group (
   FOREIGN KEY(group_uuid) REFERENCES script_sandbox_group(uuid)
 );
 
+INSERT INTO script_group VALUES('97e0937f-23fe-4f06-9d12-d21b22f79938', '85438e94-2d7c-437f-aa73-872b844df1cd');
 INSERT INTO script_group VALUES('9f12ba01-d6c7-4e3d-bcff-0a2c92f91764', '85438e94-2d7c-437f-aa73-872b844df1cd');
 INSERT INTO script_group VALUES('37554136-dc8a-4424-a931-c2c92ae5f38a', '85438e94-2d7c-437f-aa73-872b844df1cd');
 INSERT INTO script_group VALUES('0e7c30fd-e4ef-40e9-8024-1e94814b215e', '85438e94-2d7c-437f-aa73-872b844df1cd');
@@ -53,6 +55,7 @@ CREATE TABLE IF NOT EXISTS command (
   FOREIGN KEY(script_uuid) REFERENCES script(uuid)
 );
 
+INSERT INTO command VALUES('c4dcc9f6-16b3-4ca6-b304-66ab3910a439', 'repl', '97e0937f-23fe-4f06-9d12-d21b22f79938');
 INSERT INTO command VALUES('1f8b5793-298f-4794-8557-4b851d668eb8', 'quit', '9f12ba01-d6c7-4e3d-bcff-0a2c92f91764');
 INSERT INTO command VALUES('9456c374-81b6-49f7-8295-579001d629c0', 'shutdown', '37554136-dc8a-4424-a931-c2c92ae5f38a');
 INSERT INTO command VALUES('fa479582-6465-44bd-8847-2b0971655706', 'script', '0e7c30fd-e4ef-40e9-8024-1e94814b215e');

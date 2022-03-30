@@ -15,7 +15,7 @@ set_room = function(character, room)
 end
 
 get_room = function(character)
-  return lunac.entity.room.wrap(game.get_entity(character.location.room_uuid))
+  return game.entity.room.wrap(lunac.entity.get(character.location.room_uuid))
 end
 
 return {

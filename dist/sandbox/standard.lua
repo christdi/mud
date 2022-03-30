@@ -1,6 +1,7 @@
 return {
   table = table,
   ipairs = ipairs,
+  pairs = pairs,
   tostring = tostring,
   dump = dump,  
   one_argument = one_argument,

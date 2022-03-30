@@ -19,6 +19,8 @@
 #include "mud/player.h"
 #include "mud/util/muduuid.h"
 
+#define PLAYER_LIB_NAME "player"
+
 static int lua_authenticate(lua_State* l);
 static int lua_narrate(lua_State* l);
 static int lua_get_entity(lua_State* l);
@@ -57,8 +59,12 @@ static const struct luaL_Reg player_lib[] = {
  * Returns 0 on success.
  **/
 int lua_player_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, PLAYER_LIB_NAME);
   luaL_newlib(l, player_lib);
-  lua_setglobal(l, "player");
+  
+  lua_rawset(l, -3);
 
   return 0;
 }

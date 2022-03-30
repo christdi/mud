@@ -9,6 +9,8 @@
 #include "mud/lua/common.h"
 #include "mud/lua/db_api.h"
 
+#define DB_LIB_NAME "db"
+
 static int lua_db_prepare_statement(lua_State* l);
 static int lua_db_bind(lua_State* l);
 static int lua_db_step(lua_State* l);
@@ -32,8 +34,12 @@ static const struct luaL_Reg db_lib[] = {
  * Returns 0 on success
  **/
 int lua_db_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, DB_LIB_NAME);
   luaL_newlib(l, db_lib);
-  lua_setglobal(l, "db");
+  
+  lua_rawset(l, -3);
 
   return 0;
 }

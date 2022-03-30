@@ -1,21 +1,21 @@
 local player = lunac.player.get(p)
 
-local character = lunac.entity.character.wrap(player.get_entity())
+local character = game.entity.character.wrap(player.get_entity())
 local room = character:get_room()
 
-local entities = lunac.archetype.observable.entities(function(entity)
-  local location = lunac.component.location.get(entity)
+local entities = game.archetype.observable.entities(function(entity)
+  local location = game.component.location.get(entity)
 
   return location.room_uuid == room.uuid
 end)
 
-player.send("[bcyan]" .. room.description.short .. "[reset]\n\n\r")
-player.send(room.description.long .. "\n\n\r")
+player.sendln("[bcyan]" .. room.description.short .. "[reset]\n")
+player.sendln(room.description.long .. "\n")
 
 for _, entity in ipairs(entities) do
-  local description = lunac.component.description.get(entity)
+  local description = game.component.description.get(entity)
 
-  player.send(description.long .. " [[bcyan]" .. description.short .. "[reset]]\n\r")
+  player.sendln(description.long .. " [[bcyan]" .. description.short .. "[reset]]")
 end
 
-lunac.event.character_looked.dispatch({character = character})
+game.event.character_looked.dispatch({character = character})

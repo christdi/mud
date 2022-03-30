@@ -11,7 +11,7 @@ define = function(type, impl)
   dispatch = function(args)
     args.type = type
 
-    game.event(args)
+    lunac.api.game.event(args)
   end
 
   local interface = {
@@ -30,10 +30,6 @@ define = function(type, impl)
   })
 
   return interface
-end
-
-dispatch = function(e)
-  game.event(e)
 end
 
 return {

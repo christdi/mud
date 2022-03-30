@@ -1,7 +1,7 @@
 local player = lunac.player.get(p)
 
 if (arg == nil or arg == "") then
-  player.send("Syntax: say <what>\n\r")
+  player.sendln("Syntax: say <what>")
 
   return
 end

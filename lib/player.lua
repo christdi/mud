@@ -7,6 +7,7 @@ local all
 local get
 local send
 local send_all
+local sendln_all
 
 --
 -- Wrap a player light userdata in a table providing convenience methods.
@@ -17,6 +18,7 @@ wrap = function(plr)
   local _plr = plr
 
   local send
+  local sendln
   local send_gmcp
   local set_entity
   local set_state
@@ -35,7 +37,16 @@ wrap = function(plr)
   send = function(what)
     if not what then error("what must be specified") end
 
-    player.send(_plr, what)
+    lunac.api.player.send(_plr, what)
+  end
+
+  --
+  -- Send a message to the player and append a newline
+  --
+  sendln = function(what)
+    local what = what or ""
+
+    lunac.api.player.send(_plr, what .. "\n\r")
   end
 
   --
@@ -44,7 +55,7 @@ wrap = function(plr)
   send_gmcp = function(topic, message)
     if not topic then error("topic must be specified") end
 
-    player.send_gmcp(_plr, topic, message)
+    lunac.api.player.send_gmcp(_plr, topic, message)
   end
 
   --
@@ -53,7 +64,7 @@ wrap = function(plr)
   set_entity = function(entity)
     if not entity then error("entity must be specified") end
 
-    player.set_entity(_plr, entity)
+    lunac.api.player.set_entity(_plr, entity)
   end
 
   --
@@ -62,7 +73,7 @@ wrap = function(plr)
   set_state = function(state)
     if not state then error("state must be specified") end
 
-    player.set_state(_plr, state.get_instance())
+    lunac.api.player.set_state(_plr, state.get_instance())
   end
 
   --
@@ -71,35 +82,35 @@ wrap = function(plr)
   set_narrator = function(narrator)
     if not narrator then error("narrator must be specified") end
 
-    player.set_narrator(_plr, narrator.get_instance())
+    lunac.api.player.set_narrator(_plr, narrator.get_instance())
   end
 
   --
   -- Get the player entity
   --
   get_entity = function()
-    return player.get_entity(_plr)
+    return lunac.api.player.get_entity(_plr)
   end
 
   --
   -- Get the available entities for the player
   --
   get_available_entities = function()
-    return player.get_entities(_plr)
+    return lunac.api.player.get_entities(_plr)
   end
 
   --
   -- Disable echo for the player
   --
   disable_echo = function()
-    player.disable_echo(_plr)
+    lunac.api.player.disable_echo(_plr)
   end
 
   --
   -- Enable echo for the player
   --
   enable_echo = function()
-    player.enable_echo(_plr)
+    lunac.api.player.enable_echo(_plr)
   end
 
   --
@@ -109,7 +120,7 @@ wrap = function(plr)
     if not username then error("username must be specified") end
     if not password then error("password must be specified") end
 
-    return player.authenticate(_plr, username, password)
+    return lunac.api.player.authenticate(_plr, username, password)
   end
 
   --
@@ -118,18 +129,19 @@ wrap = function(plr)
   narrate = function(event)
     if not event then error("event must be specified") end
 
-    player.narrate(_plr, event)
+    lunac.api.player.narrate(_plr, event)
   end
 
   --
   -- Disconnect the player
   --
   disconnect = function()
-    player.disconnect(_plr)
+    lunac.api.player.disconnect(_plr)
   end
 
   return {
     send = send,
+    sendln = sendln,
     send_gmcp = send_gmcp,
     set_entity = set_entity,
     set_state = set_state,
@@ -187,9 +199,21 @@ end
 
 --
 -- Sends a message to all player.
+--
 send_all = function(msg)
   for _, v in pairs(_players) do
     v.send(msg)
+  end
+end
+
+--
+-- Sends a message to all player and appends a newline.
+--
+sendln_all = function(msg)
+  local msg = msg or ""
+
+  for _, v in pairs(_players) do
+    v.sendln(msg)
   end
 end
 
@@ -199,5 +223,6 @@ return {
   all = all,
   get = get,
   send = send,
-  send_all = send_all
+  send_all = send_all,
+  sendln_all = sendln_all
 }

@@ -10,6 +10,8 @@
 #define GLOBAL_GAME_FIELD_NAME "gptr"
 #define GLOBAL_DB_FIELD_NAME "dbptr"
 #define GLOBAL_C_NULL_FIELD_NAME "cnull"
+#define GLOBAL_API_TABLE_NAME "lunac"
+#define GLOBAL_API_FIELD_NAME "api"
 #define MAX_ERROR_LINE_LENGTH 128
 #define LOG_STACK_TYPE_SIZE 128
 
@@ -35,7 +37,26 @@ int lua_initialise_state(lua_State* l, game_t* game) {
   lua_pushlightuserdata(l, NULL);
   lua_setglobal(l, GLOBAL_C_NULL_FIELD_NAME);
 
+  lua_newtable(l);
+  lua_pushstring(l, GLOBAL_API_FIELD_NAME);
+  lua_newtable(l);
+  lua_rawset(l, -3);
+
+  lua_setglobal(l, GLOBAL_API_TABLE_NAME);
+
   return 0;
+}
+
+/**
+ * Pushes the API table onto the stack.
+ * 
+ * l - The calling Lua state.
+**/
+void lua_push_api_table(lua_State* l) {
+  lua_getglobal(l, GLOBAL_API_TABLE_NAME);
+  lua_pushstring(l, GLOBAL_API_FIELD_NAME);
+  lua_rawget(l, -2);
+  lua_remove(l, -2);
 }
 
 /**

@@ -17,7 +17,7 @@ local get_entity_name
 on_enter = function(p)
    local plr = lunac.player.get(p)
 
-   plr.send("Welcome to [bred]DEMO[reset] MUD!\n\n\r")
+   plr.sendln("Welcome to [bred]DEMO[reset] MUD!\n")
    plr.send("Please enter your username: ")
 
    plr.login = { substate = get_username }
@@ -65,21 +65,21 @@ end
 --
 -- plr - Lua player instance
 display_characters = function(plr)
-      plr.send("\n\rCharacter Selection\n\r");
+      plr.sendln("Character Selection");
 
       local available_entities = plr.get_available_entities()
 
       if #available_entities == 0 then
-         plr.send("\n\rYou have no characters available to login, please create one to play.\n\r");
+         plr.sendln("You have no characters available to login, please create one to play.");
          
          return
       end
 
       for k, v in ipairs(plr.get_available_entities()) do
-         if lunac.component.name.has(v) then
-            local entity_name = lunac.component.name.get(v)
+         if game.component.name.has(v) then
+            local entity_name = game.component.name.get(v)
 
-            plr.send("\t[bcyan]" .. entity_name.name .. "[reset]\n\r")
+            plr.sendln("\t[bcyan]" .. entity_name.name .. "[reset]")
          end
       end
 end
@@ -105,18 +105,20 @@ end
 -- arg - arguments passed in by player
 get_password = function(plr, arg)
    if not plr.authenticate(plr.login.username, arg) then
-      plr.send("\n\r[bred]Authentication failed[reset]\n\n\rPlease enter your username: ")
+      plr.sendln("[bred]Authentication failed[reset]")
+      plr.send("Please enter your username: ")
+
       plr.login.substate = get_username
       plr.enable_echo()
 
       return
    end
    
-   plr.send("\n\r[bgreen]Authentication successful![reset]\n\r")
+   plr.sendln("[bgreen]Authentication successful![reset]")
    
    display_characters(plr)
    
-   plr.send("\n\rPlease enter the name of the character to play or 'new' to create one: ");
+   plr.send("Please enter the name of the character to play or 'new' to create one: ");
    
    plr.login.substate = get_entity_choice;
 
@@ -130,7 +132,7 @@ end
 -- arg - arguments passed in by player
 get_entity_choice = function(plr, arg)
    if arg == "new" then
-      plr.send("\n\rPlease enter a name: ")
+      plr.send("Please enter a name: ")
 
       plr.login.substate = get_entity_name
 
@@ -140,12 +142,12 @@ get_entity_choice = function(plr, arg)
    local available_entities = plr.get_available_entities()
 
    for _, v in ipairs(available_entities) do
-      if lunac.component.name.has(v) then
-         local entity_name = lunac.component.name.get(v)
+      if game.component.name.has(v) then
+         local entity_name = game.component.name.get(v)
 
          if entity_name.name == arg then
             plr.set_entity(v)
-            plr.set_state(lunac.state.play)
+            plr.set_state(game.state.play)
 
             return
          end
@@ -164,21 +166,21 @@ end
 -- plr - Lua player instance
 -- arg - arguments passed in by player
 get_entity_name = function(plr, arg)
-   if #lunac.component.name.entities(function(entity)       
-      return lunac.component.name.get(entity).name:lower() == arg:lower()
+   if #game.component.name.entities(function(entity)       
+      return game.component.name.get(entity).name:lower() == arg:lower()
    end) > 0 then
-      plr.send(p, "\n\rThat name is already in use.  Please enter another: ")
+      plr.send("\n\rThat name is already in use.  Please enter another: ")
       
       return
    end
 
    plr.login.name = arg
 
-   local character = lunac.entity.character.new():initialise(arg, arg, "A generic looking individual")
+   local character = game.entity.character.new():initialise(arg, arg, "A generic looking individual")
    character:set_room(game.config.default_room);
 
    plr.set_entity(character)
-   plr.set_state(lunac.state.play)
+   plr.set_state(game.state.play)
 end
 
 

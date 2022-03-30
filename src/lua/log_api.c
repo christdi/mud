@@ -5,6 +5,7 @@
 #include "mud/lua/common.h"
 #include "mud/lua/log_api.h"
 
+#define LOG_LIB_NAME "log"
 #define MAX_SCRIPT_INFO_LINE_LENGTH 128
 
 static lua_Debug get_debug_info(lua_State* l);
@@ -32,8 +33,14 @@ static const struct luaL_Reg log_lib[] = {
  * Returns 0 on success
  **/
 int lua_log_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, LOG_LIB_NAME);
   luaL_newlib(l, log_lib);
-  lua_setglobal(l, "log");
+  
+  lua_rawset(l, -3);
+
+  return 0;
 
   return 0;
 }

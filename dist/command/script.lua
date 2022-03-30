@@ -1,7 +1,7 @@
 local player = lunac.player.get(p)
 
 if (arg == nil or arg == "") then
-  player.send("Syntax: script <available>\n\r")
+  player.sendln("Syntax: script <available>")
 
   return
 end
@@ -11,17 +11,17 @@ local subcommand, arg = one_argument(arg)
 if (subcommand:lower() == "available") then
   local scripts = script.available();
 
-  player.send("The following scripts are available to reference.\n\n\r")
+  player.sendln("The following scripts are available to reference.\n")
 
   for index, s in ipairs(scripts) do
-    player.send("Script: [bcyan]" .. s.path .. "[reset]\n\r")
-    player.send("  uuid: [bcyan]" .. s.uuid .. "[reset]\n\r")
-    player.send("  groups: [bcyan]" .. join(s.groups) .. "[reset]\n\n\r")
+    player.sendln("Script: [bcyan]" .. s.path .. "[reset]")
+    player.sendln("  uuid: [bcyan]" .. s.uuid .. "[reset]")
+    player.sendln("  groups: [bcyan]" .. join(s.groups) .. "\n")
   end
 
-  player.send("\n\r")
+  player.sendln()
 
   return
 end
 
-player.send("Syntax: script <available>\n\r")
+player.sendln("Syntax: script <available>")

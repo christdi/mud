@@ -9,15 +9,15 @@ new = function(name, func)
   local task
 
   schedule = function(execute_in)
-    task = game.schedule_task(name, execute_in, func)
+    task = lunac.api.game.schedule_task(name, execute_in, func)
 
-    log.info("Scheduled task [" .. task.name .."]")
+    lunac.api.log.info("Scheduled task [" .. task.name .."]")
   end
 
   cancel = function()
-    game.cancel_task(task)
+    lunac.api.game.cancel_task(task)
 
-    log.info("Cancelled task [" .. task.name .. "]")
+    lunac.api.log.info("Cancelled task [" .. task.name .. "]")
   end
 
   local interface = {
@@ -29,7 +29,7 @@ new = function(name, func)
 end
 
 all = function()
-  return game.get_tasks()
+  return lunac.api.game.get_tasks()
 end
 
 return {

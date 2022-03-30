@@ -16,19 +16,19 @@ new = function(extension)
   add = function(entity, data)
     data.entity = entity.uuid;
 
-    game.add_component(entity, c, data)
+    lunac.api.game.add_component(entity, c, data)
   end
 
   get = function(entity)
-    return game.get_component(entity, c)
+    return lunac.api.game.get_component(entity, c)
   end
 
   has = function(entity)
-    return game.has_component(entity, c)
+    return lunac.api.game.has_component(entity, c)
   end
 
   entities = function(filter)
-    local entities = game.get_component_entities(c)
+    local entities = lunac.api.game.get_component_entities(c)
 
     if filter ~= nil then
       filter_array(entities, filter)
@@ -44,7 +44,7 @@ new = function(extension)
   index = function()
   end
 
-  c = game.register_component();
+  c = lunac.api.game.register_component();
 
   local interface = {
     add = add,

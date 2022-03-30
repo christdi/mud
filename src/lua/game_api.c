@@ -19,7 +19,7 @@
 #include "mud/lua/struct.h"
 #include "mud/task.h"
 
-#define API_TABLE_NAME "game"
+#define GAME_LIB_NAME "game"
 
 static int lua_test(lua_State* l);
 
@@ -114,8 +114,12 @@ static const struct luaL_Reg game_lib[] = {
  * Returns 0 on success
  **/
 int lua_game_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, GAME_LIB_NAME);
   luaL_newlib(l, game_lib);
-  lua_setglobal(l, API_TABLE_NAME);
+  
+  lua_rawset(l, -3);
 
   return 0;
 }
