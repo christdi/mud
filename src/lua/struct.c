@@ -6,6 +6,7 @@
 
 #include "mud/action.h"
 #include "mud/command.h"
+#include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
 #include "mud/ecs/system.h"
 #include "mud/json.h"
@@ -25,6 +26,9 @@
 
 #define COMMAND_NAME_FIELD "name"
 #define COMMAND_SCRIPT_UUID_FIELD "script"
+
+#define COMMAND_GROUP_DESCRIPTION_FIELD "description"
+#define COMMAND_GROUP_COMMANDS_FIELD "commands"
 
 #define ACTION_NAME_FIELD "name"
 #define ACTION_SCRIPT_UUID_FIELD "script"
@@ -133,6 +137,55 @@ void lua_push_command(lua_State* l, command_t* command) {
 
   lua_pushstring(l, COMMAND_SCRIPT_UUID_FIELD);
   lua_pushstring(l, uuid_str(&command->script));
+  lua_rawset(l, -3);
+}
+
+/**
+ * Converts a command group structure to a Lua table and pushes it on top of the stack.
+ * 
+ * l - Lua state instance
+ * group - command group to be converted
+**/
+void lua_push_command_group(lua_State* l, command_group_t* group) {
+  assert(l);
+  assert(group);
+
+  lua_newtable(l);
+
+  lua_pushstring(l, TYPE_FIELD);
+  lua_pushnumber(l, STRUCT_COMMAND_GROUP);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_pushlightuserdata(l, group);
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, UUID_FIELD);
+  lua_pushstring(l, uuid_str(&group->uuid));
+  lua_rawset(l, -3);
+
+  lua_pushstring(l, COMMAND_GROUP_DESCRIPTION_FIELD);
+  lua_pushstring(l, group->description);
+  lua_rawset(l, -3);
+
+  int index = 1;
+
+  char* uuid = NULL;
+  it_t it = list_begin(group->commands);
+
+  lua_pushstring(l, COMMAND_GROUP_COMMANDS_FIELD);
+  lua_newtable(l);
+
+  while ((uuid = it_get(it) ) != NULL) {
+    lua_pushnumber(l, index);
+    lua_pushstring(l, uuid);
+    lua_rawset(l, -3);
+
+    it = it_next(it);
+
+    index++;
+  }
+  
   lua_rawset(l, -3);
 }
 
@@ -426,6 +479,41 @@ command_t* lua_to_command(lua_State* l, int index) {
   lua_pop(l, 1);
 
   return command;
+}
+
+/**
+ * Extracts the pointer to a command group from the table on top of the stack.
+ *
+ * l - Lua state instance
+ *
+ * Returns the command_group_t pointer or null
+**/
+command_group_t* lua_to_command_group(lua_State* l, int index) {
+  assert(l);
+
+  luaL_checktype(l, index, LUA_TTABLE);
+  lua_pushstring(l, TYPE_FIELD);
+
+  int table_index = index > 0 ? index : index - 1;
+  lua_rawget(l, table_index);
+
+  struct_type_t type = luaL_checknumber(l, -1);
+  lua_pop(l, 1);
+
+  if (type != STRUCT_COMMAND_GROUP) {
+    LOG(ERROR, "Could not convert lua table to command group as type was not command group");
+
+    return NULL;
+  }
+
+  lua_pushstring(l, PTR_FIELD);
+  lua_rawget(l, table_index);
+
+  luaL_checktype(l, -1, LUA_TLIGHTUSERDATA);
+  command_group_t* command_group = lua_touserdata(l, -1);
+  lua_pop(l, 1);
+
+  return command_group;  
 }
 
 /**

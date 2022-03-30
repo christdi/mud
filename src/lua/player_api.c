@@ -5,6 +5,7 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include "mud/command.h"
 #include "mud/data/deallocate.h"
 #include "mud/data/linked_list.h"
 #include "mud/db.h"
@@ -33,6 +34,8 @@ static int lua_disconnect(lua_State* l);
 static int lua_disable_echo(lua_State* l);
 static int lua_enable_echo(lua_State* l);
 static int lua_send_gmcp(lua_State* l);
+static int lua_add_command_group(lua_State* l);
+static int lua_remove_command_group(lua_State* l);
 
 static const struct luaL_Reg player_lib[] = {
   { "authenticate", lua_authenticate },
@@ -47,6 +50,8 @@ static const struct luaL_Reg player_lib[] = {
   { "disable_echo", lua_disable_echo },
   { "enable_echo", lua_enable_echo },
   { "send_gmcp", lua_send_gmcp },
+  { "add_command_group", lua_add_command_group },
+  { "remove_command_group", lua_remove_command_group },
   { NULL, NULL }
 };
 
@@ -380,5 +385,53 @@ static int lua_send_gmcp(lua_State* l) {
     free(msg);
   }
   
+  return 0;
+}
+
+/**
+ * API method to add a command group to a player.
+ * l - The current Lua state
+ * 
+ * player.add_command_group(p, group)
+ * 
+ * Returns 0 or calls luaL_error on error
+**/
+static int lua_add_command_group(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -2);
+  command_group_t* group = lua_to_command_group(l, -1);
+
+  if (player_add_command_group(player, group) == -1) {
+    return luaL_error(l, "Error adding command group [%s] to player [%s]", group->description, uuid_str(&player->uuid));
+  }
+
+  lua_pop(l, 2);
+
+  return 0;
+}
+
+/**
+  * API method to remove a command group from a player.
+  * l - The current Lua state
+  * 
+  * player.remove_command_group(p, group)
+  * 
+  * Returns 0 or calls luaL_error on error
+**/
+static int lua_remove_command_group(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -2);
+  command_group_t* group = lua_to_command_group(l, -1);
+
+  if (player_remove_command_group(player, group) == -1) {
+    return luaL_error(l, "Error removing command group [%s] from player [%s]", group->description, uuid_str(&player->uuid));
+  }
+
+  lua_pop(l, 2);
+
   return 0;
 }

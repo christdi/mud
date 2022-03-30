@@ -347,3 +347,36 @@ int list_size(linked_list_t* list) {
 
   return count;
 }
+
+/**
+ * Clears all nodes from the list.
+ *
+ * list - Instance of list_t to be cleared.
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int list_clear(linked_list_t* list) {
+  assert(list);
+
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return -1;
+  }
+
+  node_t* node = list->first;
+
+  while (node != NULL) {
+    node_t* next_node = node->next;
+    remove_node(list, node);
+    node = next_node;
+  }
+
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return -1;
+  }
+
+  return 0;
+}

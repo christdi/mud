@@ -71,7 +71,7 @@ int action_load_actions(game_t* game) {
 
   int count;
 
-  if ((count = db_action_find_all(game->database, results)) == -1) {
+  if ((count = db_action_load_all(game->database, results)) == -1) {
     LOG(ERROR, "Failed to load actions into engine");
     free_linked_list_t(results);
 

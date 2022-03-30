@@ -1,4 +1,4 @@
-#include "mud/player.h"
+#include "mud/command.h"
 #include "mud/data/hash_table.h"
 #include "mud/data/linked_list.h"
 #include "mud/db.h"
@@ -10,6 +10,7 @@
 #include "mud/network/client.h"
 #include "mud/network/gmcp.h"
 #include "mud/network/telnet.h"
+#include "mud/player.h"
 #include "mud/util/mudhash.h"
 #include "mud/util/mudstring.h"
 #include "mud/util/muduuid.h"
@@ -35,6 +36,7 @@ player_t* create_player_t() {
   player->username = NULL;
   player->state = NULL;
   player->client = NULL;
+  player->commands = command_new_command_repository_t();
 
   return player;
 }
@@ -47,6 +49,10 @@ void free_player_t(player_t* player) {
 
   if (player->username != NULL) {
     free(player->username);
+  }
+
+  if (player->commands != NULL) {
+    command_free_command_repository_t(player->commands);
   }
 
   free(player);
@@ -277,6 +283,50 @@ int player_request_enable_echo(player_t* player) {
     telnet_t* telnet = network_client_get_protocol(player->client, TELNET);
 
     network_telnet_send_wont(telnet, player->client, TELOPT_ECHO);
+  }
+
+  return 0;
+}
+
+/**
+ * Adds a command group to the players command repository.
+ *
+ * player - the player_t instance which is to have the command group added
+ * group - the command_group_t instance to be added
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int player_add_command_group(player_t* player, command_group_t* group) {
+  assert(player);
+  assert(group);
+  assert(player->commands);
+
+  if (command_add_group_to_repository(player->commands, group) == -1) {
+    LOG(ERROR, "Failed to add command group to player");
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Removes a command group from the players command repository.
+ *
+ * player - the player_t instance which is to have the command group removed
+ * group - the command_group_t instance to be removed
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int player_remove_command_group(player_t* player, command_group_t* group) {
+  assert(player);
+  assert(group);
+  assert(player->commands);
+
+  if (command_remove_group_from_repository(player->commands, group) == -1) {
+    LOG(ERROR, "Failed to remove command group from player");
+
+    return -1;
   }
 
   return 0;

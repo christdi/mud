@@ -50,18 +50,44 @@ function main()
   game.entity.portal = lunac.entity.define(require('dist/entity/portal'), { location = game.component.location, room_ref = game.component.room_ref, description = game.component.description, tag = game.component.tag })
 
   game.config.default_room = game.entity.room.new()
-  game.config.default_room:initialise("Home of the gods", "This is the place where gods come come to celebrate and rejoice with fallen warriors.")
+    :with_short_description("Home of the Gods")
+    :with_long_description("This is the place where gods come come to celebrate and rejoice with fallen warriors")
 
   game.config.second_room = game.entity.room.new()
-  game.config.second_room:initialise("Recluse of the Damned", "This is the place where lost souls come to be forgotten.")
+    :with_short_description("Recluse of the Damned")
+    :with_long_description("This is the place where lost souls come to be forgotten.")
 
   game.config.third_room = game.entity.room.new()
-  game.config.third_room:initialise("Home of the Platinum Dragon", "This is the place where the truly good come to live in harmony.")
+    :with_short_description("Home of the Platinum Dragon")
+    :with_long_description("This is the place where the truly good come to live in peace and harmony.")
 
-  game.entity.portal.new():initialise("Portal to Hel", game.config.default_room, game.config.second_room, "a portal to hel", "An icy portal from which a cold wind blows", { "portal", "hel" })
-  game.entity.portal.new():initialise("Portal to Valhalla", game.config.second_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
-  game.entity.portal.new():initialise("Portal to Mount Celestia", game.config.default_room, game.config.third_room, "a portal to mount celestia", "A glowing portal through which tall mountains are visible", {"portal", "mount", "celestia" })
-  game.entity.portal.new():initialise("Portal to Valhalla", game.config.third_room, game.config.default_room, "a portal to valhalla", "A glowing portal which rings with the sound of battle", { "portal", "valhalla" } )
+  game.entity.portal.new()
+    :with_origin(game.config.default_room)
+    :with_destination(game.config.second_room)
+    :with_short_description("A portal to Hel")
+    :with_long_description("An icy portal from which a cold wind blows")
+    :with_tags({ "portal", "hel" })
+  
+  game.entity.portal.new()
+    :with_origin(game.config.second_room)
+    :with_destination(game.config.default_room)
+    :with_short_description("A portal to Valhalla")
+    :with_long_description("A glowing portal which rings with the sound of battle")
+    :with_tags({ "portal", "valhalla" })
+
+  game.entity.portal.new()
+    :with_origin(game.config.default_room)
+    :with_destination(game.config.third_room)
+    :with_short_description("A portal to Mount Celestia")
+    :with_long_description("A portal to the place of the gods")
+    :with_tags({ "portal", "mount", "celestia" })
+
+  game.entity.portal.new()
+    :with_origin(game.config.third_room)
+    :with_destination(game.config.default_room)
+    :with_short_description("A portal to Valhalla")
+    :with_long_description("A glowing portal which rings with the sound of battle")
+    :with_tags({ "portal", "valhalla" })
 end
 
 function shutdown()
@@ -74,6 +100,9 @@ end
 
 function commands_loaded(c)
   commands.initialise(c)
+end
+
+function command_groups_loaded(c)
 end
 
 function actions_loaded(a)

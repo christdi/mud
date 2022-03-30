@@ -37,6 +37,7 @@ int list_extract(linked_list_t* src, linked_list_t* dst, linked_list_predicate_f
 size_t list_at(linked_list_t* list, size_t index, void** value);
 it_t list_begin(linked_list_t* list);
 it_t list_end(linked_list_t* list);
+int list_clear(linked_list_t* list);
 
 int list_size(linked_list_t* list);
 

@@ -21,6 +21,7 @@ int lua_call_shutdown_hook(lua_State *l);
 
 int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities);
 int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands);
+int lua_call_command_groups_loaded_hook(lua_State* l, linked_list_t* command_groups);
 int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions);
 
 int lua_call_player_connected_hook(lua_State* l, player_t* player);
