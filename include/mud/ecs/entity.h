@@ -19,7 +19,7 @@ typedef struct entity {
 /**
  * Function prototypes
  **/
-entity_t* ecs_create_entity_t();
+entity_t* ecs_new_entity_t();
 void ecs_free_entity_t(entity_t* entity);
 void ecs_deallocate_entity(void* value);
 
@@ -27,5 +27,7 @@ int ecs_load_entities(game_t* game);
 
 entity_t* ecs_get_entity(game_t* game, const char* uuid);
 entity_t* ecs_new_entity(game_t* game);
+int ecs_save_entity(game_t* game, entity_t* entity);
+int ecs_delete_entity(game_t* game, entity_t* entity);
 
 #endif

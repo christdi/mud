@@ -20,7 +20,7 @@
  *
  * Returns a pointer to the newly allocated entity_t struct.
  **/
-entity_t* ecs_create_entity_t() {
+entity_t* ecs_new_entity_t() {
   entity_t* entity = calloc(1, sizeof *entity);
 
   return entity;
@@ -114,12 +114,74 @@ entity_t* ecs_get_entity(game_t* game, const char* uuid) {
  * Returns a pointer to an entity struct representing the new entity
  **/
 entity_t* ecs_new_entity(game_t* game) {
-  entity_t* entity = ecs_create_entity_t();
+  assert(game);
+
+  entity_t* entity = ecs_new_entity_t();
   entity->id = new_uuid();
 
   hash_table_insert(game->entities, uuid_str(&entity->id), entity);
 
-  LOG(INFO, "New entity created uuid: [%s]", uuid_str(&entity->id));
-
   return entity;
+}
+
+/**
+ * Persists an entity to the database.
+ *
+ * game - game_t instance containing database
+ * entity - the entity to be saved to the database
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int ecs_save_entity(game_t* game, entity_t* entity) {
+  assert(game);
+  assert(entity);
+
+  if (db_entity_save(game->database, entity) == -1) {
+    LOG(ERROR, "Unable to save entity [%s]", uuid_str(&entity->id));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Removes an entity from entities and removes it from persistence.
+ *
+ * game - game_t instance containing database and entities
+ * entity - the entity to be deleted
+ *
+ * Returns 0 on success or -1 on failure
+**/ 
+int ecs_delete_entity(game_t* game, entity_t* entity) {
+  assert(game);
+  assert(entity);
+
+  hash_table_delete(game->entities, uuid_str(&entity->id));
+
+  if (db_begin_transaction(game->database) == -1) {
+    LOG(ERROR, "Failed to begin transaction");
+
+    return -1;
+  }
+
+  if (db_entity_delete_user_entity(game->database, entity) == -1) {
+    LOG(ERROR, "Unable to delete user entity [%s]", uuid_str(&entity->id));
+
+    return -1;
+  }
+
+  if (db_entity_delete(game->database, entity) == -1) {
+    LOG(ERROR, "Unable to delete entity [%s]", uuid_str(&entity->id));
+
+    return -1;
+  }
+
+  if (db_end_transaction(game->database) == -1) {
+    LOG(ERROR, "Failed to end transaction");
+
+    return -1;
+  }
+
+  return 0;
 }

@@ -16,7 +16,7 @@ int task_is_ready_to_execute(void* value);
  *
  * Returns the newly allocated task_t
  **/
-task_t* task_new_task_t(const char* name, int execute_in, int ref) {
+task_t* task_new_task_t(const char* name, int execute_in, lua_ref_t* ref) {
   task_t* task = calloc(1, sizeof(task_t));
 
   task->uuid = new_uuid();
@@ -35,6 +35,10 @@ void task_free_task_t(task_t* task) {
 
   if (task->name != NULL) {
     free(task->name);
+  }
+
+  if (task->ref != NULL) {
+    lua_free_lua_ref_t(task->ref);
   }
 
   free(task);
@@ -122,8 +126,6 @@ int task_cancel_task(linked_list_t* tasks, game_t* game, task_t* task) {
   assert(tasks);
   assert(game);
   assert(task);
-
-  lua_release_ref(game->lua_state, task->ref);
 
   list_remove(tasks, task);
 

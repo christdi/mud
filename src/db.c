@@ -15,6 +15,40 @@
 #include "mud/player.h"
 
 /**
+ * Begins a trasnaction.
+ *
+ * db - sqlite3 handle to database
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int db_begin_transaction(sqlite3* db) {
+  if (sqlite3_exec(db, "BEGIN", 0, 0, 0) != 0) {
+    LOG(ERROR, "Failed to begin database transaction: [%s]", sqlite3_errmsg(db));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Ends a transaction, committing the results.
+ *
+ * db - sqlite3 handle to database
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int db_end_transaction(sqlite3* db) {
+  if (sqlite3_exec(db, "COMMIT", 0, 0, 0) != 0) {
+    LOG(ERROR, "Failed to begin database transaction: [%s]", sqlite3_errmsg(db));
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
  * Retrieves a command via it's name
  *
  * Parameters:
@@ -150,7 +184,7 @@ int db_entity_load_all(sqlite3* db, linked_list_t* entities) {
       return 0;
     }
 
-    entity_t* entity = ecs_create_entity_t();
+    entity_t* entity = ecs_new_entity_t();
 
     strlcpy(entity->id.raw, (char*)sqlite3_column_text(res, 0), sizeof(entity->id.raw));
 
@@ -216,7 +250,49 @@ int db_entity_get_ids_by_user(sqlite3* db, const char* uuid, linked_list_t* resu
 }
 
 /**
- * Persists an entity to the database.  If the entity exists already it will be updated.
+ * Deletes any entries in user_entity matching a given entity UUID.
+ *
+ * sqlite - sqlite3 handle to database
+ * entity - the entity to be deleted to identify rows to delete
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int db_entity_delete_user_entity(sqlite3* db, entity_t* entity) {
+  assert(db);
+  assert(entity);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "DELETE FROM user_entity WHERE entity_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, entity->id.raw, (int)strlen(entity->id.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to delete user entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Persists an entity to the database.
  *
  * Parameters
  *   db - Handle to sqlite database
@@ -248,6 +324,47 @@ int db_entity_save(sqlite3* db, entity_t* entity) {
 
   if (sqlite3_step(res) != SQLITE_DONE) {
     LOG(ERROR, "Failed to insert entity into database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Deletes an entity from the database.
+ *   db - Handle to sqlite database
+ *   entity - Entity to be saved
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int db_entity_delete(sqlite3* db, entity_t* entity) {
+  assert(db);
+  assert(entity);
+
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "DELETE FROM entity WHERE uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to delete entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, entity->id.raw, (int)strlen(entity->id.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to delete entity from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to delete entity from database: [%s]", sqlite3_errmsg(db));
     sqlite3_finalize(res);
 
     return -1;
@@ -315,8 +432,13 @@ int db_script_load(sqlite3* db, const char* uuid, script_t* script) {
 }
 
 /**
- * TODO(Chris I)
- **/
+ * Loads all scripts from the database.
+ * 
+ * db - sqlite3 handle
+ * scripts - result set of scripts
+ * 
+ * Returns 0 on success or -1 on failure
+ */
 int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
   assert(db);
   assert(scripts);
@@ -357,63 +479,6 @@ int db_script_load_all(sqlite3* db, linked_list_t* scripts) {
 }
 
 /**
- * Retrieves permissions of a script.
- *
- * Parameters
- *   db - Pointer to sqlite3 database
- *   uuid - UUID of the script access
- *   results - Out parameter for results
- *
- * Returns amount of results or -1 on failure
- **/
-int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
-  assert(db);
-  assert(uuid);
-  assert(results);
-
-  sqlite3_stmt* res = NULL;
-
-  const char* sql = "SELECT module, method FROM script_sandbox_permission p INNER JOIN script_sandbox_group_permission gp on gp.permission_uuid = p.uuid INNER JOIN script_group g on g.group_uuid = gp.group_uuid WHERE g.script_uuid = ?";
-
-  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
-    LOG(ERROR, "Failed to prepare statement to retrieve script permissions from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  if (sqlite3_bind_text(res, 1, uuid, (int)strlen(uuid), NULL) != SQLITE_OK) {
-    LOG(ERROR, "Failed to bind uuid to retrieve script permissions from database: [%s]", sqlite3_errmsg(db));
-    sqlite3_finalize(res);
-
-    return -1;
-  }
-
-  int rc = 0;
-
-  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
-    if (rc != SQLITE_ROW) {
-      LOG(ERROR, "Failed to retreive script permissions from from database: [%s]", sqlite3_errmsg(db));
-
-      sqlite3_finalize(res);
-
-      return -1;
-    }
-
-    char* module = sqlite3_column_type(res, 0) == SQLITE_NULL ? NULL : (char*)sqlite3_column_text(res, 0);
-    char* method = sqlite3_column_type(res, 1) == SQLITE_NULL ? NULL : (char*)sqlite3_column_text(res, 1);
-
-    script_permission_t* script_permission = script_new_script_permission_t(module, method);
-
-    list_add(results, script_permission);
-  }
-
-  sqlite3_finalize(res);
-
-  return 0;
-}
-
-/**
  * Retrieves the script groups associated with a script.
  *
  * db - sqlite3 db instance
@@ -422,14 +487,14 @@ int db_script_sandbox_permission_by_script_id(sqlite3* db, const char* uuid, lin
  *
  * Returns number of results or -1 on error.
  **/
-int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
+int db_script_sandbox_group_by_script_id(sqlite3* db, const char* uuid, linked_list_t* results) {
   assert(db);
   assert(uuid);
   assert(results);
 
   sqlite3_stmt* res = NULL;
 
-  const char* sql = "SELECT name FROM script_sandbox_group ssg INNER JOIN script_group sg on ssg.uuid = sg.group_uuid WHERE sg.script_uuid = ?";
+  const char* sql = "SELECT uuid, filepath, name, description FROM script_sandbox_group ssg INNER JOIN script_group sg on ssg.uuid = sg.group_uuid WHERE sg.script_uuid = ?";
 
   if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
     LOG(ERROR, "Failed to prepare statement to retrieve script group from database: [%s]", sqlite3_errmsg(db));
@@ -456,11 +521,78 @@ int db_script_script_group_by_script_id(sqlite3* db, const char* uuid, linked_li
       return -1;
     }
 
-    char* name = (char*)sqlite3_column_text(res, 0);
+    
+    char* uuid = (char*)sqlite3_column_text(res, 0);
+    char* filepath = (char*)sqlite3_column_text(res, 1);
+    char* name = (char*)sqlite3_column_text(res, 2);
+    char* description = (char*)sqlite3_column_text(res, 3);
 
-    script_group_t* script_group = script_new_script_group_t(name);
+    script_group_t* script_group = script_new_script_group_t(uuid, filepath, name, description);
 
     list_add(results, script_group);
+  }
+
+  sqlite3_finalize(res);
+
+  return 0;
+}
+
+/**
+ * Saves a script_group_t to the database.
+ * 
+ * db - sqlite3 db instance
+ * group - script_group_t to save
+ * 
+ * Returns 0 on success or -1 on failure.
+ */
+int db_script_sandbox_group_save(sqlite3* db, script_group_t* group) {
+  assert(db);
+  assert(group);
+
+  sqlite3_stmt* res = NULL;
+
+  const char *sql = "INSERT INTO script_sandbox_group (uuid, filepath, name, description) VALUES (?, ?, ?, ?)";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, group->uuid.raw, (int)strlen(group->uuid.raw), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind uuid to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 2, group->filepath, (int)strlen(group->filepath), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind filepath to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 3, group->name, (int)strlen(group->name), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind name to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 4, group->description, (int)strlen(group->description), NULL) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind description to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_step(res) != SQLITE_DONE) {
+    LOG(ERROR, "Failed to save script group to database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
   }
 
   sqlite3_finalize(res);

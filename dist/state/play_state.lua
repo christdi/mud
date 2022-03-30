@@ -1,5 +1,3 @@
-local register
-local use
 local interface
 
 local on_enter
@@ -8,28 +6,18 @@ local on_input
 local on_output
 local on_event
 
-local state
-
--- Register this state
-register = function()
-   state = game.register_state(interface)
-end
-
--- Switches a player to this state
---
--- p - instance of player userdata
-use = function(p)
-   player.set_state(p, state)
-end
-
 on_enter = function(p)
-  player.send(p, "You are now playing!\n\r")
+  local plr = lunac.player.get(p)
+
+  plr.sendln("You are now playing!")
 
   commands.execute("look", p)
 end
 
 on_exit = function(p)
-  player.send(p, "You are no longer playing.\n\r")
+  local plr = lunac.player.get(p)
+
+  plr.sendln("You are no longer playing.")
 end
 
 on_input = function(p, arg)
@@ -41,22 +29,22 @@ on_input = function(p, arg)
 end
 
 on_output = function(p, output)
-  local entity = player.get_entity(p)
+  local plr = lunac.player.get(p)
+  local entity = plr.get_entity()
 
-  if name_component.has(entity) then
-    local name = name_component.get(entity)
+  if game.component.name.has(entity) then
+    local name = game.component.name.get(entity)
 
-    player.send(p, "\n\n\r[bgreen]" .. name.name .. " >[reset] ")
+    plr.send("[bgreen]" .. name.name .. " >[reset] ")
   end
 end
 
 on_event = function(p, event)
-  player.narrate(p, event);
+  local plr = lunac.player.get(p)
+  plr.narrate(event)
 end
 
 interface = {
-  register = register,
-  use = use,
   on_enter = on_enter,
   on_exit = on_exit,
   on_input = on_input,

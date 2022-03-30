@@ -11,12 +11,10 @@
 #include "mud/log.h"
 #include "mud/json.h"
 #include "mud/lua/common.h"
-#include "mud/lua/event.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/ref.h"
 #include "mud/lua/struct.h"
-#include "mud/narrator.h"
 #include "mud/player.h"
-#include "mud/state.h"
 #include "mud/task.h"
 #include "mud/util/muduuid.h"
 
@@ -276,7 +274,13 @@ int lua_call_player_disconnected_hook(lua_State* l, player_t* player) {
 }
 
 /**
- * TODO(Chris I)
+ * Hook method called when the engine has detected that a player has sent a command.
+ * 
+ * l - Lua state instance
+ * player - player_t instance of the player who sent the command
+ * input - Input string sent by the player
+ * 
+ * Returns 0 on success or -1 on failure.
  **/
 int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input) {
   assert(l);
@@ -307,10 +311,10 @@ int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input
  * Parameters
  *   l - The Lua state
  *   player - The player who is being narrated to
- *   narrator - Narrator struct containing ref to Lua module
+ *   narrator - lua_ref_t to narrator in Lua state
  *   event - The event to be narrated
  **/
-int lua_call_narrate_event_hook(lua_State* l, player_t* player, narrator_t* narrator, lua_event_data_t* event) {
+int lua_call_narrate_event_hook(lua_State* l, player_t* player, lua_ref_t* narrator, lua_ref_t* event) {
   assert(l);
   assert(player);
   assert(narrator);
@@ -348,7 +352,7 @@ int lua_call_narrate_event_hook(lua_State* l, player_t* player, narrator_t* narr
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_enter_hook(lua_State* l, player_t* player, state_t* state) {
+int lua_call_state_enter_hook(lua_State* l, player_t* player, lua_ref_t* state) {
   assert(l);
   assert(player);
   assert(state);
@@ -384,7 +388,7 @@ int lua_call_state_enter_hook(lua_State* l, player_t* player, state_t* state) {
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_exit_hook(lua_State* l, player_t* player, state_t* state) {
+int lua_call_state_exit_hook(lua_State* l, player_t* player, lua_ref_t* state) {
   assert(l);
   assert(player);
   assert(state);
@@ -421,7 +425,7 @@ int lua_call_state_exit_hook(lua_State* l, player_t* player, state_t* state) {
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_input_hook(lua_State* l, player_t* player, state_t* state, const char* input) {
+int lua_call_state_input_hook(lua_State* l, player_t* player, lua_ref_t* state, const char* input) {
   assert(l);
   assert(player);
   assert(state);
@@ -458,7 +462,7 @@ int lua_call_state_input_hook(lua_State* l, player_t* player, state_t* state, co
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_output_hook(lua_State* l, player_t* player, state_t* state, const char* output) {
+int lua_call_state_output_hook(lua_State* l, player_t* player, lua_ref_t* state, const char* output) {
   assert(l);
   assert(player);
   assert(state);
@@ -496,7 +500,7 @@ int lua_call_state_output_hook(lua_State* l, player_t* player, state_t* state, c
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, event_t* event) {
+int lua_call_state_event_hook(lua_State* l, player_t* player, lua_ref_t* state, event_t* event) {
   assert(l);
   assert(player);
   assert(state);
@@ -537,7 +541,7 @@ int lua_call_state_event_hook(lua_State* l, player_t* player, state_t* state, ev
  *
  * Returns 0 on success or returns luaL_error on error.
  **/
-int lua_call_state_gmcp_hook(lua_State* l, player_t* player, state_t* state, const char* topic, const char* msg) {
+int lua_call_state_gmcp_hook(lua_State* l, player_t* player, lua_ref_t* state, const char* topic, const char* msg) {
   assert(l);
   assert(player);
   assert(state);
@@ -594,7 +598,7 @@ int lua_call_system_execute_hook(lua_State* l, system_t* system) {
   assert(l);
   assert(system);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, system->ref);
+  lua_rawgeti(l, LUA_REGISTRYINDEX, system->ref->ref);
   lua_pushstring(l, SYSTEM_EXECUTE_HOOK_FUNCTION);
 
   if (lua_gettable(l, -2) != LUA_TFUNCTION) {
@@ -626,7 +630,7 @@ int lua_call_task_execute_hook(lua_State* l, task_t* task) {
   assert(l);
   assert(task);
 
-  lua_rawgeti(l, LUA_REGISTRYINDEX, task->ref);
+  lua_rawgeti(l, LUA_REGISTRYINDEX, task->ref->ref);
 
   luaL_checktype(l, -1, LUA_TFUNCTION);
 
@@ -635,8 +639,6 @@ int lua_call_task_execute_hook(lua_State* l, task_t* task) {
 
     return -1;
   }
-
-  luaL_unref(l, LUA_REGISTRYINDEX, task->ref);
 
   return 0;
 }

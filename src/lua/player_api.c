@@ -15,10 +15,11 @@
 #include "mud/lua/common.h"
 #include "mud/lua/player_api.h"
 #include "mud/lua/struct.h"
-#include "mud/narrator.h"
 #include "mud/network/client.h"
 #include "mud/player.h"
 #include "mud/util/muduuid.h"
+
+#define PLAYER_LIB_NAME "player"
 
 static int lua_authenticate(lua_State* l);
 static int lua_narrate(lua_State* l);
@@ -58,8 +59,12 @@ static const struct luaL_Reg player_lib[] = {
  * Returns 0 on success.
  **/
 int lua_player_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, PLAYER_LIB_NAME);
   luaL_newlib(l, player_lib);
-  lua_setglobal(l, "player");
+  
+  lua_rawset(l, -3);
 
   return 0;
 }
@@ -81,7 +86,7 @@ static int lua_authenticate(lua_State* l) {
 
   lua_pop(l, 3);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_authenticate(player, game, username, password) == -1) {
     lua_pop(l, 3);
@@ -112,7 +117,7 @@ static int lua_narrate(lua_State* l) {
   event_t* event = lua_touserdata(l, -1);
   lua_pop(l, 2);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_narrate(player, game, event) != 0) {
     return luaL_error(l, "Unable to narrate to player");
@@ -176,10 +181,10 @@ static int lua_set_state(lua_State* l) {
   luaL_checktype(l, -2, LUA_TTABLE);
 
   player_t* player = lua_to_player(l, -2);
-  state_t* state = lua_touserdata(l, -1);
+  lua_ref_t* state = lua_touserdata(l, -1);
   lua_pop(l, 2);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   if (player_change_state(player, game, state) == -1) {
     return luaL_error(l, "Failed to change player state");
@@ -200,7 +205,7 @@ static int lua_set_narrator(lua_State* l) {
   luaL_checktype(l, -1, LUA_TUSERDATA);
   luaL_checktype(l, -2, LUA_TTABLE);
 
-  narrator_t* narrator = lua_touserdata(l, -1);
+  lua_ref_t* narrator = lua_touserdata(l, -1);
   player_t* player = lua_to_player(l, -2);
 
   lua_pop(l, 2);
@@ -222,7 +227,7 @@ static int lua_get_entities(lua_State* l) {
   player_t* player = lua_to_player(l, -1);
   lua_pop(l, 1);
 
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   linked_list_t* results = create_linked_list_t();
   results->deallocator = deallocate;

@@ -1,3 +1,4 @@
-player.send(p, "So long!\n\r");
+local player = lunac.player.get(p)
 
-player.disconnect(p);
+player.sendln("So long!");
+player.disconnect()

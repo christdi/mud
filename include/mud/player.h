@@ -19,10 +19,9 @@
 typedef struct client client_t;
 typedef struct game game_t;
 typedef struct entity entity_t;
-typedef struct state state_t;
 typedef struct event event_t;
-typedef struct narrator narrator_t;
 typedef struct linked_list linked_list_t;
+typedef struct lua_ref lua_ref_t;
 
 /**
  * Structs
@@ -35,8 +34,8 @@ typedef struct player {
 
   client_t* client;
   entity_t* entity;
-  state_t* state;
-  narrator_t* narrator;
+  lua_ref_t* state;
+  lua_ref_t* narrator;
 } player_t;
 
 /**
@@ -54,7 +53,7 @@ void player_gmcp(client_t* client, void* context, const char* topic, const char*
 void player_on_event(player_t* player, game_t* game, event_t* event);
 
 
-int player_change_state(player_t* player, game_t* game, state_t* state);
+int player_change_state(player_t* player, game_t* game, lua_ref_t* state);
 int player_authenticate(player_t* player, game_t* game, const char* username, const char* password);
 int player_narrate(player_t* player, game_t* game, event_t* event);
 int player_request_disable_echo(player_t* player);

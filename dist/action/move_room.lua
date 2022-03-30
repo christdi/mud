@@ -1,5 +1,4 @@
-character_entity.set_room(entity, data.to)
-
-events.dispatch(moved_event.new(entity, data.portal))
+game.entity.character.wrap(entity):set_room(data.to)
+game.event.moved.dispatch({entity = entity, portal = data.portal})
 
 return true

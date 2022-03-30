@@ -10,6 +10,8 @@
 #include "mud/lua/script_api.h"
 #include "mud/util/muduuid.h"
 
+#define SCRIPT_LIB_NAME "script"
+
 static int lua_script_available(lua_State* l);
 
 static const struct luaL_Reg script_lib[] = {
@@ -18,22 +20,34 @@ static const struct luaL_Reg script_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Registers the script API functions.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success
  **/
 int lua_script_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, SCRIPT_LIB_NAME);
   luaL_newlib(l, script_lib);
-  lua_setglobal(l, "script");
+  
+  lua_rawset(l, -3);
+
+  return 0;
 
   return 0;
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for retrieving all available scripts.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns the table on the stack or calls luaL_error on error.
  **/
 static int lua_script_available(lua_State* l) {
-  lua_common_assert_n_arguments(l, 0);
-
-  game_t* game = lua_common_get_game(l);
+  game_t* game = lua_get_game(l);
 
   linked_list_t* scripts = create_linked_list_t();
   scripts->deallocator = deallocate_script;
@@ -41,7 +55,7 @@ static int lua_script_available(lua_State* l) {
   if (db_script_load_all(game->database, scripts) == -1) {
     LOG(ERROR, "Error loading scripts from database");
 
-    return -1;
+    return luaL_error(l, "Error loading scripts from database");
   }
 
   script_t* script = NULL;
@@ -54,7 +68,7 @@ static int lua_script_available(lua_State* l) {
     linked_list_t* groups = create_linked_list_t();
     groups->deallocator = script_deallocate_script_group_t;
 
-    if (db_script_script_group_by_script_id(game->database, uuid_str(&script->uuid), groups) == -1) {
+    if (db_script_sandbox_group_by_script_id(game->database, uuid_str(&script->uuid), groups) == -1) {
       LOG(ERROR, "Error retrieving script groups for script uuid [%s]", uuid_str(&script->uuid));
     }
 

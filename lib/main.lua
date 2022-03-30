@@ -1,3 +1,13 @@
+lunac.component = require('lib/component')
+lunac.state = require('lib/state')
+lunac.task = require('lib/task')
+lunac.system = require('lib/system')
+lunac.entity = require('lib/entity')
+lunac.event = require('lib/event')
+lunac.archetype = require('lib/archetype')
+lunac.narrator = require('lib/narrator')
+lunac.player = require('lib/player')
+
 function one_argument(str)
   local index = str:find(" ")
 
@@ -19,7 +29,7 @@ function join(tbl, sep)
    if sep == null then
       sep = " "
    end
-   
+
    local str = ""
 
    for k, v in pairs(tbl) do
@@ -57,7 +67,7 @@ function filter_array(tbl, filter)
          tbl[j] = tbl[i];
          tbl[i] = nil;
      end
-       
+
      j = j + 1;
    else
      tbl[i] = nil;

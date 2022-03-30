@@ -11,9 +11,8 @@
  * Structs
  **/
 typedef struct config {
-  char* game_script_file;
-  char* lua_common_script;
-  char* log_config_file;
+  char* game_script;
+  char* lib_script;
   char* database_file;
   unsigned int game_port;
   unsigned int ticks_per_second;

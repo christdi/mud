@@ -9,6 +9,8 @@
 #include "mud/lua/common.h"
 #include "mud/lua/db_api.h"
 
+#define DB_LIB_NAME "db"
+
 static int lua_db_prepare_statement(lua_State* l);
 static int lua_db_bind(lua_State* l);
 static int lua_db_step(lua_State* l);
@@ -25,22 +27,32 @@ static const struct luaL_Reg db_lib[] = {
 };
 
 /**
- * TODO(Chris I)
+ * Registers the db module with the Lua state.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success
  **/
 int lua_db_register_api(lua_State* l) {
+  lua_push_api_table(l);
+  
+  lua_pushstring(l, DB_LIB_NAME);
   luaL_newlib(l, db_lib);
-  lua_setglobal(l, "db");
+  
+  lua_rawset(l, -3);
 
   return 0;
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for preparing a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_prepare_statement(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   const char* sql = luaL_checkstring(l, 1);
 
@@ -58,12 +70,14 @@ static int lua_db_prepare_statement(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
- **/
+ * Lua API method for binding a value to a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
+ */
 static int lua_db_bind(lua_State* l) {
-  lua_common_assert_n_arguments(l, 3);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
@@ -96,12 +110,14 @@ static int lua_db_bind(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for stepping a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_step(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
-  sqlite3* db = lua_common_get_database(l);
+  sqlite3* db = lua_get_database(l);
 
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
@@ -129,11 +145,13 @@ static int lua_db_step(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for getting the text value of a column.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success or calls luaL_error on failure.
  **/
 static int lua_db_column_text(lua_State* l) {
-  lua_common_assert_n_arguments(l, 2);
-
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   sqlite3_stmt* res = lua_touserdata(l, 1);
@@ -146,11 +164,13 @@ static int lua_db_column_text(lua_State* l) {
 }
 
 /**
- * TODO(Chris I)
+ * Lua API method for finalizing a statement.
+ * 
+ * l - The Lua state.
+ * 
+ * Returns 0 on success.
  **/
 static int lua_db_finalize(lua_State* l) {
-  lua_common_assert_n_arguments(l, 1);
-
   luaL_checktype(l, 1, LUA_TLIGHTUSERDATA);
 
   sqlite3_stmt* res = lua_touserdata(l, 1);

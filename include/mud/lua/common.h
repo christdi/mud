@@ -14,13 +14,13 @@ typedef struct sqlite3 sqlite3;
 /**
  * Function prototypes
  **/
-int lua_common_initialise_state(lua_State* l, game_t* game);
+int lua_initialise_state(lua_State* l, game_t* game);
 
-game_t* lua_common_get_game(lua_State* l);
-sqlite3* lua_common_get_database(lua_State* l);
-lua_Debug lua_common_get_debug(lua_State* l);
+void lua_push_api_table(lua_State* l);
+game_t* lua_get_game(lua_State* l);
+sqlite3* lua_get_database(lua_State* l);
+lua_Debug lua_get_debug(lua_State* l);
 
-int lua_common_assert_n_arguments(lua_State* l, int n);
-void lua_common_log_stack(lua_State* l);
+void lua_log_stack(lua_State* l);
 
 #endif

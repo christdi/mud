@@ -1,5 +1,7 @@
+local player = lunac.player.get(p)
+
 if (arg == nil or arg == "") then
-  player.send(p, "Syntax: systems <list|enable|disable>\n\r")
+  player.sendln("Syntax: systems <list|enable|disable>")
 
   return;
 end
@@ -7,11 +9,10 @@ end
 local subcommand, arg = one_argument(arg)
 
 if subcommand:lower() == "list" then
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-    player.send(p, "\n\r[bcyan]" .. info.name .. "\n\r");
-    player.send(p, " [bgreen]uuid[reset] = " .. info.uuid .. "\n\r")
-    player.send(p, " [bgreen]enabled[reset] = " .. tostring(info.enabled) .. "\n\r")
+  for _, v in ipairs(lunac.system.all()) do
+    player.sendln("\n\r[bcyan]" .. v.get_name());
+    player.sendln(" [bgreen]uuid[reset] = " .. v.get_uuid())
+    player.sendln(" [bgreen]enabled[reset] = " .. tostring(v.is_enabled()))
   end
 
   return
@@ -21,63 +22,55 @@ if subcommand:lower() == "enable" then
   local uuid, arg = one_argument(arg)
 
   if uuid == nil or uuid == "" then
-    player.send(p, "Syntax: systems enable <uuid>\n\r")
+    player.sendln("Syntax: systems enable <uuid>")
 
     return
   end
 
   local system
 
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-
-    if info.uuid == uuid then
+  for _, v in ipairs(lunac.system.all()) do
+    if v.get_uuid() == uuid then
       system = v
     end
   end
 
   if not system then
-    player.send(p, "No system found with that uuid\n\r")
+    player.sendln("No system found with that uuid")
 
     return
   end
 
-  local info = system.info()
-
   system.enable()
 
-  player.send(p, "[bcyan]" .. info.name .. "[reset] system enabled")
+  player.sendln("[bcyan]" .. system.get_name() .. "[reset] system enabled")
 end
 
 if subcommand:lower() == "disable" then
   local uuid, arg = one_argument(arg)
 
   if uuid == nil or uuid == "" then
-    player.send(p, "Syntax: systems enable <uuid>\n\r")
+    player.sendln("Syntax: systems enable <uuid>")
 
     return
   end
 
   local system
 
-  for _, v in ipairs(systems.systems()) do
-    local info = v.info()
-
-    if info.uuid == uuid then
+  for _, v in ipairs(lunac.system.all()) do
+    if v.get_uuid() == uuid then
       system = v
     end
   end
 
   if not system then
-    player.send(p, "No system found with that uuid\n\r")
+    player.sendln("No system found with that uuid")
 
     return
   end
 
-  local info = system.info()
-
   system.disable()
 
-  player.send(p, "[bcyan]" .. info.name .. "[reset] system disabled")
+  player.sendln("[bcyan]" .. system.get_name() .. "[reset] system disabled")
 end
 
