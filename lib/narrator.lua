@@ -14,7 +14,7 @@ define = function(name)
   local get_name
   local narrate;
   local deregister
-  local use
+  local get_instance
 
   on = function(event, callback)
     if not event then error("event name must be specified") end
@@ -50,8 +50,8 @@ define = function(name)
     _narrator = nil
   end
 
-  use = function(plr)
-    player.set_narrator(plr, _narrator)
+  get_instance = function()
+    return _narrator
   end
 
   _interface = {
@@ -59,7 +59,7 @@ define = function(name)
     get_name = get_name,
     narrate = narrate,
     deregister = deregister,
-    use = use
+    get_instance = get_instance
   }
 
   log.info("Registering " .. _name .. " narrator")

@@ -1,16 +1,14 @@
-players = require('dist/players')
 commands = require('dist/commands')
 actions = require('dist/actions')
 
 function main()
-  game.players = {}
   game.config = {}
 
   log.info("Demo MUD initialising")
 
-  lunac.state.login_state = lunac.state.new(require('dist/state/login_state'))
-  lunac.state.play_state = lunac.state.new(require('dist/state/play_state'))
-  lunac.state.lua_state = lunac.state.new(require('dist/state/lua_state'))
+  lunac.state.login = lunac.state.new(require('dist/state/login_state'))
+  lunac.state.play = lunac.state.new(require('dist/state/play_state'))
+  lunac.state.lua = lunac.state.new(require('dist/state/lua_state'))
 
   lunac.system.random_tp_system = lunac.system.new("Random Teleport", require('dist/system/random_teleport'))
   lunac.system.random_tp_system.disable()
@@ -75,15 +73,15 @@ end
 
 
 function player_connected(p)
-  game.players[p.uuid] = p
+  local plr = lunac.player.new(p)
 
-  lunac.narrator.standard.use(p)
-  lunac.state.login_state.switch(p)
+  plr.set_state(lunac.state.login)
+  plr.set_narrator(lunac.narrator.standard)
 end
 
 
 function player_disconnected(p)
-  game.players[p.uuid] = nil
+  lunac.player.remove(p)
 end
 
 

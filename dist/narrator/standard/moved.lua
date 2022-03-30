@@ -1,5 +1,6 @@
-return function(plr, event)
-  local player_entity = player.get_entity(plr)
+return function(p, event)
+  local player = lunac.player.get(p)
+  local player_entity = player.get_entity()
 
   if lunac.component.location.has(player_entity) then
     local player_location = lunac.component.location.get(player_entity);
@@ -24,7 +25,7 @@ return function(plr, event)
       local from_location = lunac.component.location.get(event.portal)
 
       if from_location.room_uuid == player_location.room_uuid then
-        player.send(plr, "\n\r[bcyan]" .. entity_name .. "[reset] leaves via " .. portal_description.short .. ".\n\r")
+        player.send("\n\r[bcyan]" .. entity_name .. "[reset] leaves via " .. portal_description.short .. ".\n\r")
       end
     end
 
@@ -32,7 +33,7 @@ return function(plr, event)
       local to_location = lunac.component.room_ref.get(event.portal)
 
       if to_location.ref == player_location.room_uuid then
-        player.send(plr, "\n\r[bcyan]" .. entity_name .. "[reset] arrives from " .. portal_description.short .. ".\n\r")
+        player.send("\n\r[bcyan]" .. entity_name .. "[reset] arrives from " .. portal_description.short .. ".\n\r")
       end
     end
   end

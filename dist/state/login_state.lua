@@ -4,7 +4,7 @@ local on_enter
 local on_exit
 local on_input
 local on_gmcp
-local populate_characters
+
 local display_characters
 local get_username
 local get_password
@@ -15,12 +15,12 @@ local get_entity_name
 --
 -- p - instance of player userdata
 on_enter = function(p)
-   player.send(p, "Welcome to [bred]DEMO[reset] MUD!\n\n\r")
-   player.send(p, "Please enter your username: ")
+   local plr = lunac.player.get(p)
 
-   local data = game.players[p.uuid];
+   plr.send("Welcome to [bred]DEMO[reset] MUD!\n\n\r")
+   plr.send("Please enter your username: ")
 
-   data.login = { substate = get_username }
+   plr.login = { substate = get_username }
 end
 
 
@@ -28,9 +28,9 @@ end
 --
 -- p - instance of player userdata
 on_exit = function(p)
-   local data = game.players[p.uuid];
+   local plr = lunac.player.get(p)
 
-   data.login = nil;
+   plr.login = nil;
 end
 
 
@@ -39,160 +39,146 @@ end
 -- p - instance of player userdata
 -- arg - arguments passed in by player
 on_input = function(p, arg)
-   local data = game.players[p.uuid];
+   local plr = lunac.player.get(p);
 
-   if data.login.substate == nil then
-      log.error("Player did not have a substate")
+   if plr.login.substate == nil then error("player did not have a login substate") end
 
-      return;
-   end
-
-   data.login.substate(p, arg, data)
+   plr.login.substate(plr, arg)
 end
 
 
 on_gmcp = function(p, topic, msg)
+   local plr = lunac.player.get(p)
+
    if topic == "Game.Login" then
-      if not msg then
-         log.error("Game.Login GMCP topic but data was NULL")
-
-         return
-      end
-
-      local data = game.players[p.uuid];
+      if not msg then error("Game.Login topic must have a message") end
       
-      data.login.username = msg.node.username
-      
-      get_password(p, msg.node.password, data)
+      plr.login.username = msg.node.username
+
+      get_password(plr, msg.node.password)
 
       return
    end
 end
 
--- Populate player data with entities available to them
---
--- p - instance of player userdata
--- data - reference to player data
-populate_characters = function(p, data)
-   local entities = player.get_entities(p)
-
-   if #entities > 0 then
-      data.entity = {};
-
-      for _, entity in ipairs(entities) do
-         data.entity[entity.name] = entity;
-      end
-   end
-end
-
-
 -- Display player characters to player
 --
--- p - instance of player userdata
--- data - reference to player data
-display_characters = function(p, data)
-   if data.entity ~= nil then
-      player.send(p, "\n\rCharacter Selection\n\r");
+-- plr - Lua player instance
+display_characters = function(plr)
+      plr.send("\n\rCharacter Selection\n\r");
 
-      for k, v in pairs(data.entity) do
-         player.send(p, "\n\r[bcyan]" .. v.name .. "[reset] - " .. v.description .. "\n\r");
+      local available_entities = plr.get_available_entities()
+
+      if #available_entities == 0 then
+         plr.send("\n\rYou have no characters available to login, please create one to play.\n\r");
+         
+         return
       end
-   end
+
+      for k, v in ipairs(plr.get_available_entities()) do
+         if lunac.component.name.has(v) then
+            local entity_name = lunac.component.name.get(v)
+
+            plr.send("\t[bcyan]" .. entity_name.name .. "[reset]\n\r")
+         end
+      end
 end
 
 
 -- Substate method to read player username
 --
--- p - instance of player userdata
+-- plr - Lua player instance
 -- arg - arguments passed in by player
--- data - reference to player data
-get_username = function(p, arg, data)
-   data.login.username = arg
+get_username = function(plr, arg)
+   plr.login.username = arg
 
-   player.send(p, "\n\rPlease enter your password: ")
-   player.disable_echo(p)
+   plr.send("\n\rPlease enter your password: ")
+   plr.disable_echo()
 
-   data.login.substate = get_password;
+   plr.login.substate = get_password;
 end
 
 
 -- Substate method to read player password
 --
--- p - instance of player userdata
+-- plr - Lua player instance
 -- arg - arguments passed in by player
--- data - reference to player data
-get_password = function(p, arg, data)
-   if player.authenticate(p, data.login.username, arg) then
-      player.send(p, "\n\r[bgreen]Authentication successful![reset]\n\r")
+get_password = function(plr, arg)
+   if not plr.authenticate(plr.login.username, arg) then
+      plr.send("\n\r[bred]Authentication failed[reset]\n\n\rPlease enter your username: ")
+      plr.login.substate = get_username
+      plr.enable_echo()
 
-      populate_characters(p, data)
-      display_characters(p, data)
-
-      player.send(p, "\n\rPlease enter the name of the character to play or 'new' to create one: ");
-
-      data.login.substate = get_entity_choice;
-   else
-      player.send(p, "\n\r[bred]Authentication failed[reset]\n\n\rPlease enter your username: ")
-
-      data.login.substate = get_username
+      return
    end
+   
+   plr.send("\n\r[bgreen]Authentication successful![reset]\n\r")
+   
+   display_characters(plr)
+   
+   plr.send("\n\rPlease enter the name of the character to play or 'new' to create one: ");
+   
+   plr.login.substate = get_entity_choice;
 
-   player.enable_echo(p)
+   plr.enable_echo()
 end
 
 
 -- Substate method to read character selection
 --
--- p - instance of player userdata
+-- plr - Lua player instance
 -- arg - arguments passed in by player
--- data - reference to player data
-get_entity_choice = function(p, arg, data)
+get_entity_choice = function(plr, arg)
    if arg == "new" then
-      player.send(p, "\n\rPlease enter a name: ")
+      plr.send("\n\rPlease enter a name: ")
 
-      data.login.substate = get_entity_name
-   else
-      if data.entity ~= nil then
-         for _, entity in pairs(data.entity) do
-            if entity.name:lower() == arg:lower() then
-               player.set_entity(p, entity);
+      plr.login.substate = get_entity_name
 
-               lunac.state.play_state.switch(p)
+      return
+   end
 
-               return
-            end
+   local available_entities = plr.get_available_entities()
+
+   for _, v in ipairs(available_entities) do
+      if lunac.component.name.has(v) then
+         local entity_name = lunac.component.name.get(v)
+
+         if entity_name.name == arg then
+            plr.set_entity(v)
+            plr.set_state(lunac.state.play)
+
+            return
          end
       end
-
-      display_characters(p, data)
-
-      player.send(p, "\n\rPlease enter the name of the character to play or 'new' to create one: ");
    end
+
+   display_characters(plr)
+
+   plr.send("\n\rPlease enter the name of the character to play or 'new' to create one: ");
+   
 end
 
 
 -- Substate method to read name of new character
 --
--- p - instance of player userdata
+-- plr - Lua player instance
 -- arg - arguments passed in by player
--- data - reference to player data
-get_entity_name = function(p, arg, data)
+get_entity_name = function(plr, arg)
    if #lunac.component.name.entities(function(entity)       
       return lunac.component.name.get(entity).name:lower() == arg:lower()
    end) > 0 then
-      player.send(p, "\n\rThat name is already in use.  Please enter another: ")
+      plr.send(p, "\n\rThat name is already in use.  Please enter another: ")
       
       return
    end
 
-   data.login.name = arg
+   plr.login.name = arg
 
    local character = lunac.entity.character.new():initialise(arg, arg, "A generic looking individual")
    character:set_room(game.config.default_room);
 
-   player.set_entity(p, character)
-
-   lunac.state.play_state.switch(p);
+   plr.set_entity(character)
+   plr.set_state(lunac.state.play)
 end
 
 

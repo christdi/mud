@@ -1,36 +1,42 @@
 local new
 
 new = function(impl)
-  local impl = impl or {}
+  if not impl then error("implementation must be specified") end
+
+  local _impl = impl or {}
 
   local deregister
-  local switch
+  local get_instance
 
-  local interface
-  local instance
+  local _interface
+  local _instance
 
   deregister = function()
-    game.deregister_state(instance)
+    game.deregister_state(_instance)
   end
 
-  switch = function(p)
-    player.set_state(p, instance)
+  get_instance = function()
+    return _instance
   end
 
-  interface = {
+  _interface = {
     deregister = deregister,
-    switch = switch
+    get_instance = get_instance
   }
 
-  setmetatable(interface, {
+  setmetatable(_interface, {
     __index = function(_, v)
-      return impl[v]
+      if _impl[v] then
+        return _impl[v]
+      end
+
+      return rawget(_interface, v)
     end
   })
 
-  instance = game.register_state(interface)
+  _instance = game.register_state(_interface)
 
-  return interface
+  return _interface
 end
 
 return {

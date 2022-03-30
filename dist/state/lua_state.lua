@@ -5,22 +5,25 @@ local on_input
 local on_output
 
 on_enter = function(p)
-  player.send(p, "Lua Interpreter\n\n\r")
+  local player = lunac.player.get(p)
+  player.send("Lua Interpreter\n\n\r")
 end
 
 on_input = function(p, arg)
+  local player = lunac.player.get(p)
   local f, error = load(arg)
 
   if error ~= nil then
-    player.send(p, "[bred]" .. error .. "[reset]\n\r")
+    player.send("[bred]" .. error .. "[reset]\n\r")
   else
     local result = f()
-    player.send(p, "[bgreen]" .. arg .. " -> " .. tostring(result) .. "[reset]\n\r")
+    player.send("[bgreen]" .. arg .. " -> " .. tostring(result) .. "[reset]\n\r")
   end
 end
 
 on_output = function(p)
-  player.send(p, "> ")
+  local player = lunac.player.get(p)
+  player.send("> ")
 end
 
 interface = {

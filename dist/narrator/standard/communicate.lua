@@ -1,4 +1,6 @@
 return function(plr, event)
+  local player = lunac.player.get(plr)
+
   if event.scope == lunac.event.communicate.scope.ROOM then
     if not lunac.component.location.has(event.origin) then
       log.error("Entity [" .. event.origin.uuid .. "] does not have location component for room scoped communication")
@@ -19,7 +21,7 @@ return function(plr, event)
       local player_entity_room_uuid = lunac.component.location.get(player_entity).room_uuid
 
       if (origin_room_uuid == player_entity_room_uuid) then
-        player.send(plr, "\n\r[bcyan]" .. origin_name .. "[reset] says '" .. event.what .. "'.\n\r")
+        player.send("\n\r[bcyan]" .. origin_name .. "[reset] says '" .. event.what .. "'.\n\r")
       end
     end
   end

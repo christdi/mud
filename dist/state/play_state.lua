@@ -7,13 +7,17 @@ local on_output
 local on_event
 
 on_enter = function(p)
-  player.send(p, "You are now playing!\n\r")
+  local plr = lunac.player.get(p)
+
+  plr.send("You are now playing!\n\r")
 
   commands.execute("look", p)
 end
 
 on_exit = function(p)
-  player.send(p, "You are no longer playing.\n\r")
+  local plr = lunac.player.get(p)
+
+  plr.send("You are no longer playing.\n\r")
 end
 
 on_input = function(p, arg)
@@ -25,17 +29,19 @@ on_input = function(p, arg)
 end
 
 on_output = function(p, output)
-  local entity = player.get_entity(p)
+  local plr = lunac.player.get(p)
+  local entity = plr.get_entity()
 
   if lunac.component.name.has(entity) then
     local name = lunac.component.name.get(entity)
 
-    player.send(p, "\n\n\r[bgreen]" .. name.name .. " >[reset] ")
+    plr.send("\n\n\r[bgreen]" .. name.name .. " >[reset] ")
   end
 end
 
 on_event = function(p, event)
-  player.narrate(p, event);
+  local plr = lunac.player.get(p)
+  plr.narrate(event)
 end
 
 interface = {

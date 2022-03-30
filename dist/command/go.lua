@@ -1,10 +1,12 @@
-if (arg == nil or arg == "") then
-  player.send(p, "Syntax: go <tag>\n\r")
+local player = lunac.player.get(p)
 
-  return;
+if (arg == nil or arg == "") then
+  player.send("Syntax: go <tag>\n\r")
+
+  return
 end
 
-local entity = lunac.entity.character.wrap(player.get_entity(p))
+local entity = lunac.entity.character.wrap(player.get_entity())
 local location = lunac.component.location.get(entity)
 
 local entities = lunac.archetype.goable.entities(function(goable)
@@ -25,7 +27,7 @@ for _, goable in ipairs(entities) do
       local success, data = actions.execute("move_room", entity, {from = current_room, to = new_room, portal = goable})
 
       if success then
-        player.send_gmcp(p, "Room", "{ \"uuid\": \"" .. new_room.uuid.. "\" }")
+        player.send_gmcp("Room", "{ \"uuid\": \"" .. new_room.uuid.. "\" }")
 
         commands.execute("look", p)
       end
@@ -35,4 +37,4 @@ for _, goable in ipairs(entities) do
   end
 end
 
-player.send(p, "There doesn't seem to be a way to go there.\n\r")
+player.send("There doesn't seem to be a way to go there.\n\r")

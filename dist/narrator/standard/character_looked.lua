@@ -1,4 +1,5 @@
 return function(plr, event)
+  local player = lunac.player.get(plr)
   local ch = event.character
 
   if not lunac.component.name.has(ch) then
@@ -9,5 +10,5 @@ return function(plr, event)
 
   local ch_name = lunac.component.name.get(ch).name;
 
-  player.send(plr, "\n\r" .. ch_name  .. " looks around.\n\r")
+  player.send("\n\r" .. ch_name  .. " looks around.\n\r")
 end

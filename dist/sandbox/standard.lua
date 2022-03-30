@@ -12,5 +12,6 @@ return {
   events = events,
   commands = commands,
   players = players,
+  script = script,
   lunac = lunac
 }

@@ -1,4 +1,5 @@
-return function(plr, event)
+return function(p, event)
+  local player = lunac.player.get(p)
   local ent = event.entity
 
   if not lunac.component.name.has(ent) then
@@ -14,16 +15,16 @@ return function(plr, event)
     local p_ent_location = lunac.component.location.get(p_ent)
 
     if p_ent.uuid == ent.uuid then
-      player.send(plr, "\n\rYour stomach lurches as you are teleported elsewhere.\n\r");
-      commands.execute("look", plr)
+      player.send("\n\rYour stomach lurches as you are teleported elsewhere.\n\r");
+      commands.execute("look", p)
     end
 
     if p_ent_location.room_uuid == event.from.uuid then
-      player.send(plr, "\n\r[bcyan]" .. name .. "[reset] disappears in a puff of smoke.\n\r")
+      player.send("\n\r[bcyan]" .. name .. "[reset] disappears in a puff of smoke.\n\r")
     end
 
     if p_ent_location.room_uuid == event.to.uuid then
-      player.send(plr, "\n\r[bcyan]" .. name .. "[reset] appears in a puff of smoke.\n\r")
+      player.send( "\n\r[bcyan]" .. name .. "[reset] appears in a puff of smoke.\n\r")
     end
   end
 end

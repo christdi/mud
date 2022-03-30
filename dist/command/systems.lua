@@ -1,5 +1,7 @@
+local player = lunac.player.get(p)
+
 if (arg == nil or arg == "") then
-  player.send(p, "Syntax: systems <list|enable|disable>\n\r")
+  player.send("Syntax: systems <list|enable|disable>\n\r")
 
   return;
 end
@@ -8,9 +10,9 @@ local subcommand, arg = one_argument(arg)
 
 if subcommand:lower() == "list" then
   for _, v in ipairs(lunac.system.all()) do
-    player.send(p, "\n\r[bcyan]" .. v.get_name() .. "\n\r");
-    player.send(p, " [bgreen]uuid[reset] = " .. v.get_uuid() .. "\n\r")
-    player.send(p, " [bgreen]enabled[reset] = " .. tostring(v.is_enabled()) .. "\n\r")
+    player.send("\n\r[bcyan]" .. v.get_name() .. "\n\r");
+    player.send(" [bgreen]uuid[reset] = " .. v.get_uuid() .. "\n\r")
+    player.send(" [bgreen]enabled[reset] = " .. tostring(v.is_enabled()) .. "\n\r")
   end
 
   return
@@ -20,7 +22,7 @@ if subcommand:lower() == "enable" then
   local uuid, arg = one_argument(arg)
 
   if uuid == nil or uuid == "" then
-    player.send(p, "Syntax: systems enable <uuid>\n\r")
+    player.send("Syntax: systems enable <uuid>\n\r")
 
     return
   end
@@ -34,21 +36,21 @@ if subcommand:lower() == "enable" then
   end
 
   if not system then
-    player.send(p, "No system found with that uuid\n\r")
+    player.send("No system found with that uuid\n\r")
 
     return
   end
 
   system.enable()
 
-  player.send(p, "[bcyan]" .. system.get_name() .. "[reset] system enabled")
+  player.send("[bcyan]" .. system.get_name() .. "[reset] system enabled")
 end
 
 if subcommand:lower() == "disable" then
   local uuid, arg = one_argument(arg)
 
   if uuid == nil or uuid == "" then
-    player.send(p, "Syntax: systems enable <uuid>\n\r")
+    player.send("Syntax: systems enable <uuid>\n\r")
 
     return
   end
@@ -62,13 +64,13 @@ if subcommand:lower() == "disable" then
   end
 
   if not system then
-    player.send(p, "No system found with that uuid\n\r")
+    player.send("No system found with that uuid\n\r")
 
     return
   end
 
   system.disable()
 
-  player.send(p, "[bcyan]" .. system.get_name() .. "[reset] system disabled")
+  player.send("[bcyan]" .. system.get_name() .. "[reset] system disabled")
 end
 
