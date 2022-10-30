@@ -14,6 +14,8 @@
 #include "mud/lua/script.h"
 #include "mud/player.h"
 
+static int populate_command_group_commands(sqlite3* db, command_group_t* command_group);
+
 /**
  * Begins a trasnaction.
  *
@@ -49,16 +51,14 @@ int db_end_transaction(sqlite3* db) {
 }
 
 /**
- * Retrieves a command via it's name
+ * Retrieves all commands from the database.
  *
- * Parameters:
- *   db - Handle to sqlite database
- *   name - Name of the command to be retrieced
- *   results - Linked list to be populated with matching commands
+ * db - sqlite3 handle to database
+ * results - linked list to store results in
  *
  * Returns number of results on success or -1 on failure.
  **/
-int db_command_find_all(sqlite3* db, linked_list_t* results) {
+int db_command_load_all(sqlite3* db, linked_list_t* results) {
   sqlite3_stmt* res = NULL;
 
   const char* sql = "SELECT uuid, name, script_uuid FROM command";
@@ -99,14 +99,119 @@ int db_command_find_all(sqlite3* db, linked_list_t* results) {
 }
 
 /**
- * Retrieves all actions from persistence.
+ * Retrives all command groups from the database.
+ * 
+ * db - sqlite3 handle to database
+ * results - linked list to store results in
+ *
+ * Returns number of results on success or -1 on failure.
+**/
+int db_command_group_load_all(sqlite3* db, linked_list_t* results) {
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT uuid, description FROM command_group";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve command groups from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+  int count = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive command groups from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    char* uuid = (char*)sqlite3_column_text(res, 0);
+    char* name = (char*)sqlite3_column_text(res, 1);
+
+    command_group_t* group = command_new_command_group_t(uuid, name);
+
+    if (populate_command_group_commands(db, group) == -1) {
+      LOG(ERROR, "Failed to populate command group commands: [%s]", sqlite3_errmsg(db));
+      command_free_command_group_t(group);
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    list_add(results, group);
+
+    count++;
+  }
+
+  sqlite3_finalize(res);
+
+  return count;
+}
+
+/**
+ * Populates the commands of a command_group_t.
+ *
+ * db - sqlite3 handle to database
+ * command_group - command_group_t to populate
+ *
+ * Returns 0 on success or -1 on failure.
+**/
+int populate_command_group_commands(sqlite3* db, command_group_t* command_group) {
+  sqlite3_stmt* res = NULL;
+
+  const char* sql = "SELECT command_uuid FROM command_group_command WHERE command_group_uuid = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &res, 0) != SQLITE_OK) {
+    LOG(ERROR, "Failed to prepare statement to retrieve command group commands from database: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  if (sqlite3_bind_text(res, 1, command_group->uuid.raw, -1, SQLITE_STATIC) != SQLITE_OK) {
+    LOG(ERROR, "Failed to bind command group uuid to statement: [%s]", sqlite3_errmsg(db));
+    sqlite3_finalize(res);
+
+    return -1;
+  }
+
+  int rc = 0;
+  int count = 0;
+
+  while ((rc = sqlite3_step(res)) != SQLITE_DONE) {
+    if (rc != SQLITE_ROW) {
+      LOG(ERROR, "Failed to retreive command group commands from database: [%s]", sqlite3_errmsg(db));
+
+      sqlite3_finalize(res);
+
+      return -1;
+    }
+
+    char* command_uuid = strdup((char*)sqlite3_column_text(res, 0));
+    list_add(command_group->commands, command_uuid);
+
+    count++;
+  }
+
+  sqlite3_finalize(res);
+
+  return count;
+}
+
+/**
+ * Retrieves all actions from database.
  *
  * db - sqlite database handle
  * results - linked list to place query results
  *
  * Returns number of results on success or -1 on failure
  **/
-int db_action_find_all(sqlite3* db, linked_list_t* results) {
+int db_action_load_all(sqlite3* db, linked_list_t* results) {
   assert(db);
   assert(results);
 

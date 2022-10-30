@@ -28,8 +28,7 @@ for _, goable in ipairs(entities) do
 
       if success then
         player.send_gmcp("Room", "{ \"uuid\": \"" .. new_room.uuid.. "\" }")
-
-        commands.execute("look", p)
+        player.execute("look")
       end
 
       return

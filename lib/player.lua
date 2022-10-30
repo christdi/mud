@@ -30,6 +30,9 @@ wrap = function(plr)
   local authenticate
   local narrate
   local disconnect
+  local add_cmd_group
+  local rem_cmd_group
+  local execute
 
   --
   -- Send a message to the player
@@ -139,6 +142,43 @@ wrap = function(plr)
     lunac.api.player.disconnect(_plr)
   end
 
+  add_cmd_group = function(group)
+    if not group then error("group must be specified") end
+
+    lunac.api.player.add_command_group(_plr, group)
+  end
+
+  rem_cmd_group = function(group)
+    if not group then error("group must be specified") end
+
+    lunac.api.player.remove_command_group(_plr, group)
+  end
+
+  execute = function(name, arguments)
+    if not name then error("name must be specified") end
+
+    local index = nil
+
+    if (string.sub(name, -2, -2) == ':') then
+      index = tonumber(string.sub(name, -1, -1))
+
+      if (index == nil) then return { invalid = true } end
+
+      name = string.sub(name, 1, -3)
+    end
+
+    local cmds = lunac.api.player.get_commands(_plr, name)
+
+    if (#cmds == 0) then return { none = true } end
+    if (index == nil and #cmds > 1) then return { multiple = true, count = #cmds } end
+    if (index ~= nil and index > #cmds) then return { invalid = true } end    
+    if (#cmds == 1) then index = 1 end
+
+    lunac.api.player.execute_command(_plr, cmds[index], arguments or "")
+
+    return { success = true }
+  end
+
   return {
     send = send,
     sendln = sendln,
@@ -152,7 +192,10 @@ wrap = function(plr)
     enable_echo = enable_echo,
     authenticate = authenticate,
     narrate = narrate,
-    disconnect = disconnect
+    disconnect = disconnect,
+    add_cmd_group = add_cmd_group,
+    rem_cmd_group = rem_cmd_group,
+    execute = execute
   }
 end
 

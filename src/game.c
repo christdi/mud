@@ -26,9 +26,9 @@
 #include "mud/player.h"
 #include "mud/task.h"
 
-int connect_to_database(game_t* game, const char* filename);
-void sleep_until_tick(game_t* game, unsigned int ticks_per_second);
-int initialise_lua(game_t* game, config_t* config);
+static int connect_to_database(game_t* game, const char* filename);
+static void sleep_until_tick(game_t* game, unsigned int ticks_per_second);
+static int initialise_lua(game_t* game, config_t* config);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -53,6 +53,9 @@ game_t* create_game_t(void) {
 
   game->commands = create_hash_table_t();
   game->commands->deallocator = command_deallocate_command_t;
+
+  game->command_groups = create_hash_table_t();
+  game->command_groups->deallocator = command_deallocate_command_group_t;
 
   game->actions = create_hash_table_t();
   game->actions->deallocator = action_deallocate_action_t;
@@ -156,6 +159,12 @@ int start_game(int argc, char* argv[]) {
 
   if (command_load_commands(game) == -1) {
     LOG(ERROR, "Failed to load commands");
+
+    return -1;
+  }
+
+  if (command_load_command_groups(game) == -1) {
+    LOG(ERROR, "Failed to load command groups");
 
     return -1;
   }
@@ -313,3 +322,4 @@ int initialise_lua(game_t* game, config_t* config) {
 
   return 0;
 }
+

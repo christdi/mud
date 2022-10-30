@@ -18,9 +18,10 @@ typedef struct action action_t;
 int db_begin_transaction(sqlite3* db);
 int db_end_transaction(sqlite3* db);
 
-int db_command_find_all(sqlite3* db, linked_list_t* results);
+int db_command_load_all(sqlite3* db, linked_list_t* results);
+int db_command_group_load_all(sqlite3* db, linked_list_t* results);
 
-int db_action_find_all(sqlite3* db, linked_list_t* results);
+int db_action_load_all(sqlite3* db, linked_list_t* results);
 
 int db_entity_load_all(sqlite3* db, linked_list_t* entities);
 int db_entity_save(sqlite3* db, entity_t* entity);

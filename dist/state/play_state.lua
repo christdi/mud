@@ -11,7 +11,7 @@ on_enter = function(p)
 
   plr.sendln("You are now playing!")
 
-  commands.execute("look", p)
+  plr.execute("look")
 end
 
 on_exit = function(p)
@@ -21,11 +21,16 @@ on_exit = function(p)
 end
 
 on_input = function(p, arg)
-   local cmd, arguments = one_argument(arg)
+  local plr = lunac.player.get(p)
 
-   if not commands.execute(cmd, p, arguments) then
-    commands.execute("go", p, cmd)
-   end
+  local cmd, arguments = one_argument(arg)
+  local result = plr.execute(cmd, arguments);
+
+  if (result.none == true or result.invalid == true) then
+    plr.sendln("You don't know how to do that.")
+  elseif (result.multiple == true) then
+    plr.sendln("You know " .. result.count .. " ways to do that.  Use \"" .. cmd .. ":x\" to select which one")
+  end
 end
 
 on_output = function(p, output)

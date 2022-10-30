@@ -23,6 +23,7 @@
 
 #define ON_ENTITIES_LOADED_HOOK_FUNCTION "entities_loaded"
 #define ON_COMMANDS_LOADED_HOOK_FUNCTION "commands_loaded"
+#define ON_COMMAND_GROUPS_LOADED_HOOK_FUNCTION "command_groups_loaded"
 #define ON_ACTIONS_LOADED_HOOK_FUNCTION "actions_loaded"
 
 #define ON_PLAYER_CONNECTED_HOOK_FUNCTION "player_connected"
@@ -166,6 +167,51 @@ int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands) {
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling actions loaded hook [%s]", lua_tostring(l, -1));
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Hook method called when the engine has loaded all command groups from persistence.
+ *
+ * l - Lua state instance
+ * command_groups - A linked list of command_group_t structs
+ *
+ * Returns 0 on success or -1 on failure
+**/
+int lua_call_command_groups_loaded_hook(lua_State* l, linked_list_t* command_groups) {
+  assert(l);
+  assert(command_groups);
+
+  if (lua_getglobal(l, ON_COMMAND_GROUPS_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
+    lua_pop(l, 1);
+
+    return 0;
+  }
+
+  lua_newtable(l);
+
+  command_group_t* command_group = NULL;
+  
+  int index = 1;
+  it_t it = list_begin(command_groups);
+
+  while ((command_group = it_get(it)) != NULL) {
+    lua_pushnumber(l, index);
+    lua_push_command_group(l, command_group);
+
+    lua_rawset(l, -3);
+
+    it = it_next(it);
+
+    index++;
+  }
+
+  if (lua_pcall(l, 1, 0, 0) != 0) {
+    LOG(ERROR, "Error when calling command groups loaded hook [%s]", lua_tostring(l, -1));
+
     return -1;
   }
 

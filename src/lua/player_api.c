@@ -5,6 +5,7 @@
 #include "lauxlib.h"
 #include "lua.h"
 
+#include "mud/command.h"
 #include "mud/data/deallocate.h"
 #include "mud/data/linked_list.h"
 #include "mud/db.h"
@@ -33,6 +34,10 @@ static int lua_disconnect(lua_State* l);
 static int lua_disable_echo(lua_State* l);
 static int lua_enable_echo(lua_State* l);
 static int lua_send_gmcp(lua_State* l);
+static int lua_add_command_group(lua_State* l);
+static int lua_remove_command_group(lua_State* l);
+static int lua_get_commands(lua_State* l);
+static int lua_execute_command(lua_State* l);
 
 static const struct luaL_Reg player_lib[] = {
   { "authenticate", lua_authenticate },
@@ -47,6 +52,10 @@ static const struct luaL_Reg player_lib[] = {
   { "disable_echo", lua_disable_echo },
   { "enable_echo", lua_enable_echo },
   { "send_gmcp", lua_send_gmcp },
+  { "add_command_group", lua_add_command_group },
+  { "remove_command_group", lua_remove_command_group },
+  { "get_commands", lua_get_commands },
+  { "execute_command", lua_execute_command },
   { NULL, NULL }
 };
 
@@ -380,5 +389,155 @@ static int lua_send_gmcp(lua_State* l) {
     free(msg);
   }
   
+  return 0;
+}
+
+/**
+ * API method to add a command group to a player.
+ * l - The current Lua state
+ * 
+ * player.add_command_group(p, group)
+ * 
+ * Returns 0 or calls luaL_error on error
+**/
+static int lua_add_command_group(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TSTRING);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -2);
+  const char* uuid = lua_tostring(l, -1);
+  game_t* game = lua_get_game(l);
+
+  command_group_t* group = command_get_command_group_by_id(game, uuid);
+
+  if (group == NULL) {
+    lua_pop(l, 2);
+
+    return luaL_error(l, "Error adding command group [%s] to player [%s], group not found", uuid, uuid_str(&player->uuid));    
+  }
+
+  if (player_add_command_group(player, group) == -1) {
+    lua_pop(l, 2);
+
+    return luaL_error(l, "Error adding command group [%s] to player [%s]", group->description, uuid_str(&player->uuid));
+  }
+
+  lua_pop(l, 2);
+
+  return 0;
+}
+
+/**
+  * API method to remove a command group from a player.
+  * l - The current Lua state
+  * 
+  * player.remove_command_group(p, group)
+  * 
+  * Returns 0 or calls luaL_error on error
+**/
+static int lua_remove_command_group(lua_State* l) {
+  luaL_checktype(l, -1, LUA_TSTRING);
+  luaL_checktype(l, -2, LUA_TTABLE);
+
+  player_t* player = lua_to_player(l, -2);
+  const char* uuid = lua_tostring(l, -1);
+  game_t* game = lua_get_game(l);
+
+  command_group_t* group = command_get_command_group_by_id(game, uuid);
+
+  if (group == NULL) {
+    lua_pop(l, 2);
+
+    return luaL_error(l, "Error removing command group [%s] from player [%s], group not found", uuid, uuid_str(&player->uuid));    
+  }
+
+  if (player_remove_command_group(player, group) == -1) {
+    lua_pop(l, 2);
+
+    return luaL_error(l, "Error removing command group [%s] from player [%s]", group->description, uuid_str(&player->uuid));
+  }
+
+  lua_pop(l, 2);
+
+  return 0;
+}
+
+/**
+ * API method which retrieves a list of commands a player may execute
+ * matching a given name.
+ * 
+ * l - the current Lua state
+ * 
+ * lunac.api.player.get_commands(p, command)
+ * 
+ * Returns 0 on success or calls luaL_error on error
+**/
+static int lua_get_commands(lua_State* l) {
+  luaL_checktype(l, -2, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TSTRING);
+
+  player_t* player = lua_to_player(l, -2);
+  const char* command = lua_tostring(l, -1);
+  game_t* game = lua_get_game(l);
+
+  linked_list_t* commands = create_linked_list_t();
+
+  if (player_get_commands(player, game, command, commands) == -1) {
+    free_linked_list_t(commands);
+    lua_pop(l, 2);
+    
+    return luaL_error(l, "Error retrieving commands named [%s] for player [%s]", command, uuid_str(&player->uuid));    
+  }
+
+  lua_pop(l, 2);
+
+  lua_newtable(l);
+
+  command_t* cmd = NULL;
+  int index = 1;
+  it_t it = list_begin(commands);
+
+  while ((cmd = it_get(it)) != NULL) {
+    lua_pushnumber(l, index);
+    lua_push_command(l, cmd);
+    lua_rawset(l, -3);
+
+    it = it_next(it);
+    index++;
+  }
+
+  free_linked_list_t(commands);
+
+  return 1;
+}
+
+/**
+ * API method which attempts to execute a command for a player.
+ * 
+ * l - the current Lua state
+ * 
+ * lunac.api.player.execute_command(p, command, arguments)
+**/
+static int lua_execute_command(lua_State* l) {
+  luaL_checktype(l, -3, LUA_TTABLE);
+  luaL_checktype(l, -2, LUA_TTABLE);
+  luaL_checktype(l, -1, LUA_TSTRING);
+
+  player_t* player = lua_to_player(l, -3);
+  command_t* cmd = lua_to_command(l, -2);
+  char* arguments = strdup(lua_tostring(l, -1));
+  
+  game_t* game = lua_get_game(l);
+
+  lua_pop(l, 3);
+
+  if (player_execute_command(player, game, cmd, arguments) == -1) {
+    free(arguments);
+
+    return luaL_error(l, "Error executing command [%s] for player [%s]", uuid_str(&cmd->uuid), uuid_str(&player->uuid));
+  }
+
+  free(arguments);
+
   return 0;
 }
