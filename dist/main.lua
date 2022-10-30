@@ -1,4 +1,3 @@
-commands = require('dist/commands')
 actions = require('dist/actions')
 
 game = {
@@ -99,22 +98,25 @@ function entities_loaded(entities)
 end
 
 function commands_loaded(c)
-  commands.initialise(c)
+  -- no-op
 end
 
 function command_groups_loaded(c)
+  -- no-op
 end
 
 function actions_loaded(a)
   actions.initialise(a)
 end
 
-
 function player_connected(p)
   local plr = lunac.player.new(p)
 
   plr.set_state(game.state.login)
   plr.set_narrator(game.narrator.standard)
+
+  plr.add_cmd_group("75bd6b07-eea0-44a6-a5a7-26a5beda690f") -- Standard
+  plr.add_cmd_group("002fbced-59c9-41d1-9019-fae8763a1d78") -- Admin
 end
 
 

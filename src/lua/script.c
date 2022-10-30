@@ -145,7 +145,7 @@ int script_run_command_script(game_t* game, const char* uuid, player_t* player, 
     free_script_t(script);
 
     return -1;
-  }
+  }  
 
   if (build_environment_table(game, uuid_str(&script->uuid)) != 0) {
     LOG(ERROR, "Error building script white list environment");

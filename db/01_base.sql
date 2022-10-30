@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS command_group (
 );
 
 INSERT INTO command_group VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'Standard');
+INSERT INTO command_group VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', 'Admin');
 
 CREATE TABLE IF NOT EXISTS command_group_command (
   command_group_uuid TEXT NOT NULL,
@@ -81,16 +82,19 @@ CREATE TABLE IF NOT EXISTS command_group_command (
   FOREIGN KEY(command_uuid) REFERENCES command(uuid)
 );
 
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'c4dcc9f6-16b3-4ca6-b304-66ab3910a439');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '1f8b5793-298f-4794-8557-4b851d668eb8');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '9456c374-81b6-49f7-8295-579001d629c0');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'fa479582-6465-44bd-8847-2b0971655706');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '9b96a8e3-95d6-4a85-ac0d-a10fe134b112');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '5895c644-50f1-4c16-ab61-1ad7c3d694f3');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'fd6d43d9-ae97-454c-984a-66939c94617e');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'c1543b0d-abde-4856-8c71-f5b2792a6f56');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '32e111d1-3f44-4149-b5a3-0ed821011511');
-INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '80f56a70-3fce-4e85-8439-77295b5b69a1');
+-- Standard Commands
+INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '1f8b5793-298f-4794-8557-4b851d668eb8'); -- quit
+INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '9b96a8e3-95d6-4a85-ac0d-a10fe134b112'); -- look
+INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', '5895c644-50f1-4c16-ab61-1ad7c3d694f3'); -- l
+INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'fd6d43d9-ae97-454c-984a-66939c94617e'); -- say
+INSERT INTO command_group_command VALUES('75bd6b07-eea0-44a6-a5a7-26a5beda690f', 'c1543b0d-abde-4856-8c71-f5b2792a6f56'); -- go
+
+-- Admin Commands
+INSERT INTO command_group_command VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', 'c4dcc9f6-16b3-4ca6-b304-66ab3910a439'); -- repl
+INSERT INTO command_group_command VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', '9456c374-81b6-49f7-8295-579001d629c0'); -- shutdown
+INSERT INTO command_group_command VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', 'fa479582-6465-44bd-8847-2b0971655706'); -- script
+INSERT INTO command_group_command VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', '32e111d1-3f44-4149-b5a3-0ed821011511'); -- entities
+INSERT INTO command_group_command VALUES('002fbced-59c9-41d1-9019-fae8763a1d78', '80f56a70-3fce-4e85-8439-77295b5b69a1'); -- systems
 
 CREATE TABLE IF NOT EXISTS entity (
   uuid TEXT PRIMARY KEY,

@@ -36,7 +36,7 @@ player_t* create_player_t() {
   player->username = NULL;
   player->state = NULL;
   player->client = NULL;
-  player->commands = command_new_command_repository_t();
+  player->command_groups = create_linked_list_t();
 
   return player;
 }
@@ -51,8 +51,8 @@ void free_player_t(player_t* player) {
     free(player->username);
   }
 
-  if (player->commands != NULL) {
-    command_free_command_repository_t(player->commands);
+  if (player->command_groups != NULL) {
+    free_linked_list_t(player->command_groups);
   }
 
   free(player);
@@ -299,9 +299,13 @@ int player_request_enable_echo(player_t* player) {
 int player_add_command_group(player_t* player, command_group_t* group) {
   assert(player);
   assert(group);
-  assert(player->commands);
+  assert(player->command_groups);
 
-  if (command_add_group_to_repository(player->commands, group) == -1) {
+  if (list_contains(player->command_groups, group)) {
+    return 0;
+  }
+
+  if (list_add(player->command_groups, group) == -1) {
     LOG(ERROR, "Failed to add command group to player");
 
     return -1;
@@ -321,12 +325,79 @@ int player_add_command_group(player_t* player, command_group_t* group) {
 int player_remove_command_group(player_t* player, command_group_t* group) {
   assert(player);
   assert(group);
-  assert(player->commands);
+  assert(player->command_groups);
 
-  if (command_remove_group_from_repository(player->commands, group) == -1) {
-    LOG(ERROR, "Failed to remove command group from player");
+  if (!list_contains(player->command_groups, group)) {
+    return 0;
+  }
 
-    return -1;
+  list_remove(player->command_groups, group);
+
+  return 0;
+}
+
+/**
+ * Given the name of a command, searches through player command groups and inserts commands
+ * found matching that name into the supplied linked list.
+ * 
+ * player - the player_t instance of the player executing the command
+ * commands - the game_t instance containing all the commands in the game
+ * name - the name of the command to find
+ * commands - the linked list to insert found commands
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+int player_get_commands(player_t* player, game_t* game, const char* name, linked_list_t* commands) {
+  assert(player);
+  assert(game);
+  assert(name);
+  assert(commands);
+
+  it_t it = list_begin(player->command_groups);
+  command_group_t* group = NULL;
+
+  while ((group = it_get(it)) != NULL) {
+    it_t c_it = list_begin(group->commands);
+    const char* uuid = NULL;
+
+    while((uuid = it_get(c_it)) != NULL) {
+      command_t* cmd = hash_table_get(game->commands, uuid);
+
+      if (cmd != NULL) {
+        if (strcmpi(cmd->name, name) == 0) {
+          list_add(commands, cmd);
+        }
+      }
+
+      c_it = it_next(c_it);
+    }
+
+    it = it_next(it);
+  }
+
+  return 0;
+}
+
+/**
+ * Attempts to execute a command for the current player.
+ * 
+ * player - the player_t representing the player to execute the command for
+ * game - the game_t instance required to call the command
+ * cmd - the command_t instance of the command to be executed
+ * arguments - the arguments to be passed to the command
+ * 
+ * Returns 0 on success or -1 on failure
+**/
+int player_execute_command(player_t* player, game_t* game, command_t* cmd, const char* arguments) {
+  assert(player);
+  assert(game);
+  assert(cmd);
+  assert(arguments);
+
+  if (script_run_command_script(game, uuid_str(&cmd->script), player, arguments) == -1) {
+    LOG(ERROR, "Failed to execute command script for player [%s], script id [%s]", uuid_str(&player->uuid), uuid_str(&cmd->script));
+
+    return -1;    
   }
 
   return 0;

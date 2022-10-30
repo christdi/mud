@@ -179,6 +179,47 @@ it_t list_steal(linked_list_t* list, void* value) {
 }
 
 /**
+ * Iterates through a linked list and returns true if the list contains the value.  Note this
+ * compares the addresses of the value, not the contents, so it'll return true if the the value
+ * is the same thing in memory.
+ * 
+ * list - the list to search
+ * value - the value to search for 
+**/
+bool list_contains(linked_list_t* list, void* value) {
+  assert(list);
+  assert(value);
+
+  if (pthread_mutex_lock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to obtain mutex [%s]", strerror(errno));
+
+    return false;
+  }
+
+  node_t* node = list->first;
+  bool found = false;
+
+  while (node != NULL) {
+    if (node->data == value) {
+      found = true;
+
+      break;
+    }
+
+    node = node->next;
+  }
+
+  if (pthread_mutex_unlock(&list->mutex) != 0) {
+    LOG(ERROR, "Failed to unlock mutex [%s]", strerror(errno));
+
+    return false;
+  }  
+
+  return found;
+
+}
+
+/**
  * Searches linked list src and removes values which return true for predicate and adds them
  * to dst.  Note that if a deallocator has been configured for the list that it will be explicitly
  * removed as the new linked list (or it's owner) is now responsible for management of the object.

@@ -106,55 +106,6 @@ void command_deallocate_command_group_t(void* value) {
 }
 
 /**
- * Allocates a new instance of a command_repository_t.
- *
- * Returns the newly allocated command_repository_t
-**/
-command_repository_t* command_new_command_repository_t() {
-  command_repository_t* repository = calloc(1, sizeof(command_repository_t));
-
-  repository->dirty = false;
-  
-  repository->commands = create_linked_list_t();
-  repository->commands->deallocator = deallocate;
-
-  repository->groups = create_linked_list_t();
-  repository->groups->deallocator = deallocate;
-
-  return repository;
-}
-
-/**
- * Frees an allocated command_repository_t.
- *
- * repository - The command_repository_t to free
-**/
-void command_free_command_repository_t(command_repository_t* repository) {
-  assert(repository);
-
-  if (repository->commands != NULL) {
-    free_linked_list_t(repository->commands);
-  }
-
-  if (repository->groups != NULL) {
-    free_linked_list_t(repository->groups);
-  }
-
-  free(repository);
-}
-
-/**
- * Deallocates a void pointer to a command_repository_t.
- *
- * value - The void pointer to the command_repository_t to deallocate 
-**/
-void command_deallocate_command_repository_t(void* value) {
-  assert(value);
-
-  command_free_command_repository_t(value);
-}
-
-/**
  * Retrieves all commands from persistence and places them into game instance
  *
  * game - game_t instance containing database and commands
@@ -229,108 +180,12 @@ int command_load_command_groups(game_t* game) {
 }
 
 /**
- * Adds a command_group_t instance to a command_repository_t instance and marks the repository as dirty.
- *
- * repository - The command_repository_t instance to add the command_group_t to
- * group - The command_group_t instance to add to the repository
- *
- * Returns 0 on success or -1 on failure
+ * Attempts to retrieve a command group by id from a game_t instance
+ * 
+ * game - the game_t instance to retrieve the command group from
+ * 
+ * Returns a command group if found or NULL otherwise.
 **/
-int command_add_group_to_repository(command_repository_t* repository, command_group_t* group) {
-  assert(repository);
-  assert(group);
-
-  if (list_add(repository->groups, (char*)uuid_str(&group->uuid)) == -1) {
-    LOG(ERROR, "Failed to add command group to repository");
-
-    return -1;
-  }
-
-  repository->dirty = true;
-
-  return 0;
-}
-
-/**
- * Removes a command_group_t instance from a command_repository_t instance and marks the repository as dirty.
- *
- * repository - The command_repository_t instance to remove the command_group_t from
- * group - The command_group_t instance to remove from the repository
- *
- * Returns 0 on success or -1 on failure
-**/
-int command_remove_group_from_repository(command_repository_t* repository, command_group_t* group) {
-  assert(repository);
-  assert(group);
-
-  list_remove(repository->groups, (char*)uuid_str(&group->uuid));
-
-  repository->dirty = true;
-
-  return 0;
-}
-
-/**
- * Updates the commands referenced within a command_repository_t instance to reflect the groups assigned.
- *
- * repository - The command_repository_t instance to update
- * groups - The hash_table_t instance containing all command groups loaded
- * commands - The hash_table_t instance containing all commands loaded
- *
- * Returns 0 on success or -1 on failure
-**/
-int command_update_commands_in_repository(command_repository_t* repository, hash_table_t* command_groups, hash_table_t* commands) {
-  assert(repository);
-
-  if (!repository->dirty) {
-    return 0;
-  }
-
-  list_clear(repository->commands);
-
-  it_t it = list_begin(repository->groups);
-  char* group_uuid = NULL;
-
-  while ((group_uuid = it_get(it)) != NULL) {
-    command_group_t* group = hash_table_get(command_groups, group_uuid);
-
-    if (group == NULL) {
-      LOG(ERROR, "Failed to find command group [%s]", group_uuid);
-
-      it = it_next(it);
-
-      continue;
-    }
-
-    it_t command_it = list_begin(group->commands);
-    char* cmd_uuid = NULL;
-
-    while ((cmd_uuid = it_get(command_it)) != NULL) {
-      command_t* command = hash_table_get(commands, cmd_uuid);
-
-      if (command == NULL) {
-        LOG(ERROR, "Failed to find command [%s]", cmd_uuid);
-
-        command_it = it_next(command_it);
-
-        continue;
-      }
-
-      if (list_add(repository->commands, command) == -1) {
-        LOG(ERROR, "Failed to add command [%s] to repository", cmd_uuid);
-
-        command_it = it_next(command_it);
-
-        continue;
-      }
-
-      command_it = it_next(command_it);
-    }
-
-    it = it_next(it);
-  }
-
-  repository->dirty = false;
-
-  return 0;
+command_group_t* command_get_command_group_by_id(game_t* game, const char* uuid) {
+  return hash_table_get(game->command_groups, uuid); 
 }

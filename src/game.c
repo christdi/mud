@@ -29,7 +29,6 @@
 static int connect_to_database(game_t* game, const char* filename);
 static void sleep_until_tick(game_t* game, unsigned int ticks_per_second);
 static int initialise_lua(game_t* game, config_t* config);
-static int update_player_commands(game_t* game);
 
 /**
  * Allocate a new instance of a game_t struct.
@@ -188,7 +187,6 @@ int start_game(int argc, char* argv[]) {
     task_execute_tasks(game->tasks, game);
     ecs_update_systems(game);
     flush_output(game->network);
-    update_player_commands(game);
     sleep_until_tick(game, game->config->ticks_per_second);
   }
 
@@ -325,24 +323,3 @@ int initialise_lua(game_t* game, config_t* config) {
   return 0;
 }
 
-/**
- * Iterates over all players and updates their command repository if necessary.
- *
- * game - game_t instance containing players, commands and command groups.
- *
- * Returns 0 on success
-**/
-int update_player_commands(game_t* game) {
-  h_it_t it = hash_table_iterator(game->players);
-  player_t* player = NULL;
-
-  while ((player = h_it_get(it)) != NULL) {
-    if (command_update_commands_in_repository(player->commands, game->command_groups, game->commands) == -1) {
-      LOG(ERROR, "Failed to update player commands for [%s]", uuid_str(&player->uuid));
-    }
-
-    it = h_it_next(it);
-  }
-
-  return 0;
-}

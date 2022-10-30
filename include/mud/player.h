@@ -21,8 +21,9 @@ typedef struct game game_t;
 typedef struct entity entity_t;
 typedef struct event event_t;
 typedef struct linked_list linked_list_t;
+typedef struct hash_table hash_table_t;
 typedef struct lua_ref lua_ref_t;
-typedef struct command_repository command_repository_t;
+typedef struct command command_t;
 typedef struct command_group command_group_t;
 
 /**
@@ -39,7 +40,7 @@ typedef struct player {
   lua_ref_t* state;
   lua_ref_t* narrator;
 
-  command_repository_t* commands;
+  linked_list_t* command_groups;
 } player_t;
 
 /**
@@ -59,10 +60,14 @@ void player_on_event(player_t* player, game_t* game, event_t* event);
 int player_change_state(player_t* player, game_t* game, lua_ref_t* state);
 int player_authenticate(player_t* player, game_t* game, const char* username, const char* password);
 int player_narrate(player_t* player, game_t* game, event_t* event);
+
 int player_request_disable_echo(player_t* player);
 int player_request_enable_echo(player_t* player);
+
 int player_add_command_group(player_t* player, command_group_t* group);
 int player_remove_command_group(player_t* player, command_group_t* group);
+int player_get_commands(player_t* player, game_t* game, const char* name, linked_list_t* commands);
+int player_execute_command(player_t* player, game_t* game, command_t* cmd, const char* arguments);
 
 void send_to_player(player_t* player, const char* fmt, ...);
 void send_gmcp_to_player(player_t* player, char* topic, char* msg);

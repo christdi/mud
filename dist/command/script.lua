@@ -9,7 +9,7 @@ end
 local subcommand, arg = one_argument(arg)
 
 if (subcommand:lower() == "available") then
-  local scripts = script.available();
+  local scripts = lunac.api.script.available();
 
   player.sendln("The following scripts are available to reference.\n")
 
