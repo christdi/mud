@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define DEFAULT_CAPACITY 16
 
@@ -44,6 +45,19 @@ void name##_remove(name##_t* array, size_t index) {                             
                                                                                   \
 type name##_at(name##_t* array, size_t index) {                                   \
   return array->items[index];                                                     \
+}                                                                                 \
+                                                                                  \
+name##_t name##_filter(name##_t* array, bool (*predicate)(type value)) {          \
+  name##_t results;                                                               \
+  name##_init(&results);                                                          \
+                                                                                  \
+  for (size_t i = 0; i < array->size; i++) {                                      \
+    if (predicate(array->items[i])) {                                             \
+      name##_push_back(&results, array->items[i]);                                \
+    }                                                                             \
+  }                                                                               \
+                                                                                  \
+  return results;                                                                 \
 }                                                                                 \
 
 #endif
