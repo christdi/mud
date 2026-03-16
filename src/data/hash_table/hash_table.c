@@ -1,6 +1,5 @@
 #include "mud/data/hash_table/hash_table.h"
 #include "mud/data/hash_table/hash_node.h"
-#include "mud/log.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -69,14 +68,7 @@ int hash_table_insert(hash_table_t* table, const char* key, void* value) {
   assert(key);
   assert(value);
 
-  char* hash_key = strdup(key);
-  size_t len = strnlen(hash_key, MAX_KEY_LENGTH - 1);
-
-  if (len > MAX_KEY_LENGTH) {
-    LOG(ERROR, "Hash key [%s] was too long and was truncated to [%d] characters", key, MAX_KEY_LENGTH);
-
-    hash_key[MAX_KEY_LENGTH] = '\0';
-  }
+  char* hash_key = strndup(key, MAX_KEY_LENGTH);
 
   int index = get_hash_index(key);
   hash_node_t* hash_node = create_hash_node_t();

@@ -54,22 +54,32 @@ if (val_len < 0 || (size_t)val_len >= len - *pos) return -1;
 
 Affected lines (approximate): 724–728, 735–739, 747–751, 759–763, 773–777, 784–788, 793–797, 806–810, 816–820, 827–831, 841–845. Search for `sprintf(buffer` in `src/json.c` to find all instances.
 
-### 3. Dead truncation logic in `hash_table.c:73-79`
+### 3. Dead truncation logic and key storage bug in `hash_table.c`
+
+The original code had a dead truncation block whose intent was valid but whose implementation was broken:
+
+```c
+char* hash_key = strdup(key);
+size_t len = strnlen(hash_key, MAX_KEY_LENGTH - 1);   // caps at MAX_KEY_LENGTH-1
+
+if (len > MAX_KEY_LENGTH) {    // can never be true — len is at most MAX_KEY_LENGTH-1
+    LOG(ERROR, ...);
+    hash_key[MAX_KEY_LENGTH] = '\0';
+}
+```
+
+Removing the dead block revealed a deeper correctness issue: `strdup` stores the full key with no length bound, but all lookup operations (`hash_table_get`, `hash_table_has`, `hash_table_delete`) compare using `strncmp(node->key, key, MAX_KEY_LENGTH)`. The hash function also only hashes the first `MAX_KEY_LENGTH` characters. This means two keys that share the same first `MAX_KEY_LENGTH` characters but differ beyond that position would hash to the same bucket and be considered identical — incorrect behaviour.
+
+The original truncation block was attempting to prevent this by capping the stored key, but it never fired. The correct fix is to use `strndup` instead of `strdup`:
 
 ```c
 // BEFORE
 char* hash_key = strdup(key);
-size_t len = strnlen(hash_key, MAX_KEY_LENGTH - 1);   // caps at MAX_KEY_LENGTH-1
-
-if (len > MAX_KEY_LENGTH) {    // can never be true
-    LOG(ERROR, ...);
-    hash_key[MAX_KEY_LENGTH] = '\0';
-}
 
 // AFTER
-char* hash_key = strdup(key);
-// No truncation block needed; strnlen already caps the hash computation.
-// If key length validation is desired, check before calling insert.
+char* hash_key = strndup(key, MAX_KEY_LENGTH);
 ```
 
-Remove lines 75–79 (the `if (len > MAX_KEY_LENGTH)` block). The `len` variable is still used by `get_hash_index` implicitly via the loop — verify `get_hash_index` uses its own `strnlen` call (it does, at line 45) so the local `len` variable after the `strdup` is unused and can be removed too.
+`strndup` copies at most `MAX_KEY_LENGTH` characters and always null-terminates, so the stored key is always bounded to `MAX_KEY_LENGTH` characters. The `strncmp` in lookups then performs a full comparison of the stored key, and behaviour is consistent with how the hash function treats the key.
+
+**Note:** In practice all keys in this codebase are UUID strings (36 characters, well under `MAX_KEY_LENGTH` of 50), so this bug would not manifest. The fix is nonetheless correct and removes a latent footgun for any future longer keys.
