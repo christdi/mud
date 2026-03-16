@@ -232,7 +232,14 @@ void test_list_extract_none_matching(void) {
   free_linked_list_t(dst);
 }
 
-void run_linked_list_tests(void) {
+void setUp(void) {
+}
+
+void tearDown(void) {
+}
+
+int main(void) {
+  UNITY_BEGIN();
   RUN_TEST(test_list_create_and_free);
   RUN_TEST(test_list_free_null_is_safe);
   RUN_TEST(test_list_size_empty);
@@ -252,4 +259,5 @@ void run_linked_list_tests(void) {
   RUN_TEST(test_list_iterator_order);
   RUN_TEST(test_list_extract_all_matching);
   RUN_TEST(test_list_extract_none_matching);
+  return UNITY_END();
 }

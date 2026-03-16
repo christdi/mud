@@ -108,24 +108,26 @@ When actioning a task:
 
 Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`. All test binaries are registered with CTest and run via `ctest`.
 
+Each test file is a self-contained binary: it defines `setUp()`, `tearDown()`, and `main()` directly. There is no shared runner. Each binary is registered with `ctest` independently so `ctest` still runs everything in one command.
+
+Test binaries do **not** link `libmud`. `tests/CMakeLists.txt` lists only the source files the module under test actually needs. This keeps each binary minimal and explicit.
+
 ### Pure logic tests (no mocking)
 
-`test_mud` — single binary, links `libmud`. Each test file in `tests/data/` exposes `run_X_tests()`, called from `tests/test_runner.c`.
-
-To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, call `run_<module>_tests()` from `test_runner.c`.
+Add a `tests/<area>/test_<module>.c` file. Include `unity.h`, write test functions, add `setUp`/`tearDown`/`main`. Add an `add_executable` + `add_test` block to `tests/CMakeLists.txt` with only the required source files. See `tests/data/test_linked_list.c` as the reference.
 
 ### Tests with dependencies (FFF mocking)
 
-The mocking framework is **FFF (Fake Function Framework)**, vendored as `tests/vendor/fff.h` (single header). `DEFINE_FFF_GLOBALS` lives in `test_runner.c`.
+The mocking framework is **FFF (Fake Function Framework)**, vendored as `tests/vendor/fff.h` (single header). There are no separate mock files — fakes are declared inline at the top of the test file:
 
-When a module under test calls an external function, create a mock in `tests/mocks/`:
+```c
+DEFINE_FFF_GLOBALS;
+FAKE_VOID_FUNC(player_on_event, player_t*, game_t*, event_t*);
+```
 
-- `mock_<module>.h` — `DECLARE_FAKE_VOID_FUNC` / `DECLARE_FAKE_VALUE_FUNC` plus a `mock_<module>_reset()` prototype
-- `mock_<module>.c` — `DEFINE_FAKE_*_FUNC` plus `mock_<module>_reset()` calling `RESET_FAKE`
+FFF's generated fake satisfies the missing symbol without linking the real implementation. Reset a fake between tests with `RESET_FAKE(player_on_event)`. Assert using the generated struct: `player_on_event_fake.call_count`, `player_on_event_fake.arg0_history[0]`, etc.
 
-The test binary **does not link `libmud`**. Instead, `tests/CMakeLists.txt` lists only the source files the module under test actually needs. FFF's generated function satisfies the missing symbol without a duplicate conflict. Add the mock `.c` and the required source files to `test_mud`'s source list.
-
-Assertions use FFF's generated struct directly: `player_on_event_fake.call_count`, `player_on_event_fake.arg0_history[0]`, etc. See `tests/mocks/mock_player.*` and `tests/event/test_event.c` as the reference implementation.
+See `tests/event/test_event.c` as the reference implementation.
 
 ### Test file conventions
 

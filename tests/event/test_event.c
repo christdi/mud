@@ -1,10 +1,14 @@
 #include <stdlib.h>
 
+#include "fff.h"
 #include "unity.h"
 
-#include "mock_player.h"
 #include "mud/data/hash_table.h"
 #include "mud/event.h"
+#include "mud/player.h"
+
+DEFINE_FFF_GLOBALS;
+FAKE_VOID_FUNC(player_on_event, player_t*, game_t*, event_t*);
 
 static int deallocator_call_count = 0;
 
@@ -105,7 +109,7 @@ void test_event_dispatch_clears_broker(void) {
 
 /* player_on_event is called once when there is one player and one event. */
 void test_event_dispatch_calls_player_on_event(void) {
-  mock_player_reset();
+  RESET_FAKE(player_on_event);
 
   event_broker_t* broker = event_new_event_broker_t();
   hash_table_t* entities = create_hash_table_t();
@@ -127,7 +131,7 @@ void test_event_dispatch_calls_player_on_event(void) {
 
 /* player_on_event is called once per player when multiple players are registered. */
 void test_event_dispatch_calls_each_player(void) {
-  mock_player_reset();
+  RESET_FAKE(player_on_event);
 
   event_broker_t* broker = event_new_event_broker_t();
   hash_table_t* entities = create_hash_table_t();
@@ -150,7 +154,7 @@ void test_event_dispatch_calls_each_player(void) {
 
 /* player_on_event is called once per event when multiple events are queued. */
 void test_event_dispatch_calls_once_per_event(void) {
-  mock_player_reset();
+  RESET_FAKE(player_on_event);
 
   event_broker_t* broker = event_new_event_broker_t();
   hash_table_t* entities = create_hash_table_t();
@@ -172,7 +176,7 @@ void test_event_dispatch_calls_once_per_event(void) {
 
 /* No calls are made when the player table is empty. */
 void test_event_dispatch_no_players_no_calls(void) {
-  mock_player_reset();
+  RESET_FAKE(player_on_event);
 
   event_broker_t* broker = event_new_event_broker_t();
   hash_table_t* entities = create_hash_table_t();
@@ -188,7 +192,14 @@ void test_event_dispatch_no_players_no_calls(void) {
   free_hash_table_t(players);
 }
 
-void run_event_tests(void) {
+void setUp(void) {
+}
+
+void tearDown(void) {
+}
+
+int main(void) {
+  UNITY_BEGIN();
   RUN_TEST(test_event_new_returns_non_null);
   RUN_TEST(test_event_new_stores_type);
   RUN_TEST(test_event_new_stores_data);
@@ -203,4 +214,5 @@ void run_event_tests(void) {
   RUN_TEST(test_event_dispatch_calls_each_player);
   RUN_TEST(test_event_dispatch_calls_once_per_event);
   RUN_TEST(test_event_dispatch_no_players_no_calls);
+  return UNITY_END();
 }
