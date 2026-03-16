@@ -41,9 +41,7 @@ action_t* action_new_action_t(const char* uuid, const char* name, const char* sc
 void action_free_action_t(action_t* action) {
   assert(action);
 
-  if (action->name != NULL) {
-    free(action->name);
-  }
+  free(action->name);
 
   free(action);
 }

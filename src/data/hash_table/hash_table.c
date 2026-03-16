@@ -22,7 +22,9 @@ hash_table_t* create_hash_table_t() {
  * Frees a hash_table
  **/
 void free_hash_table_t(hash_table_t* hash_table) {
-  assert(hash_table);
+  if (!hash_table) {
+    return;
+  }
 
   for (int i = 0; i < HASH_TABLE_SIZE; i++) {
     linked_list_t* list = hash_table->nodes[i];

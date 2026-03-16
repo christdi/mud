@@ -36,13 +36,8 @@ system_t* ecs_new_system_t(const char* name, lua_ref_t* ref) {
 void ecs_free_system_t(system_t* system) {
   assert(system);
 
-  if (system->name != NULL) {
-    free(system->name);
-  }
-
-  if (system->ref != NULL) {
-    lua_free_lua_ref_t(system->ref);
-  }
+  free(system->name);
+  lua_free_lua_ref_t(system->ref);
 
   free(system);
 }

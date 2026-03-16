@@ -42,17 +42,9 @@ config_t* config_new(void) {
 void config_free(config_t* config) {
   assert(config);
 
-  if (config->game_script != NULL) {
-    free(config->game_script);
-  }
-
-  if (config->lib_script != NULL) {
-    free(config->lib_script);
-  }
-
-  if (config->database_file != NULL) {
-    free(config->database_file);
-  }
+  free(config->game_script);
+  free(config->lib_script);
+  free(config->database_file);
 
   free(config);
 }
