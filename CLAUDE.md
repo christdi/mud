@@ -78,9 +78,15 @@ The C engine exposes ~9 Lua binding modules (`src/lua/`): `game_api`, `player_ap
 
 `.clang-format` enforces WebKit-based style: 2-space indentation, attached braces. Run `clang-format` on changed files before committing.
 
+## Communication Style
+
+Be concise. No preamble, no trailing summaries of what was just done. Commit messages should explain why, not restate what the diff already shows.
+
 ## Task Tracking
 
-Planned and in-progress work is tracked in `tasks/`. Each task is a markdown file named `task_<N>_<description>.md`. Completed tasks move from `tasks/todo/` to `tasks/done/`. Read the relevant task file before actioning work — they contain specific file locations, before/after code examples, and reasoning.
+Planned and in-progress work is tracked in `tasks/`. Each task is a markdown file named `task_<N>_<description>.md`. Completed tasks move from `tasks/todo/` to `tasks/done/`.
+
+Tasks are Jira-style tickets: state the problem and the proposed solution at a high level. No file paths, line numbers, or code examples — implementation detail is left to whoever actions the ticket.
 
 ## Important Code Notes
 
