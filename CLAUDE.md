@@ -114,11 +114,11 @@ Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/ve
 
 To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, call `run_<module>_tests()` from `test_runner.c`.
 
-### Tests with dependencies (link-seam mocking)
+### Tests with dependencies (linker-wrap mocking)
 
-When a module under test calls an external function (e.g. `player_on_event`), use a **link-seam mock**: a substitute `.c` in `tests/mocks/` that provides the same symbol but records invocations. The test executable for that module links the mock instead of the real implementation and does **not** link `libmud` (to avoid duplicate symbols). See `test_event` in `tests/CMakeLists.txt` as the reference implementation.
+When a module under test calls an external function (e.g. `player_on_event`), use GNU ld's `--wrap` flag. Adding `-Wl,--wrap=player_on_event` to `test_mud`'s link options causes the linker to rename the real function to `__real_player_on_event` and route all calls to `__wrap_player_on_event`. The mock in `tests/mocks/` defines `__wrap_player_on_event` and records invocations. The single `test_mud` binary links `libmud` (containing the real implementation) alongside the mock — no duplicate symbol conflict. See `tests/CMakeLists.txt` and `tests/mocks/mock_player.c` as the reference implementation.
 
-Each mock in `tests/mocks/` exposes a `mock_<module>_reset()` function and accessor functions for recorded call data. Tests call `mock_<module>_reset()` at the start of each test that uses the mock.
+Each mock in `tests/mocks/` exposes a `mock_<module>_reset()` function and accessor functions for recorded call data. Tests call `mock_<module>_reset()` at the start of each test that uses the mock. Add new mocks by adding a `--wrap=<function>` flag and including the mock source in `test_mud`'s source list.
 
 ### Test file conventions
 

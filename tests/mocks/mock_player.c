@@ -35,8 +35,9 @@ event_t* mock_player_on_event_event(int index) {
   return recorded_events[index];
 }
 
-/* Link-seam replacement for player_on_event. Records invocations for test assertions. */
-void player_on_event(player_t* player, game_t* game, event_t* event) {
+/* Linker-wrap replacement for player_on_event (--wrap=player_on_event).
+   Records invocations so tests can assert on call count and arguments. */
+void __wrap_player_on_event(player_t* player, game_t* game, event_t* event) {
   (void)game;
 
   if (call_count < MOCK_MAX_RECORDED_CALLS) {
