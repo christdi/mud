@@ -49,17 +49,9 @@ script_group_t* script_new_script_group_t(const char* uuid, const char*filepath,
 void script_free_script_group_t(script_group_t* script_group) {
   assert(script_group);
 
-  if (script_group->filepath != NULL) {
-    free(script_group->filepath);
-  }
-
-  if (script_group->name != NULL) {
-    free(script_group->name);
-  }
-
-  if (script_group->description != NULL) {
-    free(script_group->description);
-  }
+  free(script_group->filepath);
+  free(script_group->name);
+  free(script_group->description);
 
   free(script_group);
 }
@@ -95,9 +87,7 @@ script_t* create_script_t() {
 void free_script_t(script_t* script) {
   assert(script);
 
-  if (script->filepath != NULL) {
-    free(script->filepath);
-  }
+  free(script->filepath);
 
   free(script);
 }

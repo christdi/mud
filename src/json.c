@@ -84,13 +84,8 @@ void json_free_json_node_t(json_node_t* node) {
     free(node->value->str);
   }
 
-  if (node->value != NULL) {
-    free(node->value);
-  }
-
-  if (node->key != NULL) {
-    free(node->key);  
-  }
+  free(node->value);
+  free(node->key);
 
   free(node);
 }
@@ -430,9 +425,7 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
     }
   }
 
-  if (key_buffer != NULL) {
-    free(key_buffer);  
-  }
+  free(key_buffer);
 
   json_free_json_node_t(obj);
 

@@ -33,13 +33,8 @@ task_t* task_new_task_t(const char* name, int execute_in, lua_ref_t* ref) {
 void task_free_task_t(task_t* task) {
   assert(task);
 
-  if (task->name != NULL) {
-    free(task->name);
-  }
-
-  if (task->ref != NULL) {
-    lua_free_lua_ref_t(task->ref);
-  }
+  free(task->name);
+  lua_free_lua_ref_t(task->ref);
 
   free(task);
 }

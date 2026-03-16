@@ -34,7 +34,9 @@ void init_linked_list(linked_list_t* list) {
  * freed as it doesn't know how to deallocate node data.
  **/
 void free_linked_list_t(linked_list_t* list) {
-  assert(list);
+  if (!list) {
+    return;
+  }
 
   if (list->first != NULL && list->last != NULL) {
     node_t* node = list->first;

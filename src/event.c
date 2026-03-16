@@ -72,11 +72,7 @@ event_broker_t* event_new_event_broker_t() {
 void event_free_event_broker_t(event_broker_t* event_broker) {
   assert(event_broker);
 
-  if (event_broker->events != NULL) {
-    free_linked_list_t(event_broker->events);
-
-    event_broker->events = NULL;
-  }
+  free_linked_list_t(event_broker->events);
 
   free(event_broker);
 }

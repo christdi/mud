@@ -31,9 +31,7 @@ component_t* ecs_create_component_t() {
 void ecs_free_component_t(component_t* component) {
   assert(component);
 
-  if (component->entities != NULL) {
-    free_hash_table_t(component->entities);
-  }
+  free_hash_table_t(component->entities);
 
   free(component);
 }
@@ -70,9 +68,7 @@ component_data_t* ecs_create_component_data_t() {
 void ecs_free_component_data_t(component_data_t* component_data) {
   assert(component_data);
 
-  if (component_data->ref != NULL) {
-    lua_free_lua_ref_t(component_data->ref);
-  }
+  lua_free_lua_ref_t(component_data->ref);
 
   free(component_data);
 }

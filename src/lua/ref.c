@@ -57,7 +57,9 @@ void lua_release_lua_ref_t(lua_ref_t* ref) {
  * ref - the lua_ref_t to free
 **/
 void lua_free_lua_ref_t(lua_ref_t* ref) {
-  assert(ref);
+  if (!ref) {
+    return;
+  }
 
   if (ref->state != NULL) {
     lua_release_lua_ref_t(ref);

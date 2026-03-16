@@ -34,9 +34,7 @@ command_t* command_new_command_t(const char* uuid, const char* name, const char*
 void command_free_command_t(command_t* command) {
   assert(command);
 
-  if (command->name != NULL) {
-    free(command->name);
-  }
+  free(command->name);
 
   free(command);
 }
@@ -83,13 +81,8 @@ command_group_t* command_new_command_group_t(const char* uuid, const char* descr
 void command_free_command_group_t(command_group_t* group) {
   assert(group);
 
-  if (group->description != NULL) {
-    free(group->description);
-  }
-
-  if (group->commands != NULL) {
-    free_linked_list_t(group->commands);
-  }
+  free(group->description);
+  free_linked_list_t(group->commands);
 
   free(group);
 }

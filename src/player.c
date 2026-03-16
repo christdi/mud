@@ -47,13 +47,8 @@ player_t* create_player_t() {
 void free_player_t(player_t* player) {
   assert(player);
 
-  if (player->username != NULL) {
-    free(player->username);
-  }
-
-  if (player->command_groups != NULL) {
-    free_linked_list_t(player->command_groups);
-  }
+  free(player->username);
+  free_linked_list_t(player->command_groups);
 
   free(player);
 }
