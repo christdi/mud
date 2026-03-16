@@ -23,11 +23,9 @@ Run from the project root (config.lua is read from the working directory):
 
 clang-tidy runs automatically during builds with a broad set of checks.
 
-To run the test suite:
+To run the test suite (from `build/`):
 ```bash
-cd build && ctest --output-on-failure
-# or run directly:
-./tests/test_mud
+ctest --output-on-failure
 ```
 
 ## Configuration
@@ -95,15 +93,38 @@ Planned and in-progress work is tracked in `tasks/`. Each task is a markdown fil
 
 Tasks are Jira-style tickets: state the problem and the proposed solution at a high level. No file paths, line numbers, or code examples — implementation detail is left to whoever actions the ticket.
 
+## Standard Task Workflow
+
+When actioning a task:
+1. Create a task file in `tasks/todo/` if one doesn't exist.
+2. Create a new git branch for the work.
+3. Make changes. Commit at logical intervals — not all at once at the end.
+4. Verify: ensure the build compiles cleanly and `ctest` passes.
+5. Update `CLAUDE.md` with any context worth preserving across sessions.
+6. Move the task file from `tasks/todo/` to `tasks/done/`.
+7. Push the branch for PR review.
+
 ## Testing
 
-Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`.
+Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`. All test binaries are registered with CTest and run via `ctest`.
 
-All suites compile into a single `test_mud` binary. Each test file (`tests/data/test_*.c`) exposes a `run_X_tests()` function called from `tests/test_runner.c`.
+### Pure logic tests (no mocking)
 
-To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, and call `run_<module>_tests()` from `test_runner.c`.
+`test_mud` — single binary, links `libmud`. Each test file in `tests/data/` exposes `run_X_tests()`, called from `tests/test_runner.c`.
 
-Modules with external dependencies (Lua, SQLite) will require **CMocka** for mocking when test coverage reaches them. Unity handles everything that is pure logic.
+To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, call `run_<module>_tests()` from `test_runner.c`.
+
+### Tests with dependencies (link-seam mocking)
+
+When a module under test calls an external function (e.g. `player_on_event`), use a **link-seam mock**: a substitute `.c` in `tests/mocks/` that provides the same symbol but records invocations. The test executable for that module links the mock instead of the real implementation and does **not** link `libmud` (to avoid duplicate symbols). See `test_event` in `tests/CMakeLists.txt` as the reference implementation.
+
+Each mock in `tests/mocks/` exposes a `mock_<module>_reset()` function and accessor functions for recorded call data. Tests call `mock_<module>_reset()` at the start of each test that uses the mock.
+
+### Test file conventions
+
+- Short comment (≤ 3 lines) before each test function describing the scenario.
+- Each test function is self-contained: set up, act, assert, clean up — no reliance on setUp/tearDown for state.
+- `setUp()` and `tearDown()` are defined in the runner and left empty.
 
 ## Important Code Notes
 
