@@ -21,22 +21,26 @@ static int always_false_predicate(void* value) {
   return 0;
 }
 
+/* A newly created list is not NULL. */
 void test_list_create_and_free(void) {
   linked_list_t* list = create_linked_list_t();
   TEST_ASSERT_NOT_NULL(list);
   free_linked_list_t(list);
 }
 
+/* Passing NULL to free_linked_list_t does not crash. */
 void test_list_free_null_is_safe(void) {
   free_linked_list_t(NULL);
 }
 
+/* A freshly created list reports a size of zero. */
 void test_list_size_empty(void) {
   linked_list_t* list = create_linked_list_t();
   TEST_ASSERT_EQUAL_INT(0, list_size(list));
   free_linked_list_t(list);
 }
 
+/* Adding one element increases the size to one. */
 void test_list_add_single(void) {
   linked_list_t* list = create_linked_list_t();
   int value = 42;
@@ -45,6 +49,7 @@ void test_list_add_single(void) {
   free_linked_list_t(list);
 }
 
+/* Adding multiple elements is reflected in the reported size. */
 void test_list_add_multiple(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -55,6 +60,7 @@ void test_list_add_multiple(void) {
   free_linked_list_t(list);
 }
 
+/* list_contains returns true for a value that was added. */
 void test_list_contains_present(void) {
   linked_list_t* list = create_linked_list_t();
   int value = 42;
@@ -63,6 +69,7 @@ void test_list_contains_present(void) {
   free_linked_list_t(list);
 }
 
+/* list_contains returns false for a value that was never added. */
 void test_list_contains_absent(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2;
@@ -71,6 +78,7 @@ void test_list_contains_absent(void) {
   free_linked_list_t(list);
 }
 
+/* Removing the only element leaves the list with a size of zero. */
 void test_list_remove_reduces_size(void) {
   linked_list_t* list = create_linked_list_t();
   int value = 42;
@@ -80,6 +88,7 @@ void test_list_remove_reduces_size(void) {
   free_linked_list_t(list);
 }
 
+/* Removing an element invokes the list's configured deallocator. */
 void test_list_remove_calls_deallocator(void) {
   deallocator_call_count = 0;
   linked_list_t* list = create_linked_list_t();
@@ -91,6 +100,7 @@ void test_list_remove_calls_deallocator(void) {
   free_linked_list_t(list);
 }
 
+/* Removing the first element of three leaves the remaining two intact. */
 void test_list_remove_from_front(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -103,6 +113,7 @@ void test_list_remove_from_front(void) {
   free_linked_list_t(list);
 }
 
+/* Removing the last element of three leaves the remaining two intact. */
 void test_list_remove_from_end(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -115,6 +126,7 @@ void test_list_remove_from_end(void) {
   free_linked_list_t(list);
 }
 
+/* Removing a middle element of three leaves the remaining two intact. */
 void test_list_remove_from_middle(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -127,6 +139,7 @@ void test_list_remove_from_middle(void) {
   free_linked_list_t(list);
 }
 
+/* list_steal removes the element but does not invoke the deallocator. */
 void test_list_steal_does_not_call_deallocator(void) {
   deallocator_call_count = 0;
   linked_list_t* list = create_linked_list_t();
@@ -139,6 +152,7 @@ void test_list_steal_does_not_call_deallocator(void) {
   free_linked_list_t(list);
 }
 
+/* Clearing a list removes all elements and reports a size of zero. */
 void test_list_clear_empties_list(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -150,6 +164,7 @@ void test_list_clear_empties_list(void) {
   free_linked_list_t(list);
 }
 
+/* Clearing a list invokes the deallocator for every element. */
 void test_list_clear_calls_deallocators(void) {
   deallocator_call_count = 0;
   linked_list_t* list = create_linked_list_t();
@@ -163,6 +178,7 @@ void test_list_clear_calls_deallocators(void) {
   free_linked_list_t(list);
 }
 
+/* Iterating from list_begin visits every element exactly once. */
 void test_list_iterator_traverses_all(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -182,6 +198,7 @@ void test_list_iterator_traverses_all(void) {
   free_linked_list_t(list);
 }
 
+/* Elements are visited in insertion order when iterating. */
 void test_list_iterator_order(void) {
   linked_list_t* list = create_linked_list_t();
   int a = 1, b = 2, c = 3;
@@ -199,6 +216,7 @@ void test_list_iterator_order(void) {
   free_linked_list_t(list);
 }
 
+/* Elements matching the predicate are moved from src to dst. */
 void test_list_extract_all_matching(void) {
   linked_list_t* src = create_linked_list_t();
   linked_list_t* dst = create_linked_list_t();
@@ -216,6 +234,7 @@ void test_list_extract_all_matching(void) {
   free_linked_list_t(dst);
 }
 
+/* When no elements match the predicate, both lists are unchanged. */
 void test_list_extract_none_matching(void) {
   linked_list_t* src = create_linked_list_t();
   linked_list_t* dst = create_linked_list_t();
