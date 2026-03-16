@@ -1,4 +1,7 @@
+#include "fff.h"
 #include "unity.h"
+
+DEFINE_FFF_GLOBALS;
 
 void run_linked_list_tests(void);
 void run_event_tests(void);

@@ -117,8 +117,8 @@ void test_event_dispatch_calls_player_on_event(void) {
 
   event_dispatch_events(broker, NULL, entities, players);
 
-  TEST_ASSERT_EQUAL_INT(1, mock_player_on_event_call_count());
-  TEST_ASSERT_EQUAL_PTR(&player, mock_player_on_event_player(0));
+  TEST_ASSERT_EQUAL_INT(1, player_on_event_fake.call_count);
+  TEST_ASSERT_EQUAL_PTR(&player, player_on_event_fake.arg0_history[0]);
 
   event_free_event_broker_t(broker);
   free_hash_table_t(entities);
@@ -141,7 +141,7 @@ void test_event_dispatch_calls_each_player(void) {
 
   event_dispatch_events(broker, NULL, entities, players);
 
-  TEST_ASSERT_EQUAL_INT(2, mock_player_on_event_call_count());
+  TEST_ASSERT_EQUAL_INT(2, player_on_event_fake.call_count);
 
   event_free_event_broker_t(broker);
   free_hash_table_t(entities);
@@ -163,7 +163,7 @@ void test_event_dispatch_calls_once_per_event(void) {
 
   event_dispatch_events(broker, NULL, entities, players);
 
-  TEST_ASSERT_EQUAL_INT(2, mock_player_on_event_call_count());
+  TEST_ASSERT_EQUAL_INT(2, player_on_event_fake.call_count);
 
   event_free_event_broker_t(broker);
   free_hash_table_t(entities);
@@ -181,7 +181,7 @@ void test_event_dispatch_no_players_no_calls(void) {
   event_submit_event(broker, event_new_event_t(LUA_EVENT, NULL, NULL));
   event_dispatch_events(broker, NULL, entities, players);
 
-  TEST_ASSERT_EQUAL_INT(0, mock_player_on_event_call_count());
+  TEST_ASSERT_EQUAL_INT(0, player_on_event_fake.call_count);
 
   event_free_event_broker_t(broker);
   free_hash_table_t(entities);

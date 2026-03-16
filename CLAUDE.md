@@ -114,11 +114,18 @@ Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/ve
 
 To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, call `run_<module>_tests()` from `test_runner.c`.
 
-### Tests with dependencies (linker-wrap mocking)
+### Tests with dependencies (FFF mocking)
 
-When a module under test calls an external function (e.g. `player_on_event`), use GNU ld's `--wrap` flag. Adding `-Wl,--wrap=player_on_event` to `test_mud`'s link options causes the linker to rename the real function to `__real_player_on_event` and route all calls to `__wrap_player_on_event`. The mock in `tests/mocks/` defines `__wrap_player_on_event` and records invocations. The single `test_mud` binary links `libmud` (containing the real implementation) alongside the mock — no duplicate symbol conflict. See `tests/CMakeLists.txt` and `tests/mocks/mock_player.c` as the reference implementation.
+The mocking framework is **FFF (Fake Function Framework)**, vendored as `tests/vendor/fff.h` (single header). `DEFINE_FFF_GLOBALS` lives in `test_runner.c`.
 
-Each mock in `tests/mocks/` exposes a `mock_<module>_reset()` function and accessor functions for recorded call data. Tests call `mock_<module>_reset()` at the start of each test that uses the mock. Add new mocks by adding a `--wrap=<function>` flag and including the mock source in `test_mud`'s source list.
+When a module under test calls an external function, create a mock in `tests/mocks/`:
+
+- `mock_<module>.h` — `DECLARE_FAKE_VOID_FUNC` / `DECLARE_FAKE_VALUE_FUNC` plus a `mock_<module>_reset()` prototype
+- `mock_<module>.c` — `DEFINE_FAKE_*_FUNC` plus `mock_<module>_reset()` calling `RESET_FAKE`
+
+The test binary **does not link `libmud`**. Instead, `tests/CMakeLists.txt` lists only the source files the module under test actually needs. FFF's generated function satisfies the missing symbol without a duplicate conflict. Add the mock `.c` and the required source files to `test_mud`'s source list.
+
+Assertions use FFF's generated struct directly: `player_on_event_fake.call_count`, `player_on_event_fake.arg0_history[0]`, etc. See `tests/mocks/mock_player.*` and `tests/event/test_event.c` as the reference implementation.
 
 ### Test file conventions
 
