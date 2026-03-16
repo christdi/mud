@@ -21,7 +21,14 @@ Run from the project root (config.lua is read from the working directory):
 
 **Dependencies:** Lua 5.3, SQLite3, OpenSSL (libssl/libcrypto), libuuid
 
-clang-tidy runs automatically during builds with a broad set of checks. There are no separate lint or test commands.
+clang-tidy runs automatically during builds with a broad set of checks.
+
+To run the test suite:
+```bash
+cd build && ctest --output-on-failure
+# or run directly:
+./tests/test_mud
+```
 
 ## Configuration
 
@@ -87,6 +94,16 @@ Be concise. No preamble, no trailing summaries of what was just done. Commit mes
 Planned and in-progress work is tracked in `tasks/`. Each task is a markdown file named `task_<N>_<description>.md`. Completed tasks move from `tasks/todo/` to `tasks/done/`.
 
 Tasks are Jira-style tickets: state the problem and the proposed solution at a high level. No file paths, line numbers, or code examples — implementation detail is left to whoever actions the ticket.
+
+## Testing
+
+Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`.
+
+All suites compile into a single `test_mud` binary. Each test file (`tests/data/test_*.c`) exposes a `run_X_tests()` function called from `tests/test_runner.c`.
+
+To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, and call `run_<module>_tests()` from `test_runner.c`.
+
+Modules with external dependencies (Lua, SQLite) will require **CMocka** for mocking when test coverage reaches them. Unity handles everything that is pure logic.
 
 ## Important Code Notes
 
