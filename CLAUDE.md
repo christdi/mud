@@ -23,11 +23,9 @@ Run from the project root (config.lua is read from the working directory):
 
 clang-tidy runs automatically during builds with a broad set of checks.
 
-To run the test suite:
+To run the test suite (from `build/`):
 ```bash
-cd build && ctest --output-on-failure
-# or run directly:
-./tests/test_mud
+ctest --output-on-failure
 ```
 
 ## Configuration
@@ -95,15 +93,47 @@ Planned and in-progress work is tracked in `tasks/`. Each task is a markdown fil
 
 Tasks are Jira-style tickets: state the problem and the proposed solution at a high level. No file paths, line numbers, or code examples — implementation detail is left to whoever actions the ticket.
 
+## Standard Task Workflow
+
+When actioning a task:
+1. Create a task file in `tasks/todo/` if one doesn't exist.
+2. Create a new git branch for the work.
+3. Make changes. Commit at logical intervals — not all at once at the end.
+4. Verify: ensure the build compiles cleanly and `ctest` passes.
+5. Update `CLAUDE.md` with any context worth preserving across sessions.
+6. Move the task file from `tasks/todo/` to `tasks/done/`.
+7. Push the branch for PR review.
+
 ## Testing
 
-Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`.
+Tests live in `tests/`. The framework is **Unity v2.5.2**, vendored in `tests/vendor/`. All test binaries are registered with CTest and run via `ctest`.
 
-All suites compile into a single `test_mud` binary. Each test file (`tests/data/test_*.c`) exposes a `run_X_tests()` function called from `tests/test_runner.c`.
+Each test file is a self-contained binary: it defines `setUp()`, `tearDown()`, and `main()` directly. There is no shared runner. Each binary is registered with `ctest` independently so `ctest` still runs everything in one command.
 
-To add a new suite: create `tests/data/test_<module>.c`, define `run_<module>_tests()`, add the file to `tests/CMakeLists.txt`, and call `run_<module>_tests()` from `test_runner.c`.
+Test binaries do **not** link `libmud`. `tests/CMakeLists.txt` lists only the source files the module under test actually needs. This keeps each binary minimal and explicit.
 
-Modules with external dependencies (Lua, SQLite) will require **CMocka** for mocking when test coverage reaches them. Unity handles everything that is pure logic.
+### Pure logic tests (no mocking)
+
+Add a `tests/<area>/test_<module>.c` file. Include `unity.h`, write test functions, add `setUp`/`tearDown`/`main`. Add an `add_executable` + `add_test` block to `tests/CMakeLists.txt` with only the required source files. See `tests/data/test_linked_list.c` as the reference.
+
+### Tests with dependencies (FFF mocking)
+
+The mocking framework is **FFF (Fake Function Framework)**, vendored as `tests/vendor/fff.h` (single header). There are no separate mock files — fakes are declared inline at the top of the test file:
+
+```c
+DEFINE_FFF_GLOBALS;
+FAKE_VOID_FUNC(player_on_event, player_t*, game_t*, event_t*);
+```
+
+FFF's generated fake satisfies the missing symbol without linking the real implementation. Reset a fake between tests with `RESET_FAKE(player_on_event)`. Assert using the generated struct: `player_on_event_fake.call_count`, `player_on_event_fake.arg0_history[0]`, etc.
+
+See `tests/event/test_event.c` as the reference implementation.
+
+### Test file conventions
+
+- Short comment (≤ 3 lines) before each test function describing the scenario.
+- Each test function is self-contained: set up, act, assert, clean up — no reliance on setUp/tearDown for state.
+- `setUp()` and `tearDown()` are defined in the runner and left empty.
 
 ## Important Code Notes
 
