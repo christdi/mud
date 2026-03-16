@@ -363,7 +363,7 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
 
         key_buffer = calloc(1, key_len + 1);
         memcpy(key_buffer, start, key_len);
-        key_buffer[key_len + 1] = '\0';
+        key_buffer[key_len] = '\0';
 
         key_start = 0;
         key_len = 0;
@@ -565,7 +565,7 @@ json_node_t* parse_string(const char* input, size_t len, size_t* pos) {
       if (c == '"') {
         node->value->str = calloc(1, str_len + 1);
         memcpy(node->value->str, input + str_start, str_len);
-        node->value->str[str_len + 1] = '\0';
+        node->value->str[str_len] = '\0';
         *pos = i;
 
         return node;
@@ -720,81 +720,62 @@ int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
   size_t val_len = 0;
 
   switch(node->type) {
-    case STRING:  
-      if ((val_len = snprintf(NULL, 0, "\"%s\"", node->value->str)) > len - *pos) {
+    case STRING:
+      val_len = snprintf(buffer + *pos, len - *pos, "\"%s\"", node->value->str);
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
-
-      sprintf(buffer + *pos, "\"%s\"", node->value->str);
 
       *pos += val_len;
 
       break;
 
     case NUMBER:
-      if ((val_len = snprintf(NULL, 0, "%g", node->value->number)) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%g", node->value->number);
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
 
-      sprintf(buffer + *pos, "%g", node->value->number);
+      *pos += val_len;
+
+      break;
+
+    case BOOLEAN: {
+      const char* bool_str = node->value->boolean ? TRUE_STR : FALSE_STR;
+
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", bool_str);
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
+        return -1;
+      }
 
       *pos += val_len;
-      
-      break;
-
-    case BOOLEAN:
-      if (node->value->boolean == true) {
-        if ((val_len = snprintf(NULL, 0, "%s", TRUE_STR)) > len - *pos) {
-          return -1;
-        }
-
-        sprintf(buffer + *pos, "%s", TRUE_STR);
-
-        *pos += val_len;
-
-        break;
-      }
-
-      if (node->value->boolean == false) {
-        if ((val_len = snprintf(NULL, 0, "%s", FALSE_STR)) > len - *pos) {
-          return -1;
-        }
-
-        sprintf(buffer + *pos, "%s", FALSE_STR);
-
-        *pos += val_len;
-
-        break;
-      }
 
       break;
+    }
 
     case NIL:
-      if ((val_len = snprintf(NULL, 0, "%s", NULL_STR)) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", NULL_STR);
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
 
-      sprintf(buffer + *pos, "%s", NULL_STR);
-
       *pos += val_len;
-      
+
       break;
 
     case OBJECT:
-      if ((val_len = snprintf(NULL, 0, "%s", "{ ")) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", "{ ");
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
-
-      sprintf(buffer + *pos, "%s", "{ ");
 
       *pos += val_len;
 
       for (json_node_t* child = node->value->children; child != NULL; child = child->next) {
-        if ((val_len = snprintf(NULL, 0, "\"%s\": ", child->key)) > len - *pos) {
+        val_len = snprintf(buffer + *pos, len - *pos, "\"%s\": ", child->key);
+        if (val_len < 0 || (size_t)val_len >= len - *pos) {
           return -1;
         }
-
-        sprintf(buffer + *pos, "\"%s\": ", child->key);
 
         *pos += val_len;
 
@@ -803,32 +784,29 @@ int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
         }
 
         if (child->next != NULL) {
-          if ((val_len = snprintf(NULL, 0, "%s", ", ")) > len - *pos) {
+          val_len = snprintf(buffer + *pos, len - *pos, "%s", ", ");
+          if (val_len < 0 || (size_t)val_len >= len - *pos) {
             return -1;
           }
-
-          sprintf(buffer + *pos, "%s", ", ");
 
           *pos += val_len;
         }
       }
 
-      if ((val_len = snprintf(NULL, 0, "%s", " }")) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", " }");
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
-
-      sprintf(buffer + *pos, "%s", " }");
 
       *pos += val_len;
 
       break;
 
     case ARRAY:
-      if ((val_len = snprintf(NULL, 0, "%s", "[ ")) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", "[ ");
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
-
-      sprintf(buffer + *pos, "%s", "[ ");
 
       *pos += val_len;
 
@@ -838,21 +816,19 @@ int write_node_value(json_node_t* node, char* buffer, size_t len, size_t* pos) {
         }
 
         if (item->next != NULL) {
-          if ((val_len = snprintf(NULL, 0, "%s", ", ")) > len - *pos) {
+          val_len = snprintf(buffer + *pos, len - *pos, "%s", ", ");
+          if (val_len < 0 || (size_t)val_len >= len - *pos) {
             return -1;
           }
-
-          sprintf(buffer + *pos, "%s", ", ");
 
           *pos += val_len;
         }
       }
 
-      if ((val_len = snprintf(NULL, 0, "%s", " ]")) > len - *pos) {
+      val_len = snprintf(buffer + *pos, len - *pos, "%s", " ]");
+      if (val_len < 0 || (size_t)val_len >= len - *pos) {
         return -1;
       }
-
-      sprintf(buffer + *pos, "%s", " ]");
 
       *pos += val_len;
 
