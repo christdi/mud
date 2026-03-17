@@ -5,8 +5,19 @@ add_compile_options(-Wno-pedantic)
 # Disable clang-tidy for all test targets (vendor code and test macros produce noise)
 set(CMAKE_C_CLANG_TIDY "")
 
-# test_linked_list
-add_executable(test_linked_list
+# Creates a self-contained test binary registered with ctest.
+# Usage: mud_add_test(<name> <sources...>)
+function(mud_add_test name)
+  add_executable(${name} ${ARGN})
+  target_include_directories(${name} PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor
+  )
+  target_link_libraries(${name} Threads::Threads)
+  add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+mud_add_test(test_linked_list
   vendor/unity.c
   data/test_linked_list.c
   ${PROJECT_SOURCE_DIR}/src/log.c
@@ -15,17 +26,7 @@ add_executable(test_linked_list
   ${PROJECT_SOURCE_DIR}/src/data/linked_list/iterator.c
 )
 
-target_include_directories(test_linked_list PRIVATE
-  ${PROJECT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/vendor
-)
-
-target_link_libraries(test_linked_list pthread)
-
-add_test(NAME test_linked_list COMMAND test_linked_list)
-
-# test_event
-add_executable(test_event
+mud_add_test(test_event
   vendor/unity.c
   event/test_event.c
   ${PROJECT_SOURCE_DIR}/src/event.c
@@ -38,12 +39,3 @@ add_executable(test_event
   ${PROJECT_SOURCE_DIR}/src/data/hash_table/hash_iterator.c
   ${PROJECT_SOURCE_DIR}/src/data/queue/queue.c
 )
-
-target_include_directories(test_event PRIVATE
-  ${PROJECT_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/vendor
-)
-
-target_link_libraries(test_event pthread)
-
-add_test(NAME test_event COMMAND test_event)

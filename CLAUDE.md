@@ -19,7 +19,7 @@ Run from the project root (config.lua is read from the working directory):
 ./mud
 ```
 
-**Dependencies:** Lua 5.3, SQLite3, OpenSSL (libssl/libcrypto), libuuid
+**Dependencies:** Lua 5.3+, SQLite3, OpenSSL, libuuid (CMake 3.5+ required)
 
 clang-tidy runs automatically during builds with a broad set of checks.
 
@@ -114,7 +114,7 @@ Test binaries do **not** link `libmud`. `tests/CMakeLists.txt` lists only the so
 
 ### Pure logic tests (no mocking)
 
-Add a `tests/<area>/test_<module>.c` file. Include `unity.h`, write test functions, add `setUp`/`tearDown`/`main`. Add an `add_executable` + `add_test` block to `tests/CMakeLists.txt` with only the required source files. See `tests/data/test_linked_list.c` as the reference.
+Add a `tests/<area>/test_<module>.c` file. Include `unity.h`, write test functions, add `setUp`/`tearDown`/`main`. Add a `mud_add_test(<name> <sources...>)` call to `tests/CMakeLists.txt` with only the required source files. See `tests/data/test_linked_list.c` as the reference.
 
 ### Tests with dependencies (FFF mocking)
 
