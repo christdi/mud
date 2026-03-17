@@ -26,6 +26,13 @@ mud_add_test(test_linked_list
   ${PROJECT_SOURCE_DIR}/src/data/linked_list/iterator.c
 )
 
+mud_add_test(test_hooks
+  vendor/unity.c
+  lua/test_hooks.c
+  ${PROJECT_SOURCE_DIR}/src/lua/hooks_store.c
+  ${PROJECT_SOURCE_DIR}/src/log.c
+)
+
 mud_add_test(test_event
   vendor/unity.c
   event/test_event.c

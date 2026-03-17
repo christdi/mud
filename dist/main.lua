@@ -11,7 +11,7 @@ game = {
   config = {}
 }
 
-function main()
+lunac.api.hooks.on_startup(function()
   lunac.api.log.info("Demo MUD initialising")
 
   game.state.login = lunac.state.new(require('dist/state/login_state'))
@@ -66,7 +66,7 @@ function main()
     :with_short_description("A portal to Hel")
     :with_long_description("An icy portal from which a cold wind blows")
     :with_tags({ "portal", "hel" })
-  
+
   game.entity.portal.new()
     :with_origin(game.config.second_room)
     :with_destination(game.config.default_room)
@@ -87,29 +87,29 @@ function main()
     :with_short_description("A portal to Valhalla")
     :with_long_description("A glowing portal which rings with the sound of battle")
     :with_tags({ "portal", "valhalla" })
-end
+end)
 
-function shutdown()
-  game.system.random_tp.deregister();
-  game.narrator.standard.deregister();
-end
+lunac.api.hooks.on_shutdown(function()
+  game.system.random_tp.deregister()
+  game.narrator.standard.deregister()
+end)
 
-function entities_loaded(entities)
-end
+lunac.api.hooks.on_entities_loaded(function(entities)
+end)
 
-function commands_loaded(c)
+lunac.api.hooks.on_commands_loaded(function(c)
   -- no-op
-end
+end)
 
-function command_groups_loaded(c)
+lunac.api.hooks.on_command_groups_loaded(function(c)
   -- no-op
-end
+end)
 
-function actions_loaded(a)
+lunac.api.hooks.on_actions_loaded(function(a)
   actions.initialise(a)
-end
+end)
 
-function player_connected(p)
+lunac.api.hooks.on_player_connected(function(p)
   local plr = lunac.player.new(p)
 
   plr.set_state(game.state.login)
@@ -117,13 +117,11 @@ function player_connected(p)
 
   plr.add_cmd_group("75bd6b07-eea0-44a6-a5a7-26a5beda690f") -- Standard
   plr.add_cmd_group("002fbced-59c9-41d1-9019-fae8763a1d78") -- Admin
-end
+end)
 
-
-function player_disconnected(p)
+lunac.api.hooks.on_player_disconnected(function(p)
   lunac.player.remove(p)
-end
+end)
 
-
-function player_input(p, what)
-end
+lunac.api.hooks.on_player_input(function(p, what)
+end)
