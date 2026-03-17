@@ -17,6 +17,7 @@ typedef struct linked_list linked_list_t;
 typedef struct network network_t;
 typedef struct event_broker event_broker_t;
 typedef struct lua_State lua_State;
+typedef struct lua_hooks lua_hooks_t;
 
 /**
  * Structs
@@ -45,6 +46,7 @@ typedef struct game {
 
   network_t* network;
   lua_State* lua_state;
+  lua_hooks_t* hooks;
 } game_t;
 
 /**

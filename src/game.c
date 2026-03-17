@@ -18,6 +18,7 @@
 #include "mud/lua/db_api.h"
 #include "mud/lua/game_api.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/hooks_api.h"
 #include "mud/lua/log_api.h"
 #include "mud/lua/player_api.h"
 #include "mud/lua/script.h"
@@ -79,6 +80,7 @@ game_t* create_game_t(void) {
   game->network = create_network_t();
 
   game->lua_state = NULL;
+  game->hooks = lua_new_hooks_t();
 
   return game;
 }
@@ -108,6 +110,8 @@ void free_game_t(game_t* game) {
   free_linked_list_t(game->events);
 
   free_network_t(game->network);
+
+  lua_free_hooks_t(game->hooks);
 
   if (game->lua_state != NULL) {
     lua_close(game->lua_state);
@@ -287,6 +291,11 @@ int initialise_lua(game_t* game, config_t* config) {
 
   if (lua_script_register_api(game->lua_state) == -1) {
     LOG(ERROR, "Failed to register Lua script API with state");
+    return -1;
+  }
+
+  if (lua_hooks_register_api(game->lua_state) == -1) {
+    LOG(ERROR, "Failed to register Lua hooks API with state");
     return -1;
   }
 

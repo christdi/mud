@@ -8,27 +8,17 @@
 #include "mud/data/linked_list.h"
 #include "mud/ecs/entity.h"
 #include "mud/ecs/system.h"
+#include "mud/game.h"
 #include "mud/log.h"
 #include "mud/json.h"
 #include "mud/lua/common.h"
 #include "mud/lua/hooks.h"
+#include "mud/lua/hooks_api.h"
 #include "mud/lua/ref.h"
 #include "mud/lua/struct.h"
 #include "mud/player.h"
 #include "mud/task.h"
 #include "mud/util/muduuid.h"
-
-#define ON_STARTUP_HOOK_FUNCTION "main"
-#define ON_SHUTDOWN_HOOK_FUNCTION "shutdown"
-
-#define ON_ENTITIES_LOADED_HOOK_FUNCTION "entities_loaded"
-#define ON_COMMANDS_LOADED_HOOK_FUNCTION "commands_loaded"
-#define ON_COMMAND_GROUPS_LOADED_HOOK_FUNCTION "command_groups_loaded"
-#define ON_ACTIONS_LOADED_HOOK_FUNCTION "actions_loaded"
-
-#define ON_PLAYER_CONNECTED_HOOK_FUNCTION "player_connected"
-#define ON_PLAYER_DISCONNECTED_HOOK_FUNCTION "player_disconnected"
-#define ON_PLAYER_INPUT_HOOK_FUNCTION "player_input"
 
 #define NARRATE_EVENT_HOOK_FUNCTION "narrate"
 
@@ -42,7 +32,7 @@
 #define SYSTEM_EXECUTE_HOOK_FUNCTION "execute"
 
 /**
- * Hook method called when the Lua state has been successfully initialised.
+ * Calls the startup hook if one has been registered.
  *
  * l - Lua state instance
  *
@@ -51,11 +41,13 @@
 int lua_call_startup_hook(lua_State* l) {
   assert(l);
 
-  if (lua_getglobal(l, ON_STARTUP_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_startup == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_startup->ref);
 
   if (lua_pcall(l, 0, 0, 0) != 0) {
     LOG(ERROR, "Error when calling on startup hook [%s]", lua_tostring(l, -1));
@@ -67,16 +59,22 @@ int lua_call_startup_hook(lua_State* l) {
 }
 
 /**
- * Hook method called when the engine is shuting down.
-**/
-int lua_call_shutdown_hook(lua_State *l) {
+ * Calls the shutdown hook if one has been registered.
+ *
+ * l - Lua state instance
+ *
+ * Returns 0 on success or -1 on error
+ **/
+int lua_call_shutdown_hook(lua_State* l) {
   assert(l);
 
-  if (lua_getglobal(l, ON_SHUTDOWN_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_shutdown == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_shutdown->ref);
 
   if (lua_pcall(l, 0, 0, 0) != 0) {
     LOG(ERROR, "Error when calling on shutdown hook [%s]", lua_tostring(l, -1));
@@ -88,7 +86,7 @@ int lua_call_shutdown_hook(lua_State *l) {
 }
 
 /**
- * Hook method called when the engine has loaded all entities from persistence.
+ * Calls the entities_loaded hook if one has been registered.
  *
  * l - Lua state instance
  * entities - A linked list of entity_t structs
@@ -99,11 +97,13 @@ int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities) {
   assert(l);
   assert(entities);
 
-  if (lua_getglobal(l, ON_ENTITIES_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_entities_loaded == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_entities_loaded->ref);
 
   lua_newtable(l);
 
@@ -124,6 +124,7 @@ int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities) {
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling entities loaded hook [%s]", lua_tostring(l, -1));
+
     return -1;
   }
 
@@ -131,10 +132,10 @@ int lua_call_entities_loaded_hook(lua_State* l, linked_list_t* entities) {
 }
 
 /**
- * Hook method called when the engine has loaded all commands from persistence.
+ * Calls the commands_loaded hook if one has been registered.
  *
  * l - Lua state instance
- * entities - A linked list of command_t structs
+ * commands - A linked list of command_t structs
  *
  * Returns 0 on success or -1 on failure
  **/
@@ -142,11 +143,13 @@ int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands) {
   assert(l);
   assert(commands);
 
-  if (lua_getglobal(l, ON_COMMANDS_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_commands_loaded == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_commands_loaded->ref);
 
   lua_newtable(l);
 
@@ -166,7 +169,8 @@ int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands) {
   }
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
-    LOG(ERROR, "Error when calling actions loaded hook [%s]", lua_tostring(l, -1));
+    LOG(ERROR, "Error when calling commands loaded hook [%s]", lua_tostring(l, -1));
+
     return -1;
   }
 
@@ -174,7 +178,7 @@ int lua_call_commands_loaded_hook(lua_State* l, linked_list_t* commands) {
 }
 
 /**
- * Hook method called when the engine has loaded all command groups from persistence.
+ * Calls the command_groups_loaded hook if one has been registered.
  *
  * l - Lua state instance
  * command_groups - A linked list of command_group_t structs
@@ -185,16 +189,18 @@ int lua_call_command_groups_loaded_hook(lua_State* l, linked_list_t* command_gro
   assert(l);
   assert(command_groups);
 
-  if (lua_getglobal(l, ON_COMMAND_GROUPS_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_command_groups_loaded == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_command_groups_loaded->ref);
 
   lua_newtable(l);
 
   command_group_t* command_group = NULL;
-  
+
   int index = 1;
   it_t it = list_begin(command_groups);
 
@@ -219,10 +225,10 @@ int lua_call_command_groups_loaded_hook(lua_State* l, linked_list_t* command_gro
 }
 
 /**
- * Hook method called when the engine has loaded all actions from persistence.
+ * Calls the actions_loaded hook if one has been registered.
  *
  * l - Lua state instance
- * entities - A linked list of action_t structs
+ * actions - A linked list of action_t structs
  *
  * Returns 0 on success or -1 on failure
  **/
@@ -230,11 +236,13 @@ int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions) {
   assert(l);
   assert(actions);
 
-  if (lua_getglobal(l, ON_ACTIONS_LOADED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_actions_loaded == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_actions_loaded->ref);
 
   lua_newtable(l);
 
@@ -255,6 +263,7 @@ int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions) {
 
   if (lua_pcall(l, 1, 0, 0) != 0) {
     LOG(ERROR, "Error when calling actions loaded hook [%s]", lua_tostring(l, -1));
+
     return -1;
   }
 
@@ -262,7 +271,7 @@ int lua_call_actions_loaded_hook(lua_State* l, linked_list_t* actions) {
 }
 
 /**
- * Hook method called when the engine has accepted a connection and created a new player.
+ * Calls the player_connected hook if one has been registered.
  *
  * l - Lua state instance
  * player - New player instance
@@ -273,11 +282,13 @@ int lua_call_player_connected_hook(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
-  if (lua_getglobal(l, ON_PLAYER_CONNECTED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_player_connected == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_player_connected->ref);
 
   lua_push_player(l, player);
 
@@ -291,10 +302,10 @@ int lua_call_player_connected_hook(lua_State* l, player_t* player) {
 }
 
 /**
- * Hook method called when the engine has detected that a player has disconnected.
+ * Calls the player_disconnected hook if one has been registered.
  *
  * l - Lua state instance
- * player - New player instance
+ * player - Disconnecting player instance
  *
  * Returns 0 on success or -1 on failure.
  **/
@@ -302,11 +313,13 @@ int lua_call_player_disconnected_hook(lua_State* l, player_t* player) {
   assert(l);
   assert(player);
 
-  if (lua_getglobal(l, ON_PLAYER_DISCONNECTED_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_player_disconnected == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_player_disconnected->ref);
 
   lua_push_player(l, player);
 
@@ -320,12 +333,12 @@ int lua_call_player_disconnected_hook(lua_State* l, player_t* player) {
 }
 
 /**
- * Hook method called when the engine has detected that a player has sent a command.
- * 
+ * Calls the player_input hook if one has been registered.
+ *
  * l - Lua state instance
  * player - player_t instance of the player who sent the command
  * input - Input string sent by the player
- * 
+ *
  * Returns 0 on success or -1 on failure.
  **/
 int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input) {
@@ -333,11 +346,13 @@ int lua_call_player_input_hook(lua_State* l, player_t* player, const char* input
   assert(player);
   assert(input);
 
-  if (lua_getglobal(l, ON_PLAYER_INPUT_HOOK_FUNCTION) != LUA_TFUNCTION) {
-    lua_pop(l, 1);
+  game_t* game = lua_get_game(l);
 
+  if (game->hooks->on_player_input == NULL) {
     return 0;
   }
+
+  lua_rawgeti(l, LUA_REGISTRYINDEX, game->hooks->on_player_input->ref);
 
   lua_pushlightuserdata(l, player);
   lua_pushstring(l, input);
@@ -576,7 +591,7 @@ int lua_call_state_event_hook(lua_State* l, player_t* player, lua_ref_t* state, 
 }
 
 /**
- * Calls the on_event method associated with the provided Lua state module.
+ * Calls the on_gmcp method associated with the provided Lua state module.
  *
  * Parameters
  *   l - The Lua state
@@ -613,7 +628,7 @@ int lua_call_state_gmcp_hook(lua_State* l, player_t* player, lua_ref_t* state, c
     if ((node = json_deserialize(msg, strlen(msg))) == NULL) {
       LOG(ERROR, "Failed to deserialize GMCP JSON data [%s]", msg);
       lua_pop(l, 3);
-      
+
       return -1;
     }
 
@@ -626,8 +641,6 @@ int lua_call_state_gmcp_hook(lua_State* l, player_t* player, lua_ref_t* state, c
 
     return -1;
   }
-
-  
 
   return 0;
 }

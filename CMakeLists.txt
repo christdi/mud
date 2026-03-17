@@ -42,6 +42,8 @@ set(LIBMUD_SOURCES
   src/lua/db_api.c
   src/lua/game_api.c
   src/lua/hooks.c
+  src/lua/hooks_api.c
+  src/lua/hooks_store.c
   src/lua/log_api.c
   src/lua/player_api.c
   src/lua/ref.c
