@@ -4,6 +4,7 @@
 #define MINIMUM_PORT 1024
 #define DEFAULT_PORT 5000
 #define DEFAULT_TICKS_PER_SECOND 20
+#define DEFAULT_POLL_RATE 100
 #define MAX_CONFIG_LINE_LENGTH 1024
 #define BASE_10 10
 
@@ -16,6 +17,7 @@ typedef struct config {
   char* database_file;
   unsigned int game_port;
   unsigned int ticks_per_second;
+  unsigned int poll_rate;
 } config_t;
 
 /**

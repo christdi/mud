@@ -19,6 +19,7 @@ int set_lib_script(const char* value, config_t* config);
 int set_database_file(const char* value, config_t* config);
 int set_game_port(const char* value, config_t* config);
 int set_ticks_per_second(const char* value, config_t* config);
+int set_poll_rate(const char* value, config_t* config);
 
 /**
  * Allocates a new config_t structure.
@@ -32,6 +33,7 @@ config_t* config_new(void) {
   config->database_file = strdup("dist/mud.db");
   config->game_port = DEFAULT_PORT;
   config->ticks_per_second = DEFAULT_TICKS_PER_SECOND;
+  config->poll_rate = DEFAULT_POLL_RATE;
 
   return config;
 }
@@ -55,7 +57,7 @@ void config_free(config_t* config) {
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, ":s:l:d:p:t:h")) != -1) {
+  while ((opt = getopt(argc, argv, ":s:l:d:p:t:r:h")) != -1) {
     switch (opt) {
     case 's':
       if (set_game_script(optarg, config) == -1) {
@@ -92,8 +94,15 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
 
       break;
 
+    case 'r':
+      if (set_poll_rate(optarg, config) == -1) {
+        return -1;
+      }
+
+      break;
+
     case 'h':
-      printf("%s [-s game script] [-l lib script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+      printf("%s [-s game script] [-l lib script] [-d database file] [-p port] [-t ticks per second] [-r poll rate]\n\r", argv[0]);
 
       return -1;
 
@@ -179,6 +188,14 @@ int load_configuration(const char* filename, config_t* config) {
 
   lua_pop(l, 1);
 
+  lua_getglobal(l, "poll_rate");
+
+  if (lua_isstring(l, -1)) {
+    set_poll_rate(lua_tostring(l, -1), config);
+  }
+
+  lua_pop(l, 1);
+
   lua_close(l);
 
   return 0;
@@ -251,6 +268,23 @@ int set_game_port(const char* value, config_t* config) {
 int set_ticks_per_second(const char* value, config_t* config) {
   if ((config->ticks_per_second = strtol(value, NULL, BASE_10)) == 0) {
     printf("Invalid value for ticks per second [%s], valid values are 1 or higher.\n\r", value);
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Sets the poll rate in the configuration.
+ *
+ * Returns 0 on success.
+ *
+ * Returns -1 if the value isn't numeric or is equal to or less than 0.
+ **/
+int set_poll_rate(const char* value, config_t* config) {
+  if ((config->poll_rate = strtol(value, NULL, BASE_10)) == 0) {
+    printf("Invalid value for poll rate [%s], valid values are 1 or higher.\n\r", value);
 
     return -1;
   }
