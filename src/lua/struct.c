@@ -290,7 +290,7 @@ void lua_push_task(lua_State* l, task_t* task) {
   lua_rawset(l, -3);
 
   lua_pushstring(l, TASK_EXECUTE_AT);
-  lua_pushnumber(l, task->execute_at);
+  lua_pushnumber(l, (lua_Number)task->execute_at.tv_sec + (lua_Number)task->execute_at.tv_usec / 1000000.0);
   lua_rawset(l, -3);
 }
 

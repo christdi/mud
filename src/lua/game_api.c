@@ -45,6 +45,7 @@ static int lua_enable_system(lua_State *l);
 static int lua_disable_system(lua_State *l);
 
 static int lua_schedule_task(lua_State *l);
+static int lua_schedule_recurring_task(lua_State *l);
 static int lua_cancel_task(lua_State* l);
 static int lua_get_tasks(lua_State* l);
 
@@ -82,6 +83,7 @@ static const struct luaL_Reg game_lib[] = {
   { "disable_system", lua_disable_system },
 
   { "schedule_task", lua_schedule_task },
+  { "schedule_recurring_task", lua_schedule_recurring_task },
   { "cancel_task", lua_cancel_task },
   { "get_tasks", lua_get_tasks },
 
@@ -465,11 +467,11 @@ static int lua_disable_system(lua_State *l) {
 }
 
 /**
- * API method which schedules a task for execution
+ * API method which schedules a one-shot task for execution.
  *
  * l - Lua state instance
  *
- * game.schedule_task("name", 60, task_func)
+ * game.schedule_task("name", 1.5, task_func)  -- delay in seconds (fractional ok)
  *
  * Returns 0 on success or calls luaL_error on error
 **/
@@ -480,12 +482,47 @@ static int lua_schedule_task(lua_State *l) {
 
   lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
 
-  int execute_in = lua_tonumber(l, -1);
+  double execute_in = lua_tonumber(l, -1);
   const char* name = lua_tostring(l, -2);
 
   lua_pop(l, 2);
 
-  task_t* task = task_new_task_t(name, execute_in, ref);
+  task_t* task = task_new_task_t(name, (long)(execute_in * 1000.0), ref);
+  game_t* game = lua_get_game(l);
+
+  task_schedule_task(game->tasks, task);
+
+  lua_push_task(l, task);
+
+  return 1;
+}
+
+/**
+ * API method which schedules a recurring task.
+ *
+ * l - Lua state instance
+ *
+ * game.schedule_recurring_task("name", 0.2, task_func)  -- interval in seconds (fractional ok)
+ *
+ * Returns the task on success or calls luaL_error on error
+**/
+static int lua_schedule_recurring_task(lua_State *l) {
+  luaL_checktype(l, -1, LUA_TFUNCTION);
+  luaL_checktype(l, -2, LUA_TNUMBER);
+  luaL_checktype(l, -3, LUA_TSTRING);
+
+  lua_ref_t* ref = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+
+  double interval = lua_tonumber(l, -1);
+  const char* name = lua_tostring(l, -2);
+
+  lua_pop(l, 2);
+
+  long interval_ms = (long)(interval * 1000.0);
+
+  task_t* task = task_new_task_t(name, interval_ms, ref);
+  task->interval_ms = interval_ms;
+
   game_t* game = lua_get_game(l);
 
   task_schedule_task(game->tasks, task);
