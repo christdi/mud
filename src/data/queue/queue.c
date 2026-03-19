@@ -22,8 +22,8 @@ void queue_enqueue(linked_list_t* queue, void* data) {
 void* queue_dequeue(linked_list_t* queue) {
   assert(queue);
 
-  it_t it = list_begin(queue);
-  void* data = it_get(it);
+  it_t iter = list_begin(queue);
+  void* data = it_get(iter);
 
   if (data) {
     list_remove(queue, data);

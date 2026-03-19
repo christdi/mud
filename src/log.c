@@ -39,8 +39,9 @@ void mlog(log_level_t level, const char* function, const int line, const char* f
   char date_time[MAX_LOG_DATE_TIME_LENGTH];
   time_t current_time;
   time(&current_time);
-  struct tm* tm = localtime(&current_time);
-  strftime(date_time, MAX_LOG_DATE_TIME_LENGTH, "%d-%m-%Y %X", tm);
+  struct tm tm_buf;
+  struct tm* tm_info = localtime_r(&current_time, &tm_buf);
+  strftime(date_time, MAX_LOG_DATE_TIME_LENGTH, "%d-%m-%Y %X", tm_info);
 
   printf("%-16s %5s [%s:%d] %s\n\r", date_time, log_get_level(level), function, line, log_line);
 }
@@ -52,16 +53,16 @@ void hlog(log_level_t level, const char* function, const int line, const char* i
 
   char hex[len * 3 + 1];
 
-  size_t i = 0;
-  size_t j = 0;
+  size_t idx = 0;
+  size_t jdx = 0;
 
-  for (i = 0; i < len; i++) {
-    sprintf(hex + j, "%02X ", (unsigned char)input[i]);
+  for (idx = 0; idx < len; idx++) {
+    sprintf(hex + jdx, "%02X ", (unsigned char)input[idx]);
 
-    j += 3;
+    jdx += 3;
   }
 
-  hex[j - 1] = '\0';
+  hex[jdx - 1] = '\0';
 
   mlog(level, function, line, "%s", hex);  
 }

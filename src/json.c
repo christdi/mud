@@ -254,35 +254,35 @@ json_type_t json_get_str_type(const char* str) {
  * Returns an instance of json_node_t or NULL if parsing failed.
 **/
 json_node_t* parse_value(const char* input, size_t len, size_t* pos) {
-  size_t i = 0;
+  size_t idx = 0;
 
   for(; *pos < len; (*pos)++) {
-    i = *pos;
-    char c = input[i];
+    idx = *pos;
+    char chr = input[idx];
 
-    if (c != ' ' && c != '{' && c != '[' && c != '"' && c != 't' && c != 'f' && c != 'n' && c != '-' && !isdigit(c)) {
-      LOG(ERROR, "Expected \"{, [, \", true, false, null or number but encountered [%c] at position [%d]", c, i);
+    if (chr != ' ' && chr != '{' && chr != '[' && chr != '"' && chr != 't' && chr != 'f' && chr != 'n' && chr != '-' && !isdigit(chr)) {
+      LOG(ERROR, "Expected \"{, [, \", true, false, null or number but encountered [%chr] at position [%d]", chr, idx);
 
       break;
     }
 
-    if (c == ' ') {
+    if (chr == ' ') {
       continue;
     }
 
     json_node_t* node = NULL;
 
-    if (c == '{') {
+    if (chr == '{') {
       node = parse_object(input, len, pos);
-    } else if (c == '[') {
+    } else if (chr == '[') {
       node = parse_array(input, len, pos);
-    } else if (c == '"') {
+    } else if (chr == '"') {
       node = parse_string(input, len, pos);
-    } else if (c == 't' || c == 'f') {
+    } else if (chr == 't' || chr == 'f') {
       node = parse_boolean(input, len, pos);
-    } else if (c == 'n') {
+    } else if (chr == 'n') {
       node = parse_null(input, len, pos);
-    } else if (isdigit(c) || c == '-') {
+    } else if (isdigit(chr) || chr == '-') {
       node = parse_number(input, len, pos);
     }
 
@@ -304,56 +304,56 @@ json_node_t* parse_value(const char* input, size_t len, size_t* pos) {
  * Returns an instance of json_node_t or NULL if parsing failed.
 **/
 json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
-  json_parse_t p = AWAIT_OBJECT_OPEN;
+  json_parse_t parse_state = AWAIT_OBJECT_OPEN;
   json_node_t* obj = json_new_json_node_t(OBJECT);
 
   size_t key_start = 0;
   size_t key_len = 0;
   char* key_buffer = NULL;
 
-  size_t i = 0;
+  size_t idx = 0;
 
 
 
   for(; *pos < len; (*pos)++) {
-    i = *pos;
-    char c = input[i];
+    idx = *pos;
+    char chr = input[idx];
 
-    if (p == AWAIT_OBJECT_OPEN) {
-      if (c != ' ' && c != '{') {
-        LOG(ERROR, "Expected \"{\" but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_OBJECT_OPEN) {
+      if (chr != ' ' && chr != '{') {
+        LOG(ERROR, "Expected \"{\" but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == '{') {
-        p = AWAIT_KEY_OPEN;
+      if (chr == '{') {
+        parse_state =AWAIT_KEY_OPEN;
       }
 
       continue;
     }
 
-    if (p == AWAIT_KEY_OPEN) {
-      if (c != ' ' && c != '"' && c != '}') {
-        LOG(ERROR, "Expected '\"' but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_KEY_OPEN) {
+      if (chr != ' ' && chr != '"' && chr != '}') {
+        LOG(ERROR, "Expected '\"' but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == '}') {
+      if (chr == '}') {
         return obj;
       }
 
-      if (c == '"') {
-        p = AWAIT_KEY_CLOSE;
-        key_start = i + 1;
+      if (chr == '"') {
+        parse_state =AWAIT_KEY_CLOSE;
+        key_start = idx + 1;
       }
 
       continue;
     }
 
-    if (p == AWAIT_KEY_CLOSE) {
-      if (c == '"') {
+    if (parse_state ==AWAIT_KEY_CLOSE) {
+      if (chr == '"') {
         const char* start = input + key_start;
 
         key_buffer = calloc(1, key_len + 1);
@@ -363,7 +363,7 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
         key_start = 0;
         key_len = 0;
 
-        p = AWAIT_KEY_COLON;
+        parse_state =AWAIT_KEY_COLON;
 
         continue;
       }
@@ -373,21 +373,21 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
       continue;
     }
 
-    if (p == AWAIT_KEY_COLON) {
-      if (c != ' ' && c != ':') {
-        LOG(ERROR, "Expected \":\" but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_KEY_COLON) {
+      if (chr != ' ' && chr != ':') {
+        LOG(ERROR, "Expected \":\" but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == ':') {
-        p = AWAIT_VALUE_OPEN;
+      if (chr == ':') {
+        parse_state =AWAIT_VALUE_OPEN;
       }
 
       continue;
     }
 
-    if (p == AWAIT_VALUE_OPEN) {
+    if (parse_state ==AWAIT_VALUE_OPEN) {
       json_node_t* node = parse_value(input, len, pos);
 
       if (node == NULL) {
@@ -399,25 +399,25 @@ json_node_t* parse_object(const char* input, size_t len, size_t* pos) {
 
       json_attach_child(obj, node);
 
-      p = AWAIT_VALUE_CLOSE;
+      parse_state =AWAIT_VALUE_CLOSE;
 
       continue;
     }
 
-    if (p == AWAIT_VALUE_CLOSE) {
-        if (c != ' ' && c != '}' && c!= ',') {
-          LOG(ERROR, "Expected \"} or ,\" but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_VALUE_CLOSE) {
+        if (chr != ' ' && chr != '}' && chr!= ',') {
+          LOG(ERROR, "Expected \"} or ,\" but encountered [%chr] at position [%d]", chr, idx);
 
           break;
         }
 
-        if (c == ',') {
-          p = AWAIT_KEY_OPEN;
+        if (chr == ',') {
+          parse_state =AWAIT_KEY_OPEN;
 
           continue;
         }
 
-        if (c == '}') {
+        if (chr == '}') {
           return obj;
         }
 
@@ -445,34 +445,34 @@ json_node_t* parse_array(const char* input, size_t len, size_t* pos) {
   assert(input);
 
   json_node_t* array = json_new_json_node_t(ARRAY);
-  json_parse_t p = AWAIT_ARRAY_OPEN;
+  json_parse_t parse_state = AWAIT_ARRAY_OPEN;
 
-  size_t i = 0;
+  size_t idx = 0;
 
   for(; *pos < len; (*pos)++) {
-    i = *pos;
-    char c = input[i];
+    idx = *pos;
+    char chr = input[idx];
 
-    if (p == AWAIT_ARRAY_OPEN) {
-      if (c != ' ' && c != '[') {
-        LOG(ERROR, "Expected '[' but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_ARRAY_OPEN) {
+      if (chr != ' ' && chr != '[') {
+        LOG(ERROR, "Expected '[' but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == '[') {
-        p = AWAIT_ARRAY_VALUE;
+      if (chr == '[') {
+        parse_state =AWAIT_ARRAY_VALUE;
 
         continue;
       }
     }
 
-    if (p == AWAIT_ARRAY_VALUE) {
-      if (c == ' ') {
+    if (parse_state ==AWAIT_ARRAY_VALUE) {
+      if (chr == ' ') {
         continue;
       }
 
-      if (c == ']') {
+      if (chr == ']') {
         return array;
       }
 
@@ -484,29 +484,29 @@ json_node_t* parse_array(const char* input, size_t len, size_t* pos) {
 
       json_attach_array(array, node);
 
-      p = AWAIT_ARRAY_CLOSE;
+      parse_state =AWAIT_ARRAY_CLOSE;
 
       continue;
     }
 
-    if (p == AWAIT_ARRAY_CLOSE) {
-      if (c != ' ' && c != ',' && c != ']') {
-        LOG(ERROR, "Expected \"',' or ']' but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_ARRAY_CLOSE) {
+      if (chr != ' ' && chr != ',' && chr != ']') {
+        LOG(ERROR, "Expected \"',' or ']' but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == ' ') {
+      if (chr == ' ') {
         continue;
       }
 
-      if (c == ',') {
-        p = AWAIT_ARRAY_VALUE;
+      if (chr == ',') {
+        parse_state =AWAIT_ARRAY_VALUE;
 
         continue;
       }
 
-      if (c == ']') {
+      if (chr == ']') {
         return array;
       }
     }
@@ -530,36 +530,36 @@ json_node_t* parse_string(const char* input, size_t len, size_t* pos) {
   assert(input);
 
   json_node_t* node = json_new_json_node_t(STRING);
-  json_parse_t p = AWAIT_VALUE_OPEN;
+  json_parse_t parse_state = AWAIT_VALUE_OPEN;
   size_t str_start = 0;
   size_t str_len = 0;
-  size_t i = 0;
+  size_t idx = 0;
 
   for(; *pos < len; (*pos)++) {
-    i = *pos;
-    char c = input[i];
+    idx = *pos;
+    char chr = input[idx];
 
-    if (p == AWAIT_VALUE_OPEN) {
-      if (c != ' ' && c != '"') {
-        LOG(ERROR, "Expected '\"' but encountered [%c] at position [%d]", c, i);
+    if (parse_state ==AWAIT_VALUE_OPEN) {
+      if (chr != ' ' && chr != '"') {
+        LOG(ERROR, "Expected '\"' but encountered [%chr] at position [%d]", chr, idx);
 
         break;
       }
 
-      if (c == '"') {
-        p = AWAIT_VALUE_CLOSE;
-        str_start = i + 1;
+      if (chr == '"') {
+        parse_state =AWAIT_VALUE_CLOSE;
+        str_start = idx + 1;
 
         continue;
       }
     }
 
-    if (p == AWAIT_VALUE_CLOSE) {
-      if (c == '"') {
+    if (parse_state ==AWAIT_VALUE_CLOSE) {
+      if (chr == '"') {
         node->value->str = calloc(1, str_len + 1);
         memcpy(node->value->str, input + str_start, str_len);
         node->value->str[str_len] = '\0';
-        *pos = i;
+        *pos = idx;
 
         return node;
       }
@@ -585,29 +585,29 @@ json_node_t* parse_string(const char* input, size_t len, size_t* pos) {
 json_node_t* parse_number(const char* input, size_t len, size_t* pos) {
   assert(input);
 
-  size_t i = 0;
+  size_t idx = 0;
   size_t num_start = *pos;
   bool seen_number = false;
 
   for(; *pos < len; (*pos)++) {
-    i = *pos;
-    char c = input[i];
+    idx = *pos;
+    char chr = input[idx];
 
-    if (c == ' ' && !seen_number) {
+    if (chr == ' ' && !seen_number) {
       continue;
     }
 
-    if (c == ' ' && seen_number) {
+    if (chr == ' ' && seen_number) {
       break;
     }
 
-    if (c == '-' || c == 'e' || c == 'E' || c == '+' || c == '.' || isdigit(c)) {
+    if (chr == '-' || chr == 'e' || chr == 'E' || chr == '+' || chr == '.' || isdigit(chr)) {
       seen_number = true;
 
       continue;
     }
 
-    if (c == ',' || c == '}' || c == ']') {
+    if (chr == ',' || chr == '}' || chr == ']') {
       double value = strtod(input + num_start, NULL);
 
       if (value == 0.0 && strncmp(input + num_start, "0.0", 3) != 0) {
@@ -625,7 +625,7 @@ json_node_t* parse_number(const char* input, size_t len, size_t* pos) {
     break;
   }
 
-  LOG(ERROR, "Expected \"number, ',', '}' or ']'\" but encountered [%c] at position [%d]", input[i], i);
+  LOG(ERROR, "Expected \"number, ',', '}' or ']'\" but encountered [%chr] at position [%d]", input[idx], idx);
 
   return NULL;
 }
@@ -661,7 +661,7 @@ json_node_t* parse_boolean(const char* input, size_t len, size_t* pos) {
     return node;
   }
 
-  LOG(ERROR, "Expected \"true or false\" but encountered [%c] at position [%i]", input[*pos], *pos);
+  LOG(ERROR, "Expected \"true or false\" but encountered [%chr] at position [%idx]", input[*pos], *pos);
 
   json_free_json_node_t(node);
 
@@ -684,7 +684,7 @@ json_node_t* parse_null(const char* input, size_t len, size_t* pos) {
   const char* current = input + *pos;
 
   if ((strncmp(current, "null", 4) != 0)) {
-    LOG(ERROR, "Expected \"null\" but encountered [%c] at position [%i]", input[*pos], *pos);
+    LOG(ERROR, "Expected \"null\" but encountered [%chr] at position [%idx]", input[*pos], *pos);
 
     json_free_json_node_t(node);
 

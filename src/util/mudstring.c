@@ -145,11 +145,11 @@ char* trim_right(char* source) {
  * Returns input
  **/
 char* lowercase(char* input) {
-  char* w = input;
+  char* ptr = input;
 
-  while (*w != '\0') {
-    *w = tolower(*w);
-    w++;
+  while (*ptr != '\0') {
+    *ptr = tolower(*ptr);
+    ptr++;
   }
 
   return input;
@@ -164,17 +164,17 @@ char* lowercase(char* input) {
  *
  * Returns the results of strncmp of s1 and s2
  **/
-int strcmpi(const char* s1, const char* s2) {
-  char* s1_lower = lowercase(strndup(s1, strlen(s1) + 1));
-  char* s2_lower = lowercase(strndup(s2, strlen(s2) + 1));
+int strcmpi(const char* str1, const char* str2) {
+  char* s1_lower = lowercase(strndup(str1, strlen(str1) + 1));
+  char* s2_lower = lowercase(strndup(str2, strlen(str2) + 1));
 
   int result = 0;
 
-  const char* c1 = s1_lower;
-  const char* c2 = s2_lower;
+  const char* s1_ptr = s1_lower;
+  const char* s2_ptr = s2_lower;
 
-  while (*c1 != '\0' || *c2 != '\0') {
-    if (*c1++ != *c2++) {
+  while (*s1_ptr != '\0' || *s2_ptr != '\0') {
+    if (*s1_ptr++ != *s2_ptr++) {
       result = -1;
       break;
     }
@@ -212,16 +212,16 @@ void string_to_hex(char* input, char* destination, size_t len) {
   assert(input);
   assert(destination);
 
-  size_t i = 0;
-  size_t j = 0;
+  size_t idx = 0;
+  size_t jdx = 0;
 
-  for (i = 0; i < len; i++) {
-    sprintf(destination + j, "%02X ", input[i]);
+  for (idx = 0; idx < len; idx++) {
+    sprintf(destination + jdx, "%02X ", input[idx]);
 
-    j += 3;
+    jdx += 3;
   }
 
-  destination[j - 1] = '\0';
+  destination[jdx - 1] = '\0';
 }
 
 /**
@@ -242,11 +242,11 @@ char* replace(const char* src, const char* find, const char* rplc) {
   size_t rplc_len = strlen(rplc);
   size_t new_len = strlen(src);
 
-  const char* c = src;
+  const char* src_ptr = src;
   int found = 0;
 
-  while (*c != '\0') {
-    if (strncmp(c, find, find_len) == 0) {
+  while (*src_ptr != '\0') {
+    if (strncmp(src_ptr, find, find_len) == 0) {
       if (find_len > rplc_len) {
         new_len = new_len - (find_len - rplc_len);
       } else {
@@ -256,7 +256,7 @@ char* replace(const char* src, const char* find, const char* rplc) {
       found = 1;
     }
 
-    c++;
+    src_ptr++;
   }
 
   if (found == 0) {
@@ -266,20 +266,20 @@ char* replace(const char* src, const char* find, const char* rplc) {
   size_t new_size = (new_len + 1) * sizeof(char);
   char* replacement = malloc(new_size);
 
-  c = src;
-  char* w = replacement;
+  src_ptr = src;
+  char* dst_ptr = replacement;
 
-  while (*c != '\0') {
-    if (strncmp(c, find, find_len) == 0) {
-      strncpy(w, rplc, rplc_len);
-      c += find_len;
-      w += rplc_len;
+  while (*src_ptr != '\0') {
+    if (strncmp(src_ptr, find, find_len) == 0) {
+      strncpy(dst_ptr, rplc, rplc_len);
+      src_ptr += find_len;
+      dst_ptr += rplc_len;
     } else {
-      *w++ = *c++;
+      *dst_ptr++ = *src_ptr++;
     }
   }
 
-  *w = '\0';
+  *dst_ptr = '\0';
 
   return replacement;
 }
@@ -320,16 +320,16 @@ int convert_symbols_to_ansi_codes(char* input, char* destination, size_t len) {
     return -1;
   }
 
-  int i = 0;
+  int idx = 0;
   char* tmp = strdup(input);
   char* swp = NULL;
 
-  while (ansi_codes[i][0] != NULL) {
+  while (ansi_codes[idx][0] != NULL) {
     swp = tmp;
-    tmp = replace(swp, ansi_codes[i][0], ansi_codes[i][1]);
+    tmp = replace(swp, ansi_codes[idx][0], ansi_codes[idx][1]);
     free(swp);
 
-    i++;
+    idx++;
   }
 
   strlcpy(destination, tmp, len);

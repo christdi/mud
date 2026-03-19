@@ -89,7 +89,7 @@ int start_game_server(network_t* network, unsigned int port) {
   server->handle.data = server;
 
   // Create an IPv6 socket with dual-stack support (accepts both IPv4 and IPv6
-  // connections) by disabling IPV6_V6ONLY before handing it to libuv.
+  // connections) by disabling IPV6_V6ONLY before handing iter to libuv.
   int sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 
   if (sockfd < 0) {
@@ -201,10 +201,10 @@ void register_flush_callback(network_t* network, callback_func func, void* conte
  * network - network_t containing network context
  **/
 void flush_output(network_t* network) {
-  it_t it = list_begin(network->clients);
+  it_t iter = list_begin(network->clients);
   client_t* client = NULL;
 
-  while ((client = it_get(it)) != NULL) {
+  while ((client = it_get(iter)) != NULL) {
     if (client->output_length > 0) {
       if (network->flush_callback->func) {
         network->flush_callback->func(client, network->flush_callback->context);
@@ -213,7 +213,7 @@ void flush_output(network_t* network) {
       flush_client_output(client);
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }
 
@@ -224,11 +224,11 @@ void flush_output(network_t* network) {
 void disconnect_clients(network_t* network) {
   assert(network);
 
-  it_t it = list_begin(network->clients);
+  it_t iter = list_begin(network->clients);
   client_t* client = NULL;
 
-  while ((client = (client_t*)it_get(it)) != NULL) {
-    it = it_next(it);
+  while ((client = (client_t*)it_get(iter)) != NULL) {
+    iter = it_next(iter);
 
     if (!uv_is_closing((uv_handle_t*)&client->handle)) {
       uv_close((uv_handle_t*)&client->handle, on_client_close_silent);
@@ -243,22 +243,22 @@ void disconnect_clients(network_t* network) {
 void network_shutdown(network_t* network) {
   assert(network);
 
-  it_t it = list_begin(network->clients);
+  it_t iter = list_begin(network->clients);
   client_t* client = NULL;
 
-  while ((client = (client_t*)it_get(it)) != NULL) {
-    it = it_next(it);
+  while ((client = (client_t*)it_get(iter)) != NULL) {
+    iter = it_next(iter);
 
     if (!uv_is_closing((uv_handle_t*)&client->handle)) {
       uv_close((uv_handle_t*)&client->handle, on_client_close_silent);
     }
   }
 
-  it = list_begin(network->servers);
+  iter = list_begin(network->servers);
   server_t* server = NULL;
 
-  while ((server = (server_t*)it_get(it)) != NULL) {
-    it = it_next(it);
+  while ((server = (server_t*)it_get(iter)) != NULL) {
+    iter = it_next(iter);
 
     if (!uv_is_closing((uv_handle_t*)&server->handle)) {
       uv_close((uv_handle_t*)&server->handle, on_server_close);
@@ -267,17 +267,17 @@ void network_shutdown(network_t* network) {
 }
 
 /**
- * Searches our internal list of servers for one on the given port and closes it.
+ * Searches our internal list of servers for one on the given port and closes iter.
  *
  * Returns -1 if server not found or 0 on success.
  **/
 int stop_game_server(network_t* network, unsigned int port) {
   assert(network);
 
-  it_t it = list_begin(network->servers);
+  it_t iter = list_begin(network->servers);
   server_t* server = NULL;
 
-  while ((server = (server_t*)it_get(it)) != NULL) {
+  while ((server = (server_t*)it_get(iter)) != NULL) {
     if (server->port == port) {
       if (!uv_is_closing((uv_handle_t*)&server->handle)) {
         uv_close((uv_handle_t*)&server->handle, on_server_close);
@@ -286,7 +286,7 @@ int stop_game_server(network_t* network, unsigned int port) {
       return 0;
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   return -1;
@@ -415,7 +415,7 @@ static void on_client_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
 
 /**
  * Called by libuv after a client handle is closed.  Notifies the application via
- * the disconnection callback then removes the client from the list and frees it.
+ * the disconnection callback then removes the client from the list and frees iter.
  **/
 static void on_client_close(uv_handle_t* handle) {
   client_t* client = handle->data;
@@ -434,7 +434,7 @@ static void on_client_close(uv_handle_t* handle) {
 
 /**
  * Called by libuv after a client handle is closed during shutdown.  Removes the client
- * from the list and frees it without calling the disconnection callback.
+ * from the list and frees iter without calling the disconnection callback.
  **/
 static void on_client_close_silent(uv_handle_t* handle) {
   client_t* client = handle->data;
@@ -446,7 +446,7 @@ static void on_client_close_silent(uv_handle_t* handle) {
 
 /**
  * Called by libuv after a server handle is closed.  Removes the server from
- * the list and frees it.
+ * the list and frees iter.
  **/
 static void on_server_close(uv_handle_t* handle) {
   server_t* server = handle->data;

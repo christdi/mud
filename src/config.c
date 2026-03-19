@@ -55,7 +55,7 @@ void config_free(config_t* config) {
 int parse_configuration(int argc, char* argv[], config_t* config) {
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, ":s:l:d:p:t:h")) != -1) {
+  while ((opt = getopt(argc, argv, ":s:l:d:p:t:h")) != -1) { // NOLINT(concurrency-mt-unsafe)
     switch (opt) {
     case 's':
       if (set_game_script(optarg, config) == -1) {
@@ -93,7 +93,7 @@ int parse_configuration(int argc, char* argv[], config_t* config) {
       break;
 
     case 'h':
-      printf("%s [-s game script] [-l lib script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
+      printf("%s [-s game script] [-lua lib script] [-d database file] [-p port] [-t ticks per second]\n\r", argv[0]);
 
       return -1;
 
@@ -125,61 +125,61 @@ int load_configuration(const char* filename, config_t* config) {
   assert(filename);
   assert(config);
 
-  lua_State* l = NULL;
+  lua_State* lua = NULL;
 
-  if ((l = luaL_newstate()) == NULL) {
+  if ((lua = luaL_newstate()) == NULL) {
     printf("Failed to create new Lua state to parse configuration");
 
     return -1;
   }
 
-  if (luaL_dofile(l, filename) != 0) {
-    printf("Error while loading Lua configuration [%s].\n\r", lua_tostring(l, -1));
+  if (luaL_dofile(lua, filename) != 0) {
+    printf("Error while loading Lua configuration [%s].\n\r", lua_tostring(lua, -1));
 
-    lua_close(l);
+    lua_close(lua);
 
     return -1;
   }
 
-  lua_getglobal(l, "game_script");
+  lua_getglobal(lua, "game_script");
 
-  if (lua_isstring(l, -1)) {
-    set_game_script(lua_tostring(l, -1), config);
+  if (lua_isstring(lua, -1)) {
+    set_game_script(lua_tostring(lua, -1), config);
   }
 
-  lua_getglobal(l, "lib_script");
+  lua_getglobal(lua, "lib_script");
 
-  if (lua_isstring(l, -1)) {
-    set_lib_script(lua_tostring(l, -1), config);
+  if (lua_isstring(lua, -1)) {
+    set_lib_script(lua_tostring(lua, -1), config);
   }
 
-  lua_pop(l, 1);
+  lua_pop(lua, 1);
 
-  lua_getglobal(l, "game_port");
+  lua_getglobal(lua, "game_port");
 
-  if (lua_isstring(l, -1)) {
-    set_game_port(lua_tostring(l, -1), config);
+  if (lua_isstring(lua, -1)) {
+    set_game_port(lua_tostring(lua, -1), config);
   }
 
-  lua_pop(l, 1);
+  lua_pop(lua, 1);
 
-  lua_getglobal(l, "database_file");
+  lua_getglobal(lua, "database_file");
 
-  if (lua_isstring(l, -1)) {
-    set_database_file(lua_tostring(l, -1), config);
+  if (lua_isstring(lua, -1)) {
+    set_database_file(lua_tostring(lua, -1), config);
   }
 
-  lua_pop(l, 1);
+  lua_pop(lua, 1);
 
-  lua_getglobal(l, "ticks_per_second");
+  lua_getglobal(lua, "ticks_per_second");
 
-  if (lua_isstring(l, -1)) {
-    set_ticks_per_second(lua_tostring(l, -1), config);
+  if (lua_isstring(lua, -1)) {
+    set_ticks_per_second(lua_tostring(lua, -1), config);
   }
 
-  lua_pop(l, 1);
+  lua_pop(lua, 1);
 
-  lua_close(l);
+  lua_close(lua);
 
   return 0;
 }

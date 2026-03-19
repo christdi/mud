@@ -37,7 +37,7 @@ void ecs_free_entity_t(entity_t* entity) {
 
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
- * to cast to the actual type and pass it to the relevant free function.
+ * to cast to the actual type and pass iter to the relevant free function.
  **/
 void ecs_deallocate_entity(void* value) {
   assert(value);
@@ -78,14 +78,14 @@ int ecs_load_entities(game_t* game) {
     return -1;
   }
 
-  it_t it = list_begin(entities);
+  it_t iter = list_begin(entities);
 
   entity_t* entity = NULL;
 
-  while ((entity = (entity_t*)it_get(it)) != NULL) {
+  while ((entity = (entity_t*)it_get(iter)) != NULL) {
     hash_table_insert(game->entities, entity->id.raw, entity);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   free_linked_list_t(entities);
@@ -146,7 +146,7 @@ int ecs_save_entity(game_t* game, entity_t* entity) {
 }
 
 /**
- * Removes an entity from entities and removes it from persistence.
+ * Removes an entity from entities and removes iter from persistence.
  *
  * game - game_t instance containing database and entities
  * entity - the entity to be deleted

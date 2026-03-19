@@ -150,14 +150,14 @@ void ecs_remove_entity_from_all_components(linked_list_t* components, linked_lis
   assert(components);
   assert(entity);
 
-  it_t it = list_begin(components);
+  it_t iter = list_begin(components);
   component_t* component = NULL;
 
-  while ((component = it_get(it)) != NULL) {
+  while ((component = it_get(iter)) != NULL) {
     if (ecs_component_has_entity(component, entity)) {
       ecs_remove_entity_from_component(component, archetypes, entity);
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }

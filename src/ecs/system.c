@@ -77,17 +77,17 @@ void ecs_disable_system(system_t* system) {
  * game - game instance containing systems
  **/
 void ecs_update_systems(game_t* game) {
-  it_t it = list_begin(game->systems);
+  it_t iter = list_begin(game->systems);
 
   system_t* system = NULL;
 
-  while ((system = it_get(it)) != NULL) {
+  while ((system = it_get(iter)) != NULL) {
     if (system->enabled) {
       if (lua_call_system_execute_hook(game->lua_state, system) == -1) {
         LOG(ERROR, "Failed to execute system");
       }
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }

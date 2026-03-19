@@ -121,10 +121,10 @@ void network_send_gmcp_message(client_t* client, char* topic, size_t topic_len, 
   assert(client);
   assert(topic);
   
-  char sb[] = { (char) IAC, (char) SB, (char) TELOPT_GMCP };
-  char se[] = { (char) IAC, (char) SE };
+  char subneg_begin[] = { (char) IAC, (char) SB, (char) TELOPT_GMCP };
+  char subneg_end[] = { (char) IAC, (char) SE };
 
-  send_to_client(client, sb, 3);
+  send_to_client(client, subneg_begin, 3);
   send_to_client(client, topic, topic_len);
 
   if (msg_len > 0) {
@@ -132,7 +132,7 @@ void network_send_gmcp_message(client_t* client, char* topic, size_t topic_len, 
     send_to_client(client, msg, msg_len);
   }
 
-  send_to_client(client, se, 2);
+  send_to_client(client, subneg_end, 2);
 }
 
 /**

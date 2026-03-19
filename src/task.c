@@ -14,7 +14,7 @@ static void on_task_timer(uv_timer_t* timer);
 static void on_task_close(uv_handle_t* handle);
 
 /**
- * Allocates a new task_t and initialises it.  The task is not scheduled until
+ * Allocates a new task_t and initialises iter.  The task is not scheduled until
  * task_schedule_task is called.
  *
  * Returns the newly allocated task_t.
@@ -124,11 +124,11 @@ int task_cancel_task(game_t* game, task_t* task) {
 void task_shutdown(game_t* game) {
   assert(game);
 
-  it_t it = list_begin(game->tasks);
+  it_t iter = list_begin(game->tasks);
   task_t* task = NULL;
 
-  while ((task = (task_t*)it_get(it)) != NULL) {
-    it = it_next(it);
+  while ((task = (task_t*)it_get(iter)) != NULL) {
+    iter = it_next(iter);
 
     if (!uv_is_closing((uv_handle_t*)&task->timer)) {
       uv_timer_stop(&task->timer);
@@ -151,7 +151,7 @@ static void on_task_timer(uv_timer_t* timer) {
 
 /**
  * Called by libuv after a task timer handle is closed.  Removes the task from
- * the game task list and frees it.
+ * the game task list and frees iter.
  **/
 static void on_task_close(uv_handle_t* handle) {
   task_t* task = handle->data;

@@ -137,7 +137,7 @@ int start_game(int argc, char* argv[]) {
   }
 
   if (parse_configuration(argc, argv, game->config) != 0) {
-    exit(-1);
+    exit(-1); // NOLINT(concurrency-mt-unsafe)
   }
 
   game->network->loop = game->loop;
