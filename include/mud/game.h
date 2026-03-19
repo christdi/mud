@@ -2,11 +2,7 @@
 #define _GAME_H_
 
 #include <sqlite3.h>
-#include <sys/time.h>
-
-#define ONE_SECOND_IN_NANOSECONDS 1000000000L
-#define ONE_SECOND_IN_MICROSECONDS 100000L
-#define GAME_PLAYER_PULSE_SECONDS 10
+#include <uv.h>
 
 /**
  * Typedefs
@@ -24,7 +20,9 @@ typedef struct lua_hooks lua_hooks_t;
  **/
 typedef struct game {
   unsigned int shutdown;
-  struct timeval last_tick;
+
+  uv_loop_t* loop;
+  uv_timer_t tick_timer;
 
   config_t* config;
 

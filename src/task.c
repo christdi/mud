@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <uv.h>
 
 #include "mud/data/linked_list.h"
 #include "mud/game.h"
@@ -9,26 +10,29 @@
 #include "mud/lua/ref.h"
 #include "mud/task.h"
 
-int task_is_ready_to_execute(void* value);
+static void on_task_timer(uv_timer_t* timer);
+static void on_task_close(uv_handle_t* handle);
 
 /**
- * Allcoates a new task_t
+ * Allocates a new task_t and initialises it.  The task is not scheduled until
+ * task_schedule_task is called.
  *
- * Returns the newly allocated task_t
+ * Returns the newly allocated task_t.
  **/
-task_t* task_new_task_t(const char* name, int execute_in, lua_ref_t* ref) {
+task_t* task_new_task_t(game_t* game, const char* name, int execute_in, lua_ref_t* ref) {
   task_t* task = calloc(1, sizeof(task_t));
 
   task->uuid = new_uuid();
   task->name = strdup(name);
-  task->execute_at = time(NULL) + execute_in;
+  task->execute_in = execute_in;
+  task->game = game;
   task->ref = ref;
 
   return task;
 }
 
 /**
- * Frees an allocated task_t
+ * Frees an allocated task_t.  The uv timer must be closed before this is called.
  **/
 void task_free_task_t(task_t* task) {
   assert(task);
@@ -52,95 +56,106 @@ void task_deallocate_task_t(void* value) {
 }
 
 /**
- * Adds a task to the list represented by task_list to execute the supplies in n seconds_in_future.
+ * Adds a task to the task list and starts its libuv timer.
  *
  * Parameters
- *  tasks - a linked list holding tasks to be executed
+ *  game - game instance owning the task list and event loop
  *  task - the task to be scheduled
  *
- * Returns a 0 on success or -1 on failure
+ * Returns 0 on success or -1 on failure
  **/
-int task_schedule_task(linked_list_t* tasks, task_t* task) {
-  assert(tasks);
-
-  if (list_add(tasks, task) != 0) {
-    LOG(ERROR, "Unable to add task to linked list");
-
-    return -1;
-  }
-
-  return 0;
-}
-
-/**
- * Searches the tasks in the supplied linked list for tasks ready to execute and executes them.
- *
- * Parameters
- *  tasks - a linked list containing potential tasks to be executed
- *  game - game struct containing all game related data
- *
- * Returns 0 on success or -1 on error.
- **/
-int task_execute_tasks(linked_list_t* tasks, game_t* game) {
-  assert(tasks);
-
-  linked_list_t* ready_tasks = create_linked_list_t();
-  ready_tasks->deallocator = task_deallocate_task_t;
-
-  if (list_extract(tasks, ready_tasks, task_is_ready_to_execute) != 0) {
-    LOG(ERROR, "Unable to extract ready tasks from linked list");
-
-    free_linked_list_t(ready_tasks);
-
-    return -1;
-  }
-
-  it_t it = list_begin(ready_tasks);
-  task_t* task = NULL;
-
-  while ((task = (task_t*)it_get(it)) != NULL) {
-    lua_call_task_execute_hook(game->lua_state, task);
-
-    it = it_next(it);
-  }
-
-  free_linked_list_t(ready_tasks);
-
-  return 0;
-}
-
-/**
- * Cancels a task that is pending execution
- *
- * tasks - linked list containing pending tasks
- * task - task to be removed
- *
- * Returns 0 on success
-**/
-int task_cancel_task(linked_list_t* tasks, game_t* game, task_t* task) {
-  assert(tasks);
+int task_schedule_task(game_t* game, task_t* task) {
   assert(game);
   assert(task);
 
-  list_remove(tasks, task);
+  int res = uv_timer_init(game->loop, &task->timer);
+
+  if (res != 0) {
+    LOG(ERROR, "uv_timer_init failed for task [%s]: %s", task->name, uv_strerror(res));
+
+    return -1;
+  }
+
+  task->timer.data = task;
+
+  uint64_t timeout_ms = (uint64_t)task->execute_in * 1000;
+
+  res = uv_timer_start(&task->timer, on_task_timer, timeout_ms, 0);
+
+  if (res != 0) {
+    LOG(ERROR, "uv_timer_start failed for task [%s]: %s", task->name, uv_strerror(res));
+
+    return -1;
+  }
+
+  if (list_add(game->tasks, task) != 0) {
+    LOG(ERROR, "Unable to add task [%s] to task list", task->name);
+    uv_timer_stop(&task->timer);
+
+    return -1;
+  }
 
   return 0;
 }
 
 /**
- * Predicate for linked list to determine if a given task is ready to execute or not.
+ * Cancels a task that is pending execution by stopping its timer.
  *
- * Parameters
- *  value - a void pointer which should be safe to cast to a task_t*, behaviour is undefined if not.
+ * game - game instance owning the task list
+ * task - task to be cancelled
  *
- * Returns 1 if this task is ready to execute or 0 otherwise.
+ * Returns 0 on success
  **/
-int task_is_ready_to_execute(void* value) {
-  task_t* task = value;
+int task_cancel_task(game_t* game, task_t* task) {
+  assert(game);
+  assert(task);
 
-  if (time(NULL) > task->execute_at) {
-    return 1;
-  }
+  uv_timer_stop(&task->timer);
+  uv_close((uv_handle_t*)&task->timer, on_task_close);
 
   return 0;
+}
+
+/**
+ * Closes all pending task timers during engine shutdown.
+ *
+ * game - game instance owning the task list
+ **/
+void task_shutdown(game_t* game) {
+  assert(game);
+
+  it_t it = list_begin(game->tasks);
+  task_t* task = NULL;
+
+  while ((task = (task_t*)it_get(it)) != NULL) {
+    it = it_next(it);
+
+    if (!uv_is_closing((uv_handle_t*)&task->timer)) {
+      uv_timer_stop(&task->timer);
+      uv_close((uv_handle_t*)&task->timer, on_task_close);
+    }
+  }
+}
+
+/**
+ * Called by libuv when a task timer fires.  Executes the Lua callback then
+ * closes the timer to trigger cleanup.
+ **/
+static void on_task_timer(uv_timer_t* timer) {
+  task_t* task = timer->data;
+
+  lua_call_task_execute_hook(task->game->lua_state, task);
+
+  uv_close((uv_handle_t*)timer, on_task_close);
+}
+
+/**
+ * Called by libuv after a task timer handle is closed.  Removes the task from
+ * the game task list and frees it.
+ **/
+static void on_task_close(uv_handle_t* handle) {
+  task_t* task = handle->data;
+
+  list_remove(task->game->tasks, task);
+  task_free_task_t(task);
 }

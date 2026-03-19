@@ -5,18 +5,23 @@
 #include "mud/util/mudstring.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <uv.h>
+
+typedef struct {
+  uv_write_t req;
+  char data[];
+} write_req_t;
+
+static void on_write_complete(uv_write_t* req, int status);
 
 /**
  * Allocates memory for and initialises a new client_t struct.
  *
  * Returns the allocated client_t struct.
  **/
-client_t* create_client_t() {
+client_t* create_client_t(void) {
   client_t* client = calloc(1, sizeof *client);
 
   client->fd = 0;
@@ -24,6 +29,7 @@ client_t* create_client_t() {
   client->last_active = time(NULL);
   client->userdata = NULL;
   client->protocol = NULL;
+  client->network = NULL;
   client->output_length = 0;
 
   return client;
@@ -40,8 +46,6 @@ void free_client_t(client_t* client) {
   }
 
   free(client);
-
-  client = NULL;
 }
 
 /**
@@ -74,7 +78,8 @@ int send_to_client(client_t* client, const char* data, size_t len) {
 }
 
 /**
- * Flushes the contents of the output buffer and attempts to send it the remote endpoint.
+ * Flushes the contents of the output buffer, runs it through the protocol chain and
+ * submits it for async writing via libuv.
  *
  * client - client_t instance whose output is being flushed
  *
@@ -89,100 +94,26 @@ int flush_client_output(client_t* client) {
 
   network_protocol_chain_on_output(client, client->output, client->output_length);
 
-  long bytes_sent = 0;
+  size_t len = client->output_length;
 
-  char* data = client->output;
-  int len = client->output_length;
+  write_req_t* wr = malloc(sizeof(write_req_t) + len);
 
-  while (bytes_sent < len) {
-    data = data + bytes_sent;
+  if (wr == NULL) {
+    LOG(ERROR, "Failed to allocate write request for fd [%d]", client->fd);
 
-    bytes_sent = send(client->fd, data, len, 0);
-
-    if (bytes_sent == -1L) {
-      LOG(ERROR, "%s", strerror(errno));
-
-      return -1;
-    }
-
-    if (bytes_sent == 0) {
-      return -1;
-    }
-
-    len = len - bytes_sent;
+    return -1;
   }
 
-  network_protocol_chain_on_flush(client, client->output, client->output_length);
+  memcpy(wr->data, client->output, len);
+
+  uv_buf_t buf = uv_buf_init(wr->data, len);
+
+  uv_write(&wr->req, (uv_stream_t*)&client->handle, &buf, 1, on_write_complete);
+
+  network_protocol_chain_on_flush(client, client->output, len);
 
   memset(client->output, 0, sizeof(client->output));
-  client->output_length = len;
-
-  return 0;
-}
-
-/**
- * Attempts to read data from the remote client.  If recv returns 0 or less, it is assumed the
- * client is no longer connected and it is mark as hungup.  Otherwise received data is passed
- * for appending to the client input buffer.
- *
- * Returns 0 on success or -1 on failure
- **/
-int receive_from_client(client_t* client) {
-  assert(client);
-
-  ssize_t len = 0;
-  size_t existing = strnlen(client->input, CLIENT_BUFFER_LENGTH);
-
-  if (existing == CLIENT_BUFFER_LENGTH) {
-    LOG(ERROR, "Disconnecting client fd [%d] as their input buffer is full.", client->fd);
-    client->hungup = 1;
-
-    return -1;
-  }
-
-  size_t remaining = (CLIENT_BUFFER_SIZE)-existing;
-  char* buffer = client->input + existing;
-
-  if ((len = recv(client->fd, buffer, remaining - 1, 0)) == -1) {
-    if (errno == EAGAIN || errno == EWOULDBLOCK) {
-      return 0;
-    }
-
-    LOG(ERROR, "%s", strerror(errno));
-
-    return -1;
-  }
-
-  if (len <= 0) {
-    client->hungup = 1;
-  } else {
-    buffer[len] = '\0';
-
-    network_protocol_chain_on_input(client, buffer, len);
-
-    client->last_active = time(NULL);
-
-
-  }
-
-  return 0;
-}
-
-/**
- * Attempts to close the client.
- *
- * Returns 0 on success or -1 on failure.
- **/
-int close_client(client_t* client) {
-  assert(client);
-
-  if (client->fd) {
-    if (close(client->fd) != 0) {
-      LOG(ERROR, "%s", strerror(errno));
-
-      return -1;
-    }
-  }
+  client->output_length = 0;
 
   return 0;
 }
@@ -196,7 +127,7 @@ int close_client(client_t* client) {
 int client_get_idle_seconds(const client_t* const client) {
   assert(client);
 
-  return time(NULL) - client->last_active;
+  return (int)(time(NULL) - client->last_active);
 }
 
 /**
@@ -259,7 +190,7 @@ int network_add_client_protocol(client_t* client, protocol_t* protocol) {
   } else {
     protocol_t* chain = client->protocol;
 
-    while(chain->next != NULL) {
+    while (chain->next != NULL) {
       chain = protocol->next;
     }
 
@@ -313,4 +244,17 @@ void* network_client_get_protocol(client_t* client, protocol_type_t type) {
   }
 
   return NULL;
+}
+
+/**
+ * Called by libuv when an async write request completes.
+ **/
+static void on_write_complete(uv_write_t* req, int status) {
+  write_req_t* wr = (write_req_t*)req;
+
+  if (status < 0) {
+    LOG(ERROR, "Write error: %s", uv_strerror(status));
+  }
+
+  free(wr);
 }

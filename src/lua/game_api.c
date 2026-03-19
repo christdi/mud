@@ -485,10 +485,10 @@ static int lua_schedule_task(lua_State *l) {
 
   lua_pop(l, 2);
 
-  task_t* task = task_new_task_t(name, execute_in, ref);
   game_t* game = lua_get_game(l);
+  task_t* task = task_new_task_t(game, name, execute_in, ref);
 
-  task_schedule_task(game->tasks, task);
+  task_schedule_task(game, task);
 
   lua_push_task(l, task);
 
@@ -512,7 +512,7 @@ static int lua_cancel_task(lua_State* l) {
 
   game_t* game = lua_get_game(l);
 
-  task_cancel_task(game->tasks, game, task);
+  task_cancel_task(game, task);
 
   return 0;
 }
