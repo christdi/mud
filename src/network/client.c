@@ -96,19 +96,19 @@ int flush_client_output(client_t* client) {
 
   size_t len = client->output_length;
 
-  write_req_t* wr = malloc(sizeof(write_req_t) + len);
+  write_req_t* write_req = malloc(sizeof(write_req_t) + len);
 
-  if (wr == NULL) {
+  if (write_req == NULL) {
     LOG(ERROR, "Failed to allocate write request for fd [%d]", client->fd);
 
     return -1;
   }
 
-  memcpy(wr->data, client->output, len);
+  memcpy(write_req->data, client->output, len);
 
-  uv_buf_t buf = uv_buf_init(wr->data, len);
+  uv_buf_t buf = uv_buf_init(write_req->data, len);
 
-  uv_write(&wr->req, (uv_stream_t*)&client->handle, &buf, 1, on_write_complete);
+  uv_write(&write_req->req, (uv_stream_t*)&client->handle, &buf, 1, on_write_complete);
 
   network_protocol_chain_on_flush(client, client->output, len);
 
@@ -143,25 +143,25 @@ int extract_from_input(client_t* client, char* dest, size_t dest_len, const char
 
   size_t delim_len = strnlen(delim, DELIM_SIZE);
 
-  size_t i = 0;
+  size_t idx = 0;
   size_t len = strnlen(client->input, CLIENT_BUFFER_SIZE);
 
   int ret = -1;
 
-  for (i = 0; i < len; i++) {
-    char* current = &client->input[i];
+  for (idx = 0; idx < len; idx++) {
+    char* current = &client->input[idx];
 
     if (strncmp(delim, current, delim_len) == 0) {
-      if (i > dest_len) {
-        LOG(ERROR, "Unable to extract input from client fd [%d], supplied dest buffer was too small at [%ld], needed [%ld]", client->fd, dest_len, i);
+      if (idx > dest_len) {
+        LOG(ERROR, "Unable to extract input from client fd [%d], supplied dest buffer was too small at [%ld], needed [%ld]", client->fd, dest_len, idx);
       } else {
-        strncpy(dest, client->input, i);
-        dest[i] = '\0';
+        strncpy(dest, client->input, idx);
+        dest[idx] = '\0';
 
         ret = 0;
       }
 
-      memcpy(client->input, current + delim_len, len - i);
+      memcpy(client->input, current + delim_len, len - idx);
 
       break;
     }
@@ -250,11 +250,11 @@ void* network_client_get_protocol(client_t* client, protocol_type_t type) {
  * Called by libuv when an async write request completes.
  **/
 static void on_write_complete(uv_write_t* req, int status) {
-  write_req_t* wr = (write_req_t*)req;
+  write_req_t* write_req = (write_req_t*)req;
 
   if (status < 0) {
     LOG(ERROR, "Write error: %s", uv_strerror(status));
   }
 
-  free(wr);
+  free(write_req);
 }

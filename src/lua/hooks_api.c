@@ -11,15 +11,15 @@
 
 #define HOOKS_LIB_NAME "hooks"
 
-static int lua_hooks_on_startup(lua_State* l);
-static int lua_hooks_on_shutdown(lua_State* l);
-static int lua_hooks_on_entities_loaded(lua_State* l);
-static int lua_hooks_on_commands_loaded(lua_State* l);
-static int lua_hooks_on_command_groups_loaded(lua_State* l);
-static int lua_hooks_on_actions_loaded(lua_State* l);
-static int lua_hooks_on_player_connected(lua_State* l);
-static int lua_hooks_on_player_disconnected(lua_State* l);
-static int lua_hooks_on_player_input(lua_State* l);
+static int lua_hooks_on_startup(lua_State* lua);
+static int lua_hooks_on_shutdown(lua_State* lua);
+static int lua_hooks_on_entities_loaded(lua_State* lua);
+static int lua_hooks_on_commands_loaded(lua_State* lua);
+static int lua_hooks_on_command_groups_loaded(lua_State* lua);
+static int lua_hooks_on_actions_loaded(lua_State* lua);
+static int lua_hooks_on_player_connected(lua_State* lua);
+static int lua_hooks_on_player_disconnected(lua_State* lua);
+static int lua_hooks_on_player_input(lua_State* lua);
 
 static const struct luaL_Reg hooks_lib[] = {
   { "on_startup", lua_hooks_on_startup },
@@ -37,13 +37,13 @@ static const struct luaL_Reg hooks_lib[] = {
 /**
  * Registers the hooks API under lunac.api.hooks.
  **/
-int lua_hooks_register_api(lua_State* l) {
-  lua_push_api_table(l);
+int lua_hooks_register_api(lua_State* lua) {
+  lua_push_api_table(lua);
 
-  lua_pushstring(l, HOOKS_LIB_NAME);
-  luaL_newlib(l, hooks_lib);
+  lua_pushstring(lua, HOOKS_LIB_NAME);
+  luaL_newlib(lua, hooks_lib);
 
-  lua_rawset(l, -3);
+  lua_rawset(lua, -3);
 
   return 0;
 }
@@ -53,13 +53,13 @@ int lua_hooks_register_api(lua_State* l) {
  *
  * lunac.api.hooks.on_startup(fn)
  **/
-static int lua_hooks_on_startup(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_startup(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_startup);
-  game->hooks->on_startup = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_startup = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -69,13 +69,13 @@ static int lua_hooks_on_startup(lua_State* l) {
  *
  * lunac.api.hooks.on_shutdown(fn)
  **/
-static int lua_hooks_on_shutdown(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_shutdown(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_shutdown);
-  game->hooks->on_shutdown = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_shutdown = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -85,13 +85,13 @@ static int lua_hooks_on_shutdown(lua_State* l) {
  *
  * lunac.api.hooks.on_entities_loaded(fn)
  **/
-static int lua_hooks_on_entities_loaded(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_entities_loaded(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_entities_loaded);
-  game->hooks->on_entities_loaded = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_entities_loaded = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -101,13 +101,13 @@ static int lua_hooks_on_entities_loaded(lua_State* l) {
  *
  * lunac.api.hooks.on_commands_loaded(fn)
  **/
-static int lua_hooks_on_commands_loaded(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_commands_loaded(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_commands_loaded);
-  game->hooks->on_commands_loaded = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_commands_loaded = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -117,13 +117,13 @@ static int lua_hooks_on_commands_loaded(lua_State* l) {
  *
  * lunac.api.hooks.on_command_groups_loaded(fn)
  **/
-static int lua_hooks_on_command_groups_loaded(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_command_groups_loaded(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_command_groups_loaded);
-  game->hooks->on_command_groups_loaded = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_command_groups_loaded = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -133,13 +133,13 @@ static int lua_hooks_on_command_groups_loaded(lua_State* l) {
  *
  * lunac.api.hooks.on_actions_loaded(fn)
  **/
-static int lua_hooks_on_actions_loaded(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_actions_loaded(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_actions_loaded);
-  game->hooks->on_actions_loaded = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_actions_loaded = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -149,13 +149,13 @@ static int lua_hooks_on_actions_loaded(lua_State* l) {
  *
  * lunac.api.hooks.on_player_connected(fn)
  **/
-static int lua_hooks_on_player_connected(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_player_connected(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_player_connected);
-  game->hooks->on_player_connected = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_player_connected = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -165,13 +165,13 @@ static int lua_hooks_on_player_connected(lua_State* l) {
  *
  * lunac.api.hooks.on_player_disconnected(fn)
  **/
-static int lua_hooks_on_player_disconnected(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_player_disconnected(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_player_disconnected);
-  game->hooks->on_player_disconnected = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_player_disconnected = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -181,13 +181,13 @@ static int lua_hooks_on_player_disconnected(lua_State* l) {
  *
  * lunac.api.hooks.on_player_input(fn)
  **/
-static int lua_hooks_on_player_input(lua_State* l) {
-  luaL_checktype(l, -1, LUA_TFUNCTION);
+static int lua_hooks_on_player_input(lua_State* lua) {
+  luaL_checktype(lua, -1, LUA_TFUNCTION);
 
-  game_t* game = lua_get_game(l);
+  game_t* game = lua_get_game(lua);
 
   lua_free_lua_ref_t(game->hooks->on_player_input);
-  game->hooks->on_player_input = lua_new_lua_ref_t(l, luaL_ref(l, LUA_REGISTRYINDEX));
+  game->hooks->on_player_input = lua_new_lua_ref_t(lua, luaL_ref(lua, LUA_REGISTRYINDEX));
 
   return 0;
 }

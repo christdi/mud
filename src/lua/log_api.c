@@ -8,13 +8,13 @@
 #define LOG_LIB_NAME "log"
 #define MAX_SCRIPT_INFO_LINE_LENGTH 128
 
-static lua_Debug get_debug_info(lua_State* l);
+static lua_Debug get_debug_info(lua_State* lua);
 
-static int lua_log_trace(lua_State* l);
-static int lua_log_debug(lua_State* l);
-static int lua_log_info(lua_State* l);
-static int lua_log_warn(lua_State* l);
-static int lua_log_error(lua_State* l);
+static int lua_log_trace(lua_State* lua);
+static int lua_log_debug(lua_State* lua);
+static int lua_log_info(lua_State* lua);
+static int lua_log_warn(lua_State* lua);
+static int lua_log_error(lua_State* lua);
 
 static const struct luaL_Reg log_lib[] = {
   { "trace", lua_log_trace },
@@ -28,17 +28,17 @@ static const struct luaL_Reg log_lib[] = {
 /**
  * Registers the log module with the Lua state.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success
  **/
-int lua_log_register_api(lua_State* l) {
-  lua_push_api_table(l);
+int lua_log_register_api(lua_State* lua) {
+  lua_push_api_table(lua);
   
-  lua_pushstring(l, LOG_LIB_NAME);
-  luaL_newlib(l, log_lib);
+  lua_pushstring(lua, LOG_LIB_NAME);
+  luaL_newlib(lua, log_lib);
   
-  lua_rawset(l, -3);
+  lua_rawset(lua, -3);
 
   return 0;
 
@@ -48,14 +48,14 @@ int lua_log_register_api(lua_State* l) {
 /**
  * Lua API method to retrieve a debug structure.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static lua_Debug get_debug_info(lua_State* l) {
+static lua_Debug get_debug_info(lua_State* lua) {
   lua_Debug debug;
-  lua_getstack(l, 1, &debug);
-  lua_getinfo(l, "nSl", &debug);
+  lua_getstack(lua, 1, &debug);
+  lua_getinfo(lua, "nSl", &debug);
 
   return debug;
 }
@@ -63,15 +63,15 @@ static lua_Debug get_debug_info(lua_State* l) {
 /**
  * Lua API method to log a trace message.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static int lua_log_trace(lua_State* l) {
-  const char* message = luaL_checkstring(l, 1);
-  lua_settop(l, 0);
+static int lua_log_trace(lua_State* lua) {
+  const char* message = luaL_checkstring(lua, 1);
+  lua_settop(lua, 0);
 
-  lua_Debug debug = get_debug_info(l);
+  lua_Debug debug = get_debug_info(lua);
   mlog(TRACE, debug.short_src, debug.currentline, message);
 
   return 0;
@@ -80,15 +80,15 @@ static int lua_log_trace(lua_State* l) {
 /**
  * Lua API method to log a debug message.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static int lua_log_debug(lua_State* l) {
-  const char* message = luaL_checkstring(l, 1);
-  lua_settop(l, 0);
+static int lua_log_debug(lua_State* lua) {
+  const char* message = luaL_checkstring(lua, 1);
+  lua_settop(lua, 0);
 
-  lua_Debug debug = get_debug_info(l);
+  lua_Debug debug = get_debug_info(lua);
   mlog(DEBUG, debug.short_src, debug.currentline, message);
 
   return 0;
@@ -97,15 +97,15 @@ static int lua_log_debug(lua_State* l) {
 /**
  * Lua API method to log an info message.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static int lua_log_info(lua_State* l) {
-  const char* message = luaL_checkstring(l, 1);
-  lua_settop(l, 0);
+static int lua_log_info(lua_State* lua) {
+  const char* message = luaL_checkstring(lua, 1);
+  lua_settop(lua, 0);
 
-  lua_Debug debug = get_debug_info(l);
+  lua_Debug debug = get_debug_info(lua);
   mlog(INFO, debug.short_src, debug.currentline, message);
 
   return 0;
@@ -114,15 +114,15 @@ static int lua_log_info(lua_State* l) {
 /**
  * Lua API method to log a warn message.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static int lua_log_warn(lua_State* l) {
-  const char* message = luaL_checkstring(l, 1);
-  lua_settop(l, 0);
+static int lua_log_warn(lua_State* lua) {
+  const char* message = luaL_checkstring(lua, 1);
+  lua_settop(lua, 0);
 
-  lua_Debug debug = get_debug_info(l);
+  lua_Debug debug = get_debug_info(lua);
   mlog(WARN, debug.short_src, debug.currentline, message);
 
   return 0;
@@ -131,15 +131,15 @@ static int lua_log_warn(lua_State* l) {
 /**
  * Lua API method to log an error message.
  * 
- * l - The Lua state.
+ * lua - The Lua state.
  * 
  * Returns 0 on success or calls luaL_error on failure.
  **/
-static int lua_log_error(lua_State* l) {
-  const char* message = luaL_checkstring(l, 1);
-  lua_settop(l, 0);
+static int lua_log_error(lua_State* lua) {
+  const char* message = luaL_checkstring(lua, 1);
+  lua_settop(lua, 0);
 
-  lua_Debug debug = get_debug_info(l);
+  lua_Debug debug = get_debug_info(lua);
   mlog(ERROR, debug.short_src, debug.currentline, message);
 
   return 0;

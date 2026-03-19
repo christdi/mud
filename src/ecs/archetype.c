@@ -67,7 +67,7 @@ void ecs_remove_archetype_component(archetype_t* archetype, component_t* compone
 }
 
 /**
- * Checks if a given entity matches an archetype by checking if it appears
+ * Checks if a given entity matches an archetype by checking if iter appears
  * in all components the archetype wraps.
  *
  * archetype - the archetype to check against
@@ -76,16 +76,16 @@ void ecs_remove_archetype_component(archetype_t* archetype, component_t* compone
  * Returns true if match or false otherwise
  **/
 bool ecs_entity_matches_archetype(archetype_t* archetype, entity_t* entity) {
-  it_t it = list_begin(archetype->components);
+  it_t iter = list_begin(archetype->components);
 
   component_t* component = NULL;
 
-  while ((component = it_get(it)) != NULL) {
+  while ((component = it_get(iter)) != NULL) {
     if (!ecs_component_has_entity(component, entity)) {
       return false;
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   return true;
@@ -128,10 +128,10 @@ bool ecs_archetype_has_entity(archetype_t* archetype, entity_t* entity) {
  * entity - the entity to be updated
  **/
 void ecs_update_entity_archetypes(linked_list_t* archetypes, entity_t* entity) {
-  it_t it = list_begin(archetypes);
+  it_t iter = list_begin(archetypes);
   archetype_t* archetype = NULL;
 
-  while ((archetype = it_get(it)) != NULL) {
+  while ((archetype = it_get(iter)) != NULL) {
     if (ecs_entity_matches_archetype(archetype, entity)) {
       if (!ecs_archetype_has_entity(archetype, entity)) {
         ecs_add_entity_to_archetype(archetype, entity);
@@ -142,6 +142,6 @@ void ecs_update_entity_archetypes(linked_list_t* archetypes, entity_t* entity) {
       }
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }

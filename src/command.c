@@ -41,7 +41,7 @@ void command_free_command_t(command_t* command) {
 
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
- * to cast to the actual type and pass it to the relevant free function.
+ * to cast to the actual type and pass iter to the relevant free function.
  **/
 void command_deallocate_command_t(void* value) {
   assert(value);
@@ -119,13 +119,13 @@ int command_load_commands(game_t* game) {
 
   lua_call_commands_loaded_hook(game->lua_state, results);
 
-  it_t it = list_begin(results);
+  it_t iter = list_begin(results);
   command_t* command = NULL;
 
-  while ((command = it_get(it)) != NULL) {
+  while ((command = it_get(iter)) != NULL) {
     hash_table_insert(game->commands, uuid_str(&command->uuid), command);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   LOG(INFO, "Loaded [%d] commands", count);
@@ -156,13 +156,13 @@ int command_load_command_groups(game_t* game) {
 
   lua_call_command_groups_loaded_hook(game->lua_state, results);
 
-  it_t it = list_begin(results);
+  it_t iter = list_begin(results);
   command_group_t* group = NULL;
 
-  while ((group = it_get(it)) != NULL) {
+  while ((group = it_get(iter)) != NULL) {
     hash_table_insert(game->command_groups, uuid_str(&group->uuid), group);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   LOG(INFO, "Loaded [%d] command groups", count);

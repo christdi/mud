@@ -11,16 +11,16 @@
  *
  * Returns the new iterator
  **/
-it_t it_next(it_t it) {
-  it_t nextIt;
+it_t it_next(it_t iter) {
+  it_t next_iter;
 
-  if (it.node && it.node->next) {
-    nextIt.node = it.node->next;
+  if (iter.node && iter.node->next) {
+    next_iter.node = iter.node->next;
   } else {
-    nextIt.node = NULL;
+    next_iter.node = NULL;
   }
 
-  return nextIt;
+  return next_iter;
 }
 
 /**
@@ -30,16 +30,16 @@ it_t it_next(it_t it) {
  *
  * Returns the new iterator
  **/
-it_t it_prev(it_t it) {
-  it_t prevIt;
+it_t it_prev(it_t iter) {
+  it_t prev_iter;
 
-  if (it.node && it.node->prev) {
-    prevIt.node = it.node->prev;
+  if (iter.node && iter.node->prev) {
+    prev_iter.node = iter.node->prev;
   } else {
-    prevIt.node = NULL;
+    prev_iter.node = NULL;
   }
 
-  return prevIt;
+  return prev_iter;
 }
 
 /**
@@ -47,9 +47,9 @@ it_t it_prev(it_t it) {
  *
  * Returns a void pointer to the data or NULL if no data is available.
  **/
-void* it_get(it_t it) {
-  if (it.node && it.node->data) {
-    return it.node->data;
+void* it_get(it_t iter) {
+  if (iter.node && iter.node->data) {
+    return iter.node->data;
   }
 
   return NULL;

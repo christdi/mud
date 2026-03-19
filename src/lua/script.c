@@ -106,7 +106,7 @@ void deallocate_script(void* value) {
 
 /**
  * Runs a command script.  The file is loaded and compiled and then a sandbox environment table is built
- * based on the access level of the script limiting the methods it may call in Lua.  Player and arguments
+ * based on the access level of the script limiting the methods iter may call in Lua.  Player and arguments
  * are exposed to the script via the environment table as "p" and "arg".
  *
  * uuid - UUID of the script to run
@@ -246,14 +246,14 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
 
   lua_newtable(game->lua_state);
 
-  it_t it = list_begin(groups);
+  it_t iter = list_begin(groups);
   script_group_t* group = NULL;
 
-  while ((group = it_get(it)) != NULL) {
+  while ((group = it_get(iter)) != NULL) {
     if (luaL_dofile(game->lua_state, group->filepath) != 0) {
       LOG(ERROR, "Error while running Lua sandbox script [%s]", lua_tostring(game->lua_state, -1));
 
-      it = it_next(it);
+      iter = it_next(iter);
 
       continue;
     }
@@ -261,7 +261,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
     if (lua_type(game->lua_state, -1) != LUA_TTABLE) {
       LOG(ERROR, "Script group script [%s] didn't return a table", group->filepath);
 
-      it = it_next(it);
+      iter = it_next(iter);
 
       continue;
     }
@@ -276,7 +276,7 @@ static int build_environment_table(game_t* game, const char* script_uuid) {
 
     lua_pop(game->lua_state, 1);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   free_linked_list_t(groups);

@@ -55,7 +55,7 @@ void free_player_t(player_t* player) {
 
 /**
  * Deallocator for data structures.  Data structures only store void pointers so we need
- * to cast to the actual type and pass it to the relevant free function.
+ * to cast to the actual type and pass iter to the relevant free function.
  **/
 void deallocate_player(void* value) {
   assert(value);
@@ -146,7 +146,7 @@ void player_gmcp(client_t* client, void* context, const char* topic, const char*
 }
 
 /**
- * Function which attempts to find a state from persistence and assign it to the player.
+ * Function which attempts to find a state from persistence and assign iter to the player.
  *
  * Parameters
  *   player - the player whose state is to be changed
@@ -238,7 +238,7 @@ int player_narrate(player_t* player, game_t* game, event_t* event) {
     lua_call_narrate_event_hook(game->lua_state, player, player->narrator, event->data);
     break;
   default:
-    send_to_player(player, "Something happened but you're not sure how to describe it.\n\r");
+    send_to_player(player, "Something happened but you're not sure how to describe iter.\n\r");
     break;
   }
 
@@ -348,14 +348,14 @@ int player_get_commands(player_t* player, game_t* game, const char* name, linked
   assert(name);
   assert(commands);
 
-  it_t it = list_begin(player->command_groups);
+  it_t iter = list_begin(player->command_groups);
   command_group_t* group = NULL;
 
-  while ((group = it_get(it)) != NULL) {
-    it_t c_it = list_begin(group->commands);
+  while ((group = it_get(iter)) != NULL) {
+    it_t cmd_iter = list_begin(group->commands);
     const char* uuid = NULL;
 
-    while((uuid = it_get(c_it)) != NULL) {
+    while((uuid = it_get(cmd_iter)) != NULL) {
       command_t* cmd = hash_table_get(game->commands, uuid);
 
       if (cmd != NULL) {
@@ -364,10 +364,10 @@ int player_get_commands(player_t* player, game_t* game, const char* name, linked
         }
       }
 
-      c_it = it_next(c_it);
+      cmd_iter = it_next(cmd_iter);
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   return 0;
@@ -459,14 +459,14 @@ void send_to_players(linked_list_t* players, const char* fmt, ...) {
 
   va_end(args);
 
-  it_t it = list_begin(players);
+  it_t iter = list_begin(players);
 
   player_t* player = NULL;
 
-  while ((player = (player_t*)it_get(it)) != NULL) {
+  while ((player = (player_t*)it_get(iter)) != NULL) {
     write_to_player(player, output);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }
 
@@ -480,7 +480,7 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
 
   char output[SEND_SIZE];
 
-  h_it_t it = hash_table_iterator(game->players);
+  h_it_t iter = hash_table_iterator(game->players);
   player_t* target;
 
   va_list args;
@@ -490,16 +490,16 @@ void send_to_all_players(game_t* game, player_t* excluding, const char* fmt, ...
     LOG(ERROR, "Formatted output was too long and was truncated");
   }
 
-  while ((target = h_it_get(it)) != NULL) {
+  while ((target = h_it_get(iter)) != NULL) {
     if (excluding && excluding == target) {
-      it = h_it_next(it);
+      iter = h_it_next(iter);
 
       continue;
     }
 
     write_to_player(target, output);
 
-    it = h_it_next(it);
+    iter = h_it_next(iter);
   }
 
   va_end(args);

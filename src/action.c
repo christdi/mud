@@ -78,13 +78,13 @@ int action_load_actions(game_t* game) {
 
   lua_call_actions_loaded_hook(game->lua_state, results);
 
-  it_t it = list_begin(results);
+  it_t iter = list_begin(results);
   action_t* action = NULL;
 
-  while ((action = it_get(it)) != NULL) {
+  while ((action = it_get(iter)) != NULL) {
     hash_table_insert(game->actions, uuid_str(&action->uuid), action);
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   LOG(INFO, "Loaded [%d] actions", count);

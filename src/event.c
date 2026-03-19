@@ -108,11 +108,11 @@ void event_dispatch_events(event_broker_t* event_broker, game_t* game, hash_tabl
   while (event_has_events(event_broker)) {
     event_t* event = queue_dequeue(event_broker->events);
 
-    h_it_t it = hash_table_iterator(players);
+    h_it_t iter = hash_table_iterator(players);
     player_t* player = NULL;
 
-    while ((player = h_it_get(it)) != NULL) {
-      it = h_it_next(it);
+    while ((player = h_it_get(iter)) != NULL) {
+      iter = h_it_next(iter);
 
       player_on_event(player, game, event);
     }

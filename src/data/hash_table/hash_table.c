@@ -26,8 +26,8 @@ void free_hash_table_t(hash_table_t* hash_table) {
     return;
   }
 
-  for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-    linked_list_t* list = hash_table->nodes[i];
+  for (int idx = 0; idx < HASH_TABLE_SIZE; idx++) {
+    linked_list_t* list = hash_table->nodes[idx];
 
     if (list != NULL) {
       free_linked_list_t(list);
@@ -38,7 +38,7 @@ void free_hash_table_t(hash_table_t* hash_table) {
 }
 
 /**
- * Gets a table index by generating a hash value and modulating it by MAX_TABLE_SIZE;
+ * Gets a table index by generating a hash value and modulating iter by MAX_TABLE_SIZE;
  **/
 unsigned int get_hash_index(const char* key) {
   assert(key);
@@ -46,15 +46,15 @@ unsigned int get_hash_index(const char* key) {
   size_t len = strnlen(key, MAX_KEY_LENGTH);
 
   unsigned long hash = HASH_BASE_VALUE;
-  unsigned char c = 0;
-  size_t i = 0;
+  unsigned char chr = 0;
+  size_t idx = 0;
 
-  while ((c = (unsigned char)*key++)) {
-    if (i++ == len) {
+  while ((chr = (unsigned char)*key++)) {
+    if (idx++ == len) {
       break;
     }
 
-    hash = ((hash << FIVE_BITS) + hash) + c; /* hash * 33 + c */
+    hash = ((hash << FIVE_BITS) + hash) + chr; /* hash * 33 + chr */
   }
 
   return (unsigned int)hash % HASH_TABLE_SIZE;
@@ -110,10 +110,10 @@ void hash_table_delete(hash_table_t* table, const char* key) {
     return;
   }
 
-  it_t it = list_begin(list);
+  it_t iter = list_begin(list);
   hash_node_t* node = NULL;
 
-  while ((node = (hash_node_t*)it_get(it)) != NULL) {
+  while ((node = (hash_node_t*)it_get(iter)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
       list_remove(list, node);
 
@@ -125,7 +125,7 @@ void hash_table_delete(hash_table_t* table, const char* key) {
       return;
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 }
 
@@ -146,15 +146,15 @@ int hash_table_has(hash_table_t* table, const char* key) {
     return 0;
   }
 
-  it_t it = list_begin(list);
+  it_t iter = list_begin(list);
   hash_node_t* node = NULL;
 
-  while ((node = (hash_node_t*)it_get(it)) != NULL) {
+  while ((node = (hash_node_t*)it_get(iter)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
       return 1;
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   return 0;
@@ -175,15 +175,15 @@ void* hash_table_get(hash_table_t* table, const char* key) {
     return NULL;
   }
 
-  it_t it = list_begin(list);
+  it_t iter = list_begin(list);
   hash_node_t* node = NULL;
 
-  while ((node = (hash_node_t*)it_get(it)) != NULL) {
+  while ((node = (hash_node_t*)it_get(iter)) != NULL) {
     if (strncmp(node->key, key, MAX_KEY_LENGTH) == 0) {
       return node->value;
     }
 
-    it = it_next(it);
+    iter = it_next(iter);
   }
 
   return NULL;
