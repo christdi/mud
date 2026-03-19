@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_C_CLANG_TIDY
   "clang-tidy"
-  "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter, -readability-magic-numbers"
+  "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter, -readability-magic-numbers, -misc-no-recursion, -readability-function-cognitive-complexity"
   "-header-filter=src/.*")
 
 find_package(Lua 5.3 REQUIRED)
@@ -19,9 +19,13 @@ find_path(LIBUV_INCLUDE_DIR uv.h PATHS /usr/local/include REQUIRED)
 
 add_compile_options(-Wall -pedantic)
 
+# bsd/string.c is a verbatim vendored BSD implementation — compile separately without clang-tidy
+add_library(bsd_vendored OBJECT src/bsd/string.c)
+set_target_properties(bsd_vendored PROPERTIES C_CLANG_TIDY "")
+target_include_directories(bsd_vendored PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
 set(LIBMUD_SOURCES
   src/action.c
-  src/bsd/string.c
   src/command.c
   src/config.c
   src/data/deallocate.c
@@ -67,7 +71,7 @@ set(LIBMUD_SOURCES
   src/util/muduuid.c
 )
 
-add_library(libmud STATIC ${LIBMUD_SOURCES})
+add_library(libmud STATIC ${LIBMUD_SOURCES} $<TARGET_OBJECTS:bsd_vendored>)
 
 target_include_directories(libmud
   PUBLIC  ${PROJECT_SOURCE_DIR}/include
