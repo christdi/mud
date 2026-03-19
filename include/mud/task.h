@@ -1,7 +1,7 @@
 #ifndef MUD_TASK_TASK_H
 #define MUD_TASK_TASK_H
 
-#include <time.h>
+#include <uv.h>
 
 #include "mud/util/muduuid.h"
 
@@ -18,19 +18,21 @@ typedef struct lua_ref lua_ref_t;
 typedef struct task {
   mud_uuid_t uuid;
   char* name;
-  time_t execute_at;
+  int execute_in;
+  uv_timer_t timer;
+  game_t* game;
   lua_ref_t* ref;
 } task_t;
 
 /**
  * Function prototypes
  **/
-task_t* task_new_task_t(const char* name, int execute_in, lua_ref_t* ref);
+task_t* task_new_task_t(game_t* game, const char* name, int execute_in, lua_ref_t* ref);
 void task_free_task_t(task_t* task);
 void task_deallocate_task_t(void* value);
 
-int task_schedule_task(linked_list_t* tasks, task_t* task);
-int task_cancel_task(linked_list_t* tasks, game_t* game, task_t* task);
-int task_execute_tasks(linked_list_t* tasks, game_t* game);
+int task_schedule_task(game_t* game, task_t* task);
+int task_cancel_task(game_t* game, task_t* task);
+void task_shutdown(game_t* game);
 
 #endif

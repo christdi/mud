@@ -1,8 +1,7 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include <pthread.h>
-#include <sys/types.h>
+#include <uv.h>
 
 #include "mud/network/callback.h"
 
@@ -17,11 +16,10 @@
 typedef struct linked_list linked_list_t;
 
 /**
- * Sturcts
+ * Structs
  **/
 typedef struct network {
-  fd_set master_set;
-  int max_fd;
+  uv_loop_t* loop;
 
   callback_t* connection_callback;
   callback_t* disconnection_callback;
@@ -33,7 +31,7 @@ typedef struct network {
 } network_t;
 
 /**
- * Functions prototypes
+ * Function prototypes
  **/
 network_t* create_network_t(void);
 void free_network_t(network_t* network);
@@ -41,9 +39,9 @@ void free_network_t(network_t* network);
 int start_game_server(network_t* network, unsigned int port);
 int stop_game_server(network_t* network, unsigned int port);
 
-void poll_network(network_t* network);
 void flush_output(network_t* network);
 void disconnect_clients(network_t* network);
+void network_shutdown(network_t* network);
 
 void register_connection_callback(network_t* network, callback_func func, void* context);
 void register_disconnection_callback(network_t* network, callback_func func, void* context);

@@ -14,6 +14,9 @@ find_package(Lua 5.3 REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 
+find_library(LIBUV_LIBRARY NAMES uv uv1 PATHS /usr/local/lib REQUIRED)
+find_path(LIBUV_INCLUDE_DIR uv.h PATHS /usr/local/include REQUIRED)
+
 add_compile_options(-Wall -pedantic)
 
 set(LIBMUD_SOURCES
@@ -69,6 +72,7 @@ add_library(libmud STATIC ${LIBMUD_SOURCES})
 target_include_directories(libmud
   PUBLIC  ${PROJECT_SOURCE_DIR}/include
   PRIVATE ${LUA_INCLUDE_DIR}
+  PRIVATE ${LIBUV_INCLUDE_DIR}
 )
 
 target_link_libraries(libmud
@@ -79,6 +83,7 @@ target_link_libraries(libmud
   Threads::Threads
   ${LUA_LIBRARIES}
   ${CMAKE_DL_LIBS}
+  ${LIBUV_LIBRARY}
 )
 
 add_executable(mud src/main.c)
