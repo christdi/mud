@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_CLANG_TIDY
   "clang-tidy"
   "-checks=clang-analyzer-*, concurrency-*, misc-*, performance-*, portability-*, readability-*, -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling, -misc-unused-parameters, -clang-diagnostic-unused-parameter, -readability-non-const-parameter, -readability-magic-numbers, -misc-no-recursion, -readability-function-cognitive-complexity"
+  "-warnings-as-errors=*"
   "-header-filter=src/.*")
 
 find_package(Lua 5.3 REQUIRED)
@@ -17,7 +18,7 @@ find_package(Threads REQUIRED)
 find_library(LIBUV_LIBRARY NAMES uv uv1 PATHS /usr/local/lib REQUIRED)
 find_path(LIBUV_INCLUDE_DIR uv.h PATHS /usr/local/include REQUIRED)
 
-add_compile_options(-Wall -pedantic)
+add_compile_options(-Wall -Werror -pedantic)
 
 # bsd/string.c is a verbatim vendored BSD implementation — compile separately without clang-tidy
 add_library(bsd_vendored OBJECT src/bsd/string.c)
