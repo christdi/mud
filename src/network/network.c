@@ -6,8 +6,10 @@
 #include "mud/network/server.h"
 
 #include <assert.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <time.h>
 #include <uv.h>
 
@@ -85,6 +87,31 @@ int start_game_server(network_t* network, unsigned int port) {
   }
 
   server->handle.data = server;
+
+  // Create an IPv6 socket with dual-stack support (accepts both IPv4 and IPv6
+  // connections) by disabling IPV6_V6ONLY before handing it to libuv.
+  int sockfd = socket(AF_INET6, SOCK_STREAM, 0);
+
+  if (sockfd < 0) {
+    LOG(ERROR, "socket() failed for port [%d]", port);
+    uv_close((uv_handle_t*)&server->handle, NULL);
+    free_server_t(server);
+
+    return -1;
+  }
+
+  int ipv6only = 0;
+  setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6only, sizeof(ipv6only));
+
+  res = uv_tcp_open(&server->handle, (uv_os_sock_t)sockfd);
+
+  if (res != 0) {
+    LOG(ERROR, "uv_tcp_open failed: %s", uv_strerror(res));
+    uv_close((uv_handle_t*)&server->handle, NULL);
+    free_server_t(server);
+
+    return -1;
+  }
 
   struct sockaddr_in6 addr;
   uv_ip6_addr("::", (int)port, &addr);
@@ -373,6 +400,16 @@ static void on_client_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* b
 
   if (network->input_callback->func) {
     network->input_callback->func(client, network->input_callback->context);
+  }
+
+  // Flush output immediately so responses reach the client without waiting
+  // for the next tick.
+  if (client->output_length > 0) {
+    if (network->flush_callback->func) {
+      network->flush_callback->func(client, network->flush_callback->context);
+    }
+
+    flush_client_output(client);
   }
 }
 
